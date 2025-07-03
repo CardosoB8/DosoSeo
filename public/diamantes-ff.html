@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="pt-MZ">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Diamantes FF - Campanha Moçambique</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1085381233077667');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1085381233077667&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+    
+    <style>
+        body {
+            background-image: linear-gradient(rgba(19, 23, 34, 0.95), rgba(19, 23, 34, 0.95)), url('https://w.forfun.com/fetch/34/34823c951950882e35a0937a01665a95.jpeg');
+            background-size: cover;
+            background-position: center;
+            font-family: 'Teko', sans-serif;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        .ff-title { font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #FFD700; text-shadow: 2px 2px 4px rgba(0,0,0,0.7); }
+        .ff-button { background-color: #FF8C00; color: white; border: 2px solid #FFD700; box-shadow: 0 5px 15px rgba(255, 140, 0, 0.4); text-transform: uppercase; font-weight: 700; letter-spacing: 1.5px; transition: all 0.2s; }
+        .ff-button:hover { background-color: #FFA500; transform: translateY(-2px); }
+        .ff-input { background-color: rgba(0,0,0,0.5); border: 1px solid #FFD700; color: white; }
+        .diamond-button { transition: all 0.2s; }
+        .diamond-button.selected { background-color: #FF8C00; border-color: #fff; transform: scale(1.05); box-shadow: 0 0 15px #FFD700; }
+        .ff-console { background-color: rgba(0,0,0,0.8); border: 1px solid #00FF00; color: #00FF00; font-family: 'Courier New', Courier, monospace; height: 350px; overflow-y: auto; padding: 1rem; border-radius: 5px; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); z-index: 250; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-content { background: linear-gradient(145deg, #2c3e50, #34495e); border: 2px solid #FFD700; padding: 2rem; border-radius: 10px; text-align: center; max-width: 90%; width: 500px; }
+        .offer-box { background-color: rgba(0,0,0,0.3); border: 2px solid #FFD700; box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); padding: 1rem; border-radius: 8px; transition: all 0.3s; }
+        .offer-box:hover { transform: scale(1.05); }
+        .progress-bar { background-color: #2c3e50; border-radius: 10px; overflow: hidden; border: 1px solid #FFD700; }
+        .progress-bar-inner { height: 20px; width: 0%; background: linear-gradient(90deg, #FFA500, #FFD700); border-radius: 8px; transition: width 2.5s ease-in-out; }
+    </style>
+</head>
+<body class="text-white flex items-center justify-center min-h-screen">
+
+    <audio id="error-sound" src="song.mp3" preload="auto"></audio>
+    <audio id="success-sound" src="songs.mp3" preload="auto"></audio>
+
+    <div class="w-full">
+        <div id="generator-container" class="max-w-xl mx-auto p-6 w-full hidden">
+            <div class="text-center">
+                 <h1 class="text-5xl md:text-6xl ff-title">Gerador de Diamantes FF</h1>
+                 <p class="text-xl text-gray-300">FF Moçambique - 2025</p>
+            </div>
+            <div class="mt-8 space-y-6">
+                <div>
+                     <label class="text-lg font-bold text-gray-200">PASSO 1: INSIRA O SEU ID DE JOGADOR</label>
+                     <input id="id-input" type="number" placeholder="Ex: 1234567890" class="w-full p-3 mt-2 rounded ff-input text-lg">
+                     <p class="text-xs text-gray-400 mt-2"><i class="fas fa-lock mr-1"></i> O seu ID é usado apenas para a entrega dos recursos. A sua conta está 100% segura.</p>
+                </div>
+                <div>
+                    <label class="text-lg font-bold text-gray-200">PASSO 2: ESCOLHA A QUANTIDADE DE DIAMANTES (💎)</label>
+                    <div id="diamond-options" class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
+                         <button class="diamond-button p-3 bg-gray-700 rounded border border-gray-600" data-amount="1,200">1,200</button>
+                         <button class="diamond-button p-3 bg-gray-700 rounded border border-gray-600" data-amount="5,600">5,600</button>
+                         <button class="diamond-button p-3 bg-gray-700 rounded border border-gray-600" data-amount="14,000">14,000</button>
+                         <button class="diamond-button p-3 bg-gray-700 rounded border border-gray-600" data-amount="25,000">25,000</button>
+                    </div>
+                </div>
+                <button id="generate-button" class="w-full p-4 rounded text-2xl ff-button">
+                     <i class="fas fa-bolt mr-2"></i> Gerar Recursos Agora!
+                </button>
+            </div>
+        </div>
+        
+        <div id="console-container" class="hidden max-w-2xl mx-auto p-4 w-full">
+            <div id="console-output" class="ff-console"></div>
+        </div>
+
+        <div id="verification-modal" class="modal-overlay">
+             <div class="modal-content">
+                <i class="fas fa-user-shield fa-4x text-red-500 mb-4"></i>
+                <h2 class="text-3xl font-bold text-red-500 uppercase">Verificação Humana Requerida!</h2>
+                <p id="verification-text" class="text-gray-300 my-4 text-lg">Para provar que é humano, complete a tarefa rápida abaixo. Os seus diamantes serão liberados após a confirmação.</p>
+                <div class="text-left">
+                    <a id="verification-link" href="https://tracking.olabet.co.mz/C.ashx?btag=a_969b_12c_&affid=941&siteid=969&adid=12&c=" target="_blank" class="block offer-box">
+                        <div class="flex items-center">
+                            <i class="fas fa-star text-yellow-400 text-2xl mr-4"></i>
+                            <div>
+                                <p class="font-bold text-lg text-white">Verificação Rápida via Registo</p>
+                                <p class="text-sm text-green-400">CLIQUE AQUI PARA INICIAR A TAREFA</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div id="confirmation-container" class="hidden max-w-xl mx-auto p-6 w-full text-center">
+            <div id="confirmation-spinner">
+                <i class="fas fa-sync-alt fa-4x text-blue-400 mb-6 animate-spin"></i>
+                <h1 class="text-4xl ff-title">A verificar o seu registo...</h1>
+                <p class="text-xl text-gray-300 my-4">A conectar com os servidores parceiros. Por favor, aguarde.</p>
+            </div>
+            <div id="confirmation-done" class="hidden">
+                <i class="fas fa-user-check fa-4x text-green-400 mb-6"></i>
+                <h1 class="text-4xl ff-title">Registo Encontrado!</h1>
+                <p class="text-xl text-gray-300 my-4">O passo final é confirmar a sua ação para liberar os recursos na sua conta.</p>
+                <button id="confirm-button" class="w-full p-4 rounded text-2xl ff-button bg-blue-600 border-blue-400">
+                    <i class="fas fa-check-double mr-2"></i> Confirmar e Liberar Diamantes
+                </button>
+            </div>
+        </div>
+
+        <div id="success-container" class="hidden max-w-xl mx-auto p-6 w-full text-center">
+            <h1 id="success-title" class="text-5xl ff-title text-green-400 mb-6"></h1>
+            <div class="progress-bar mb-4">
+                <div id="progress-bar-inner" class="progress-bar-inner"></div>
+            </div>
+            <p id="success-message" class="text-xl text-gray-300 my-4 min-h-[56px]"></p>
+        </div>
+
+        <div id="error-modal" class="modal-overlay">
+             <div class="modal-content border-red-500">
+                <i class="fas fa-exclamation-triangle fa-3x text-red-500 mb-4"></i>
+                <h2 class="text-2xl font-bold text-white mb-2">Atenção</h2>
+                <p id="error-message" class="text-gray-300 mb-6"></p>
+                <button id="error-close-button" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg">OK</button>
+             </div>
+        </div>
+
+        <footer id="main-footer" class="hidden text-center py-8 px-4 mt-12">
+            <div class="max-w-4xl mx-auto border-t border-gray-700 pt-6">
+                <p class="text-xs text-gray-500 mb-4">
+                    <strong>AVISO LEGAL:</strong> Este site funciona como uma publicidade e ferramenta de entretenimento. Não é afiliado, endossado ou patrocinado pela Garena, Meta (Facebook™), Google™ ou qualquer outra entidade. Free Fire™ e Garena™ são marcas comerciais dos seus respetivos donos.
+                </p>
+                <p class="text-xs text-gray-600">
+                    A conclusão de ofertas de parceiros pode ser necessária.
+                </p>
+            </div>
+        </footer>
+    </div>
+    
+    <script>
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.addEventListener('keydown', event => { if (event.ctrlKey && ['c', 'u', 's', 'p', 'x'].includes(event.key.toLowerCase())) event.preventDefault(); });
+
+        const elements = {
+            generatorContainer: document.getElementById('generator-container'),
+            consoleContainer: document.getElementById('console-container'),
+            verificationModal: document.getElementById('verification-modal'),
+            confirmationContainer: document.getElementById('confirmation-container'),
+            successContainer: document.getElementById('success-container'),
+            errorModal: document.getElementById('error-modal'),
+            mainFooter: document.getElementById('main-footer'),
+            generateButton: document.getElementById('generate-button'),
+            verificationLink: document.getElementById('verification-link'),
+            confirmButton: document.getElementById('confirm-button'),
+            errorCloseButton: document.getElementById('error-close-button'),
+            idInput: document.getElementById('id-input'),
+            diamondButtons: document.querySelectorAll('.diamond-button'),
+            consoleOutput: document.getElementById('console-output'),
+            finalAmount: document.getElementById('final-amount'),
+            finalId: document.getElementById('final-id'),
+            errorMessage: document.getElementById('error-message'),
+            confirmationSpinner: document.getElementById('confirmation-spinner'),
+            confirmationDone: document.getElementById('confirmation-done'),
+            progressBarInner: document.getElementById('progress-bar-inner'),
+            successTitle: document.getElementById('success-title'),
+            successMessage: document.getElementById('success-message'),
+            errorSound: document.getElementById('error-sound'),
+            successSound: document.getElementById('success-sound')
+        };
+        let selectedAmount = "";
+
+        function showError(message) {
+            elements.errorMessage.textContent = message;
+            elements.errorModal.style.display = 'flex';
+        }
+        elements.errorCloseButton.addEventListener('click', () => elements.errorModal.style.display = 'none');
+
+        function selectDiamondButton(button) {
+            elements.diamondButtons.forEach(btn => btn.classList.remove('selected'));
+            button.classList.add('selected');
+            selectedAmount = button.dataset.amount;
+        }
+
+        window.onload = () => {
+            if (localStorage.getItem('verification_sent') === 'true') {
+                elements.generatorContainer.style.display = 'none';
+                elements.confirmationContainer.classList.remove('hidden');
+                setTimeout(() => {
+                    elements.confirmationSpinner.style.display = 'none';
+                    elements.confirmationDone.classList.remove('hidden');
+                }, 2500);
+            } else {
+                elements.generatorContainer.style.display = 'block';
+                elements.mainFooter.classList.remove('hidden');
+                const randomIndex = Math.floor(Math.random() * elements.diamondButtons.length);
+                selectDiamondButton(elements.diamondButtons[randomIndex]);
+            }
+        };
+
+        elements.diamondButtons.forEach(button => {
+            button.addEventListener('click', () => selectDiamondButton(button));
+        });
+        
+        elements.generateButton.addEventListener('click', () => {
+            const idValue = elements.idInput.value.trim();
+            if (idValue === '' || !/^\d+$/.test(idValue)) {
+                showError('Por favor, insira um ID de jogador válido (apenas números).');
+                return;
+            }
+            localStorage.setItem('ff_id', idValue);
+            localStorage.setItem('ff_amount', selectedAmount);
+            elements.generatorContainer.style.display = 'none';
+            elements.mainFooter.style.display = 'none';
+            elements.consoleContainer.classList.remove('hidden');
+            startConsole(idValue, selectedAmount);
+        });
+
+        elements.verificationLink.addEventListener('click', function(event) {
+            event.preventDefault();
+            localStorage.setItem('verification_sent', 'true');
+            window.open(this.href, '_blank');
+            document.getElementById('verification-text').innerHTML = "Excelente! Complete o seu registo na nova aba. <strong class='text-yellow-400'>Depois, volte aqui para confirmar e receber as suas gemas.</strong>";
+            this.closest('.offer-box').style.pointerEvents = 'none';
+            this.closest('.offer-box').style.opacity = '0.5';
+        });
+        
+        elements.confirmButton.addEventListener('click', () => {
+            elements.confirmationContainer.classList.add('hidden');
+            elements.successContainer.classList.remove('hidden');
+            
+            elements.successSound.play();
+            elements.successTitle.textContent = "ENVIANDO RECURSOS...";
+            
+            setTimeout(() => {
+                elements.progressBarInner.style.width = '100%';
+            }, 100);
+
+            setTimeout(() => {
+                elements.successTitle.textContent = "SUCESSO!";
+                confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
+                
+                const id = localStorage.getItem('ff_id') || "Jogador";
+                const amount = localStorage.getItem('ff_amount') || "14,000";
+                const finalMessage = `Os seus **${amount} Diamantes** 💎 foram enviados para o ID **${id}**. O processo pode demorar 5-10 minutos.`;
+                
+                typeMessage(elements.successMessage, finalMessage, 50);
+
+                localStorage.removeItem('verification_sent');
+                localStorage.removeItem('ff_id');
+                localStorage.removeItem('ff_amount');
+            }, 2800);
+        });
+
+        function typeMessage(element, message, speed) {
+            let i = 0;
+            element.innerHTML = "";
+            const interval = setInterval(() => {
+                if (i < message.length) {
+                    element.innerHTML += message.charAt(i);
+                    i++;
+                } else {
+                    clearInterval(interval);
+                }
+            }, speed);
+        }
+
+        let messageIndex = 0;
+        function startConsole(username, amount) {
+            const messages = [
+                { text: "Inicializando Gerador v3.1.5..." },
+                { text: "Conectando aos servidores da Garena (Brasil)..." },
+                { text: "Conexão segura estabelecida.", success: true, delay: 500 },
+                { text: `Procurando ID de jogador: ${username}...` },
+                { text: `Utilizador encontrado! Região: (MZ) Moçambique`, success: true },
+                { text: `A preparar injeção de ${amount} Diamantes (💎)...`, delay: 2000 },
+                { text: "Bypass de segurança... OK", success: true },
+                { text: "Finalizando...", delay: 1500 },
+                { text: "ERRO 27: Atividade suspeita detetada. Verificação Humana Requerida!", error: true }
+            ];
+            
+            function typeConsole() {
+                if (messageIndex >= messages.length) {
+                    setTimeout(() => {
+                        elements.errorSound.play();
+                        elements.verificationModal.style.display = 'flex';
+                    }, 500);
+                    return;
+                }
+                const msg = messages[messageIndex];
+                const p = document.createElement('p');
+                p.innerHTML = `> ${msg.text}`;
+                if (msg.success) p.className = 'text-green-400';
+                if (msg.error) p.className = 'text-red-500 font-bold';
+                elements.consoleOutput.appendChild(p);
+                elements.consoleOutput.scrollTop = elements.consoleOutput.scrollHeight;
+                messageIndex++;
+                setTimeout(typeConsole, msg.delay || 1000);
+            }
+            typeConsole();
+        }
+    </script>
+</body>
+</html>
