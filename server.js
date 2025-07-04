@@ -1,125 +1,116 @@
+// server.js (VERSÃO FINAL E COMPLETA)
+// Este é o cérebro do seu assistente. Ele serve a página do chat e se comunica com a API do Gemini.
+
+// 1. Configuração Inicial
+require('dotenv').config();
 const express = require('express');
-const fileUpload = require('express-fileupload');
-const { createWorker } = require('tesseract.js');
-const cors = require('cors');
-const fs = require('fs');
+const multer = require('multer');
+const { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } = require('@google/generative-ai');
 
 const app = express();
 const port = 3000;
 
-// Configuração aprimorada do fileUpload
-app.use(
-  fileUpload({
-    useTempFiles: true,
-    tempFileDir: '/tmp/',
-    limits: { fileSize: 5 * 1024 * 1024 } // 5MB
-  })
-);
+// Configuração para servir arquivos estáticos (HTML, CSS, JS) da pasta 'public'
+// A opção 'extensions' permite acessar 'atendimento.html' apenas com '/atendimento'
+app.use(express.static('public', { extensions: ['html'] }));
+app.use(express.json()); // Permite que o servidor entenda JSON vindo do frontend
+const upload = multer({ storage: multer.memoryStorage() }); // Configura upload de arquivos
 
-// Restante dos middlewares
-app.use(cors());
-app.use(express.json());
-app.use(express.static('public'));
+// 2. Configuração do Gemini
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Rotas dinâmicas para arquivos HTML
-const htmlFiles = fs
-  .readdirSync(__dirname + '/public')
-  .filter((file) => file.endsWith('.html'))
-  .map((file) => file.replace('.html', ''));
+const safetySettings = [ // Configurações de segurança para permitir uma conversa mais fluida
+    { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+    { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
+    { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
+    { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+];
 
-htmlFiles.forEach((route) => {
-  // Foi necessário usar template literals com crases e construir a rota e o caminho corretamente.
-  app.get(`/${route}`, (req, res) => {
-    res.sendFile(`${__dirname}/public/${route}.html`);
-  });
+// INSTRUÇÕES PARA O GEMINI (A "Personalidade" do Bot)
+const promptDoAssistente = `
+Você é o "Assistente Jet", um chatbot amigável e profissional.
+Sua única função é guiar o usuário no processo de obter acesso a uma ferramenta chamada "robô Aviator".
+
+O FLUXO É O SEGUINTE:
+1. Você se apresenta e pede ao usuário que se cadastre em um site parceiro.
+2. Você pede que o usuário envie uma captura de tela (screenshot) da página de confirmação de cadastro.
+3. Você aguarda o upload da imagem.
+4. Após o upload, você irá analisar a imagem. Se for válida, você fornecerá o link do Telegram. Se não, pedirá para tentar novamente.
+
+REGRAS RÍGIDAS:
+- Seja sempre educado, natural e paciente. Deixe o usuário confortável.
+- NÃO CONVERSE SOBRE NENHUM OUTRO ASSUNTO. Se o usuário perguntar sobre o tempo, futebol, quem te criou, ou qualquer outra coisa, responda de forma educada que sua função é apenas ajudar com o acesso ao robô Aviator. Exemplo de desvio: "Entendo sua curiosidade, mas meu foco aqui é te ajudar a conseguir seu acesso. Você já fez o cadastro e tem a captura de tela?"
+- Não use gírias. Mantenha um tom profissional, mas acessível.
+`;
+
+// Inicia uma sessão de chat contínua com as instruções
+const chat = genAI.getGenerativeModel({ model: "gemini-1.5-flash", safetySettings, generationConfig: { temperature: 0.5 } }).startChat({
+    history: [{ role: "user", parts: [{ text: promptDoAssistente }] }],
 });
 
-// OBSERVAÇÃO:
-// O trecho abaixo com fetch não deve estar diretamente no código do servidor,
-// pois trata-se de uma chamada que normalmente é feita do lado do cliente.
-// await fetch('/api/ocr', {
-//   method: 'POST',
-//   body: formData
-// });
+// Endpoint para conversas de TEXTO
+app.post('/chat', async (req, res) => {
+    try {
+        const userMessage = req.body.message;
+        const result = await chat.sendMessage(userMessage);
+        const botResponse = result.response.text();
+        res.json({ reply: botResponse });
+    } catch (error) {
+        console.error("Erro no endpoint /chat:", error);
+        res.status(500).json({ reply: "Houve um problema com o assistente. Tente novamente." });
+    }
+});
 
-// Rota OCR com tratamento de erro aprimorado
-app.post('/api/ocr', async (req, res) => {
-  try {
-    if (!req.files || !req.files.file) {
-      return res.status(400).json({ error: 'Nenhum arquivo enviado' });
+// Endpoint para UPLOAD E VALIDAÇÃO DE IMAGEM
+app.post('/upload', upload.single('screenshot'), async (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ reply: "Nenhum arquivo foi enviado." });
     }
 
-    const worker = await createWorker({
-      logger: (m) => console.log(m)
-    });
+    try {
+        const model = genAI.getGenerativeModel({ model: "gemini-pro-vision", safetySettings });
+        
+        // As palavras que você quer que o Gemini procure na imagem.
+        // PERSONALIZE ESTA LISTA COM AS PALAVRAS QUE VOCÊ DESEJA!
+        const palavrasChave = "'Registado', 'Registro concluído', 'Bem-vindo', 'Sucesso', 'Cadastro realizado', 'Parabéns'";
 
-    // Correção: carregar e inicializar o worker antes de processar a imagem
-    await worker.load();
-    await worker.loadLanguage('por');
-    await worker.initialize('por');
+        const imageValidationPrompt = `
+            Analise esta imagem. É uma captura de tela de confirmação de registro de um site?
+            Procure por alguma das seguintes palavras-chave: ${palavrasChave}.
+            
+            - Se você encontrar QUALQUER uma dessas palavras na imagem, responda EXATAMENTE e APENAS com a seguinte frase: APROVADO:LINK_DO_TELEGRAM
+            - Se a imagem não contiver nenhuma dessas palavras, ou se for uma imagem aleatória (um gato, uma paisagem, etc.), responda de forma educada, explicando que a imagem não parece ser uma confirmação de cadastro e peça para o usuário tentar novamente com a imagem correta.
+        `;
 
-    const {
-      data: { text }
-    } = await worker.recognize(req.files.file.tempFilePath);
+        const imagePart = {
+            inlineData: {
+                data: req.file.buffer.toString("base64"),
+                mimeType: req.file.mimetype,
+            },
+        };
 
-    await worker.terminate();
+        const result = await model.generateContent([imageValidationPrompt, imagePart]);
+        const botResponseText = result.response.text();
 
-    res.json({ text });
-  } catch (error) {
-    console.error('Erro no OCR:', error);
-    res.status(500).json({ 
-      error: 'Erro ao processar a imagem',
-      details: error.message
-    });
-  }
-});
+        // Verificando a resposta exata do Gemini
+        if (botResponseText.startsWith("APROVADO:")) {
+            // !! MUITO IMPORTANTE: COLOQUE SEU LINK REAL DO TELEGRAM AQUI !!
+            const seuLinkDoTelegram = "https://t.me/ferramentaaviator"; 
+            const respostaFinal = `Excelente! Verifiquei sua imagem e está tudo certo. Seu acesso foi liberado! Acesse nosso grupo exclusivo no Telegram através deste link: ${seuLinkDoTelegram}`;
+            res.json({ reply: respostaFinal });
+        } else {
+            // Se não for aprovado, retorna a explicação educada do próprio Gemini
+            res.json({ reply: botResponseText });
+        }
 
-// Rota de validação com melhor tratamento de data
-// Rota de validação com fallback em "Obrigado"
-app.post('/api/validate', (req, res) => {
-  try {
-    const { text } = req.body;
-    const today = new Date();
-    const formattedDate = `${String(today.getDate()).padStart(2, '0')}/${String(
-      today.getMonth() + 1
-    ).padStart(2, '0')}/${today.getFullYear()}`;
-
-    // Lista de palavras a verificar obrigatoriamente
-    const requiredWords = ['REGISTADO', formattedDate];
-
-    // Primeiro, checa se todas as palavras obrigatórias estão presentes
-    const hasAllRequired = requiredWords.every((w) => text.includes(w));
-
-    // Se não tiver todas, verifica só "Obrigado"
-    const isValid = hasAllRequired || text.includes('GANHE');
-
-    // Monta a resposta
-    if (isValid) {
-      res.json({
-        approved: true,
-        guideLink:
-          'https://www.mediafire.com/file/zvy5z1jdow995aj/10_Ferramentas_de_Apostas_online_para_iniciantes.pdf/file'
-      });
-    } else {
-      res.json({
-        approved: false,
-        message:
-          'Erro na validação. Verifique:\n' +
-          '1. Se criou a conta pelo link fornecido\n' +
-          '2. Tente criar de novo\n' +
-          '3. Crie nova conta'
-      });
+    } catch (error) {
+        console.error("Erro no endpoint /upload:", error);
+        res.status(500).json({ reply: "Não consegui processar sua imagem. Por favor, tente novamente." });
     }
-  } catch (error) {
-    res.status(500).json({
-      error: 'Erro na validação',
-      details: error.message
-    });
-  }
 });
 
-
+// 3. Iniciar o Servidor
 app.listen(port, () => {
-  // Correção: utilizar template literal para compor a mensagem com a variável port
-  console.log(`Servidor rodando em http://localhost:${port}/index.html`);
+    console.log(`Servidor rodando em http://localhost:${port}`);
+    console.log(`Acesse o chat em http://localhost:${port}/atendimento`);
 });
