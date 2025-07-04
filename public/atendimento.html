@@ -25,10 +25,10 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh; /* Usa min-height para se ajustar melhor ao conteúdo */
+            min-height: 100vh;
             padding: 1rem;
             margin: 0;
-            box-sizing: border-box; /* Garante que padding e borda não aumentem o tamanho total */
+            box-sizing: border-box;
         }
         .chat-container {
             width: 100%;
@@ -92,7 +92,7 @@
             border-top: 1px solid var(--border-color);
             background-color: var(--primary-color);
             align-items: center;
-            gap: 10px; /* Adiciona um pequeno espaçamento entre os elementos */
+            gap: 10px;
         }
         #chat-input {
             flex-grow: 1;
@@ -111,14 +111,14 @@
             background-color: #30363d;
             cursor: not-allowed;
         }
-        #send-btn { /* Removido #upload-btn pois não será mais usado */
+        #send-btn {
             background: none;
             border: none;
             color: var(--text-color);
             font-size: 1.8rem;
             cursor: pointer;
             transition: color 0.3s;
-            padding: 0; /* Remove padding padrão do botão */
+            padding: 0;
         }
         #send-btn:hover {
             color: var(--accent-color);
@@ -131,30 +131,30 @@
             padding: 0.8rem 1.2rem;
             border-radius: 20px;
             text-decoration: none;
-            display: inline-block; /* Para que o padding e margin funcionem */
-            margin-top: 0.5rem; /* Espaço acima do botão */
+            display: inline-block;
+            margin-top: 0.5rem;
             font-weight: 500;
             transition: background-color 0.3s ease;
-            border: none; /* Garante que não tenha borda */
-            cursor: pointer; /* Indica que é clicável */
-            font-family: 'Poppins', sans-serif; /* Mantém a fonte consistente */
-            font-size: 1rem; /* Tamanho da fonte */
+            border: none;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
         }
 
         .link-button:hover {
-            background-color: #28a745; /* Um tom ligeiramente diferente para o hover */
+            background-color: #28a745;
         }
 
         /* Media Queries para Responsividade */
         @media (max-width: 768px) {
             body {
                 padding: 0.5rem;
-                align-items: flex-end; /* Alinha o chat-container à parte inferior em telas menores */
+                align-items: flex-end;
             }
             .chat-container {
-                height: 100vh; /* Ocupa a altura total em telas menores */
-                max-height: 100vh; /* Garante que não exceda 100vh */
-                border-radius: 0; /* Remove bordas arredondadas em tela cheia */
+                height: 100vh;
+                max-height: 100vh;
+                border-radius: 0;
             }
             .chat-messages {
                 padding: 1rem;
@@ -190,37 +190,60 @@
         const chatMessages = document.getElementById('chat-messages');
         const chatInput = document.getElementById('chat-input');
         const sendBtn = document.getElementById('send-btn');
-        // uploadBtn e fileUpload foram removidos, pois não são mais necessários
 
         function addMessage(text, sender) {
             const messageElement = document.createElement('div');
             messageElement.classList.add('message', sender);
 
-            // Verifica se a mensagem contém o link do Telegram e substitui por um botão
-            // O padrão "Acesse nosso grupo exclusivo no Telegram através deste link:"
-            // seguido por um URL é o que vamos procurar.
-            const telegramLinkPattern = /(Acesse nosso grupo exclusivo no Telegram através deste link:)\s*(https:\/\/[^\s]+)/;
-            const match = text.match(telegramLinkPattern);
+            // Expressão regular para encontrar qualquer URL completo
+            // Captura o texto que pode estar antes do URL e o próprio URL
+            const urlPattern = /(https?:\/\/[^\s]+)/g; // Alterado para 'g' para pegar todas as ocorrências
 
-            if (sender === 'bot' && match) {
-                const preText = match[1]; // "Acesse nosso grupo exclusivo no Telegram através deste link:"
-                const actualLink = match[2]; // O link real
-                
-                // Cria um span para o texto que antecede o botão
-                const textSpan = document.createElement('span');
-                textSpan.textContent = preText;
-                messageElement.appendChild(textSpan);
+            if (sender === 'bot' && urlPattern.test(text)) {
+                // Se o texto do bot contém um URL, vamos processá-lo
+                let processedText = text;
 
-                // Cria o botão
-                const linkButton = document.createElement('a');
-                linkButton.href = actualLink;
-                linkButton.target = "_blank"; // Abre em nova aba
-                linkButton.rel = "noopener noreferrer"; // Boa prática de segurança
-                linkButton.classList.add('link-button');
-                linkButton.textContent = "Acessar Grupo do Telegram";
-                messageElement.appendChild(linkButton);
+                // Substitui cada URL encontrado por um placeholder temporário
+                const urlsFound = [];
+                processedText = processedText.replace(urlPattern, (match) => {
+                    urlsFound.push(match);
+                    return `___URL_PLACEHOLDER_${urlsFound.length - 1}___`;
+                });
 
+                // Cria um elemento de texto temporário para quebrar as linhas
+                const tempDiv = document.createElement('div');
+                tempDiv.innerText = processedText; // innerText para manter as quebras de linha
+
+                // Itera sobre os nós filhos para criar spans e botões
+                Array.from(tempDiv.childNodes).forEach(node => {
+                    if (node.nodeType === Node.TEXT_NODE) {
+                        // Adiciona partes de texto normais
+                        messageElement.appendChild(document.createTextNode(node.textContent));
+                    } else if (node.nodeType === Node.ELEMENT_NODE && node.textContent.startsWith('___URL_PLACEHOLDER_')) {
+                        // Se for um placeholder, substitui pelo botão
+                        const index = parseInt(node.textContent.replace('___URL_PLACEHOLDER_', '').replace('___', ''));
+                        const actualLink = urlsFound[index];
+
+                        const linkButton = document.createElement('a');
+                        linkButton.href = actualLink;
+                        linkButton.target = "_blank"; // Abre em nova aba
+                        linkButton.rel = "noopener noreferrer"; // Boa prática de segurança
+                        linkButton.classList.add('link-button');
+                        
+                        // Define o texto do botão. Você pode personalizar isso.
+                        // Se o link for do Telegram, o texto será "Acessar Grupo do Telegram".
+                        // Caso contrário, pode ser "Acessar Link".
+                        if (actualLink.includes('t.me')) { // Verifica se é um link do Telegram
+                            linkButton.textContent = "Acessar Grupo do Telegram";
+                        } else {
+                            linkButton.textContent = "Acessar Link"; // Texto genérico para outros links
+                        }
+
+                        messageElement.appendChild(linkButton);
+                    }
+                });
             } else {
+                // Se não houver URL ou não for mensagem do bot, adiciona o texto normalmente
                 messageElement.textContent = text;
             }
             
@@ -243,7 +266,7 @@
                     body: JSON.stringify({ message: userText })
                 });
                 const data = await response.json();
-                addMessage(data.reply, 'bot'); // Usa a função addMessage que agora lida com o botão
+                addMessage(data.reply, 'bot');
             } catch (error) {
                 console.error("Erro ao enviar mensagem:", error);
                 addMessage("Desculpe, ocorreu um erro de conexão. Tente novamente.", 'bot');
@@ -253,10 +276,6 @@
             }
         }
         
-        // Remove os event listeners relacionados ao upload de imagem
-        // fileUpload.addEventListener('change', async (event) => { ... });
-        // uploadBtn.addEventListener('click', () => fileUpload.click());
-
         sendBtn.addEventListener('click', handleSend);
         chatInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') handleSend();
@@ -264,17 +283,11 @@
 
         // Mensagem inicial do bot ao carregar a página
         window.addEventListener('load', () => {
-            // A mensagem inicial será gerenciada pelo servidor (server.js)
-            // para que as instruções sobre o link de afiliado sejam apresentadas
-            // pelo Gemini conforme o prompt configurado.
-            // Aqui, podemos adicionar uma mensagem de "carregando" se quisermos
-            // ou deixar vazio e aguardar a primeira resposta do Gemini.
-            // Para um início mais fluido, vamos enviar uma mensagem vazia para o servidor
-            // para que ele inicie o chat com o prompt do assistente.
+            // Envia uma mensagem dummy para o servidor para que ele inicie o chat com o prompt do assistente.
             fetch('/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: 'iniciar_chat' }) // Mensagem dummy para iniciar o chat no backend
+                body: JSON.stringify({ message: 'iniciar_chat' })
             })
             .then(response => response.json())
             .then(data => {
