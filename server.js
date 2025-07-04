@@ -1,10 +1,9 @@
-// server.js (VERSÃO FINAL E COMPLETA)
 // Este é o cérebro do seu assistente. Ele serve a página do chat e se comunica com a API do Gemini.
 
 // 1. Configuração Inicial
 require('dotenv').config();
 const express = require('express');
-const multer = require('multer');
+// Removendo multer, pois não faremos upload de arquivos
 const { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } = require('@google/generative-ai');
 
 const app = express();
@@ -14,7 +13,6 @@ const port = 3000;
 // A opção 'extensions' permite acessar 'atendimento.html' apenas com '/atendimento'
 app.use(express.static('public', { extensions: ['html'] }));
 app.use(express.json()); // Permite que o servidor entenda JSON vindo do frontend
-const upload = multer({ storage: multer.memoryStorage() }); // Configura upload de arquivos
 
 // 2. Configuração do Gemini
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -33,15 +31,27 @@ Sua única função é guiar o usuário no processo de obter acesso a uma ferram
 
 O FLUXO É O SEGUINTE:
 1. Você se apresenta e pede ao usuário que se cadastre em um site parceiro.
-2. Você pede que o usuário envie uma captura de tela (screenshot) da página de confirmação de cadastro.
-3. Você aguarda o upload da imagem.
-4. Após o upload, você irá analisar a imagem. Se for válida, você fornecerá o link do Telegram. Se não, pedirá para tentar novamente.
+2. Você pede que o usuário **copie e cole o link da página de confirmação de cadastro do navegador**.
+3. Se o usuário não souber como copiar o link, você deve guiá-lo passo a passo:
+    - "Para copiar o link, basta clicar na barra de endereço (onde o site está escrito, geralmente na parte superior do seu navegador) e depois copiar o texto que aparece lá (Ctrl+C no Windows/Linux ou Cmd+C no Mac). Depois, cole aqui na nossa conversa (Ctrl+V ou Cmd+V)."
+4. Você aguarda o envio do link.
+5. Após o envio, você irá analisar o link. Se for válido (corresponder a um dos links permitidos), você fornecerá o link do Telegram. Se não, pedirá para tentar novamente.
 
 REGRAS RÍGIDAS:
 - Seja sempre educado, natural e paciente. Deixe o usuário confortável.
-- NÃO CONVERSE SOBRE NENHUM OUTRO ASSUNTO. Se o usuário perguntar sobre o tempo, futebol, quem te criou, ou qualquer outra coisa, responda de forma educada que sua função é apenas ajudar com o acesso ao robô Aviator. Exemplo de desvio: "Entendo sua curiosidade, mas meu foco aqui é te ajudar a conseguir seu acesso. Você já fez o cadastro e tem a captura de tela?"
+- NÃO CONVERSE SOBRE NENHUM OUTRO ASSUNTO. Se o usuário perguntar sobre o tempo, futebol, quem te criou, ou qualquer outra coisa, responda de forma educada que sua função é apenas ajudar com o acesso ao robô Aviator. Exemplo de desvio: "Entendo sua curiosidade, mas meu foco aqui é te ajudar a conseguir seu acesso. Você já fez o cadastro e tem o link da página de confirmação?"
 - Não use gírias. Mantenha um tom profissional, mas acessível.
+- A validação do link é a ÚNICA forma de prosseguir.
 `;
+
+// Lista de links de cadastro válidos (APENAS UM EXEMPLO - COLOQUE SEUS LINKS REAIS AQUI)
+// O bot vai verificar se o link do usuário é IGUAL a um destes, OU se ele CONTÉM um destes.
+const linksValidosCadastro = [
+    "https://www.placard.co.mz/thank-you/",
+    "https://www.placard.co.mz/thank-you",
+    "https://www.placard.co.mz/thank-you/welcome",
+    // Adicione mais links conforme necessário
+];
 
 // Inicia uma sessão de chat contínua com as instruções
 const chat = genAI.getGenerativeModel({ model: "gemini-1.5-flash", safetySettings, generationConfig: { temperature: 0.5 } }).startChat({
@@ -52,65 +62,53 @@ const chat = genAI.getGenerativeModel({ model: "gemini-1.5-flash", safetySetting
 app.post('/chat', async (req, res) => {
     try {
         const userMessage = req.body.message;
+
+        // Tentar identificar se a mensagem do usuário é um link
+        let isLink = false;
+        try {
+            // Regex simples para identificar se a mensagem parece ser um URL
+            isLink = /^(http|https):\/\/[^ "]+$/.test(userMessage.trim());
+        } catch (e) {
+            isLink = false;
+        }
+
+        // Se a mensagem for um link, tentar validar
+        if (isLink) {
+            let linkAprovado = false;
+            for (const linkPermitido of linksValidosCadastro) {
+                // Verifica se o link do usuário é EXATAMENTE IGUAL ou CONTÉM o link permitido
+                if (userMessage.trim() === linkPermitido || userMessage.trim().includes(linkPermitido)) {
+                    linkAprovado = true;
+                    break;
+                }
+            }
+
+            if (linkAprovado) {
+                // !! MUITO IMPORTANTE: COLOQUE SEU LINK REAL DO TELEGRAM AQUI !!
+                const seuLinkDoTelegram = "https://t.me/ferramentaaviator";
+                const respostaFinal = `Excelente! Verifiquei seu link e está tudo certo. Seu acesso foi liberado! Acesse nosso grupo exclusivo no Telegram através deste link: ${seuLinkDoTelegram}`;
+                return res.json({ reply: respostaFinal });
+            } else {
+                // Se o link não for aprovado, o Gemini dará uma resposta genérica (pedindo para tentar novamente)
+                // Poderíamos dar uma resposta mais específica aqui se quisermos que o servidor cuide da resposta de negação de link.
+                // Por agora, deixamos o Gemini seguir com o fluxo de "tente novamente".
+                 return res.json({ reply: "O link que você forneceu não parece ser de uma página de confirmação de cadastro válida. Por favor, certifique-se de copiar o link correto da página de sucesso após o cadastro e tente novamente. Se precisar de ajuda para copiar, me diga!" });
+            }
+        }
+
+        // Se não for um link, ou se o link não for aprovado, continua o chat normal com o Gemini
         const result = await chat.sendMessage(userMessage);
         const botResponse = result.response.text();
         res.json({ reply: botResponse });
+
     } catch (error) {
         console.error("Erro no endpoint /chat:", error);
         res.status(500).json({ reply: "Houve um problema com o assistente. Tente novamente." });
     }
 });
 
-// Endpoint para UPLOAD E VALIDAÇÃO DE IMAGEM
-app.post('/upload', upload.single('screenshot'), async (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({ reply: "Nenhum arquivo foi enviado." });
-    }
-
-    try {
-        const model = genAI.getGenerativeModel({ model: "gemini-pro-vision", safetySettings });
-        
-        // As palavras que você quer que o Gemini procure na imagem.
-        // PERSONALIZE ESTA LISTA COM AS PALAVRAS QUE VOCÊ DESEJA!
-        const palavrasChave = "'Registado', 'Registro concluído', 'Bem-vindo', 'Sucesso', 'Cadastro realizado', 'Parabéns'";
-
-        const imageValidationPrompt = `
-            Analise esta imagem. É uma captura de tela de confirmação de registro de um site?
-            Procure por alguma das seguintes palavras-chave: ${palavrasChave}.
-            
-            - Se você encontrar QUALQUER uma dessas palavras na imagem, responda EXATAMENTE e APENAS com a seguinte frase: APROVADO:LINK_DO_TELEGRAM
-            - Se a imagem não contiver nenhuma dessas palavras, ou se for uma imagem aleatória (um gato, uma paisagem, etc.), responda de forma educada, explicando que a imagem não parece ser uma confirmação de cadastro e peça para o usuário tentar novamente com a imagem correta.
-        `;
-
-        const imagePart = {
-            inlineData: {
-                data: req.file.buffer.toString("base64"),
-                mimeType: req.file.mimetype,
-            },
-        };
-
-        const result = await model.generateContent([imageValidationPrompt, imagePart]);
-        const botResponseText = result.response.text();
-
-        // Verificando a resposta exata do Gemini
-        if (botResponseText.startsWith("APROVADO:")) {
-            // !! MUITO IMPORTANTE: COLOQUE SEU LINK REAL DO TELEGRAM AQUI !!
-            const seuLinkDoTelegram = "https://t.me/ferramentaaviator"; 
-            const respostaFinal = `Excelente! Verifiquei sua imagem e está tudo certo. Seu acesso foi liberado! Acesse nosso grupo exclusivo no Telegram através deste link: ${seuLinkDoTelegram}`;
-            res.json({ reply: respostaFinal });
-        } else {
-            // Se não for aprovado, retorna a explicação educada do próprio Gemini
-            res.json({ reply: botResponseText });
-        }
-
-    } catch (error) {
-        console.error("Erro no endpoint /upload:", error);
-        res.status(500).json({ reply: "Não consegui processar sua imagem. Por favor, tente novamente." });
-    }
-});
-
 // 3. Iniciar o Servidor
 app.listen(port, () => {
     console.log(`Servidor rodando em http://localhost:${port}`);
-    console.log(`Acesse o chat em http://localhost:${port}/atendimento`);
+    console.log(`Acesse o chat em http://localhost:${port}/atendimento`); // Ou qualquer outra página HTML em 'public'
 });
