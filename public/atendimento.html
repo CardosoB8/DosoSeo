@@ -139,6 +139,8 @@
             cursor: pointer;
             font-family: 'Poppins', sans-serif;
             font-size: 1rem;
+            width: auto; /* Permite que o botão se ajuste ao texto */
+            text-align: center;
         }
 
         .link-button:hover {
@@ -191,59 +193,69 @@
         const chatInput = document.getElementById('chat-input');
         const sendBtn = document.getElementById('send-btn');
 
+        // Regex para encontrar URLs. Mais simples, pois a lógica de detecção de tipo será feita por string.
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+
+        // Função para criar o botão
+        function createLinkButton(url, buttonText) {
+            const linkButton = document.createElement('a');
+            linkButton.href = url;
+            linkButton.target = "_blank"; // Abre em nova aba
+            linkButton.rel = "noopener noreferrer"; // Boa prática de segurança
+            linkButton.classList.add('link-button');
+            linkButton.textContent = buttonText;
+            return linkButton;
+        }
+
         function addMessage(text, sender) {
             const messageElement = document.createElement('div');
             messageElement.classList.add('message', sender);
 
-            // Expressão regular para encontrar qualquer URL completo
-            // Captura o texto que pode estar antes do URL e o próprio URL
-            const urlPattern = /(https?:\/\/[^\s]+)/g; // Alterado para 'g' para pegar todas as ocorrências
-
-            if (sender === 'bot' && urlPattern.test(text)) {
-                // Se o texto do bot contém um URL, vamos processá-lo
+            if (sender === 'bot') {
                 let processedText = text;
+                const matches = [...text.matchAll(urlRegex)]; // Encontra todas as URLs
 
-                // Substitui cada URL encontrado por um placeholder temporário
-                const urlsFound = [];
-                processedText = processedText.replace(urlPattern, (match) => {
-                    urlsFound.push(match);
-                    return `___URL_PLACEHOLDER_${urlsFound.length - 1}___`;
-                });
+                if (matches.length > 0) {
+                    // Crie um fragmento para otimização do DOM
+                    const fragment = document.createDocumentFragment();
+                    let lastIndex = 0;
 
-                // Cria um elemento de texto temporário para quebrar as linhas
-                const tempDiv = document.createElement('div');
-                tempDiv.innerText = processedText; // innerText para manter as quebras de linha
+                    matches.forEach(match => {
+                        const url = match[0];
+                        const startIndex = match.index;
+                        const endIndex = startIndex + url.length;
 
-                // Itera sobre os nós filhos para criar spans e botões
-                Array.from(tempDiv.childNodes).forEach(node => {
-                    if (node.nodeType === Node.TEXT_NODE) {
-                        // Adiciona partes de texto normais
-                        messageElement.appendChild(document.createTextNode(node.textContent));
-                    } else if (node.nodeType === Node.ELEMENT_NODE && node.textContent.startsWith('___URL_PLACEHOLDER_')) {
-                        // Se for um placeholder, substitui pelo botão
-                        const index = parseInt(node.textContent.replace('___URL_PLACEHOLDER_', '').replace('___', ''));
-                        const actualLink = urlsFound[index];
-
-                        const linkButton = document.createElement('a');
-                        linkButton.href = actualLink;
-                        linkButton.target = "_blank"; // Abre em nova aba
-                        linkButton.rel = "noopener noreferrer"; // Boa prática de segurança
-                        linkButton.classList.add('link-button');
-                        
-                        // Define o texto do botão. Você pode personalizar isso.
-                        // Se o link for do Telegram, o texto será "Acessar Grupo do Telegram".
-                        // Caso contrário, pode ser "Acessar Link".
-                        if (actualLink.includes('t.me')) { // Verifica se é um link do Telegram
-                            linkButton.textContent = "Acessar Grupo do Telegram";
-                        } else {
-                            linkButton.textContent = "Acessar Link"; // Texto genérico para outros links
+                        // Adiciona o texto antes do link
+                        if (startIndex > lastIndex) {
+                            fragment.appendChild(document.createTextNode(processedText.substring(lastIndex, startIndex)));
                         }
 
-                        messageElement.appendChild(linkButton);
+                        // Determina o texto do botão com base no URL
+                        let buttonText = "Acessar Link"; // Padrão
+                        if (url.includes('t.me')) {
+                            buttonText = "Acessar Grupo do Telegram"; // Para o link final do Telegram
+                        } else if (url.includes('seulinkdeafiliado.com/cadastro')) { // **Ajuste aqui para o seu link de afiliado REAL!**
+                            buttonText = "Cadastrar"; // Para o link de cadastro
+                        }
+                        // Você pode adicionar mais condições 'else if' para outros links específicos
+
+                        fragment.appendChild(createLinkButton(url, buttonText));
+                        lastIndex = endIndex;
+                    });
+
+                    // Adiciona qualquer texto após o último link
+                    if (lastIndex < processedText.length) {
+                        fragment.appendChild(document.createTextNode(processedText.substring(lastIndex)));
                     }
-                });
+
+                    messageElement.appendChild(fragment);
+
+                } else {
+                    // Se não houver URLs na mensagem do bot, adiciona o texto normalmente
+                    messageElement.textContent = text;
+                }
             } else {
-                // Se não houver URL ou não for mensagem do bot, adiciona o texto normalmente
+                // Mensagens do usuário são adicionadas como texto puro
                 messageElement.textContent = text;
             }
             
@@ -283,7 +295,6 @@
 
         // Mensagem inicial do bot ao carregar a página
         window.addEventListener('load', () => {
-            // Envia uma mensagem dummy para o servidor para que ele inicie o chat com o prompt do assistente.
             fetch('/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
