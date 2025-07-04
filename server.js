@@ -36,7 +36,7 @@ const telegramLink = "https://t.me/ferramentaaviator"; // EX: "https://t.me/grup
 const validRegistrationLinks = [
     "https://seusiteparceiro.com/confirmacao-cadastro",
     "https://outrosite.com/registro-concluido",
-    "https://sitelegal.net/sucesso",
+    "https://www.placard.co.mz/thank-you/",
     // Adicione todos os URLs base das suas páginas de confirmação de cadastro aqui
     // IMPORTANTE: Inclua também o domínio base do seu link de afiliado, caso a confirmação seja no mesmo domínio.
     "https://seulinkdeafiliado.com/confirmacao", // Exemplo de página de confirmação no seu domínio de afiliado
@@ -49,6 +49,7 @@ Sua única função é guiar o usuário no processo de obter acesso a uma ferram
 
 O FLUXO É O SEGUINTE:
 1. Você se apresenta e pede ao usuário que se cadastre. Ofereça o seguinte link para o cadastro: ${affiliateLink}
+   ***ATENÇÃO: O link de cadastro ${affiliateLink} DEVE ESTAR CLARAMENTE NA SUA PRIMEIRA MENSAGEM***
 2. Após o cadastro, você pede que o usuário **copie e cole o link COMPLETO da página de confirmação de cadastro do navegador**.
 3. Se o usuário não souber como copiar o link, você deve guiá-lo passo a passo, de forma bem didática:
     - "Para copiar o link, basta clicar uma vez na barra de endereço do seu navegador (onde o site está escrito, geralmente no topo da tela). Depois, selecione todo o texto que aparece lá e copie (pode usar Ctrl+C no Windows/Linux ou Cmd+C no Mac). Em seguida, cole aqui na nossa conversa (Ctrl+V ou Cmd+V)."
