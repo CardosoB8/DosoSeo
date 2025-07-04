@@ -1,0 +1,24 @@
+{
+  "name": "assistente-jet-chat",
+  "version": "1.0.0",
+  "description": "Chatbot de atendimento com Express e Google Gemini para validação de acesso.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "chatbot",
+    "gemini",
+    "express",
+    "atendimento"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google/generative-ai": "^0.12.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1"
+  }
+}
