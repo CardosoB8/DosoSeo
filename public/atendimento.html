@@ -9,8 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
-        /* SEU CÓDIGO CSS ORIGINAL VAI AQUI. 
-           COPIE E COLE ELE EXATAMENTE COMO ESTAVA ANTES. */
+        /* SEU CÓDIGO CSS ORIGINAL COM AJUSTES PARA MOBILE */
         :root {
             --primary-color: #0D1117;
             --secondary-color: #161B22;
@@ -26,9 +25,10 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh; /* Usa min-height para se ajustar melhor ao conteúdo */
             padding: 1rem;
             margin: 0;
+            box-sizing: border-box; /* Garante que padding e borda não aumentem o tamanho total */
         }
         .chat-container {
             width: 100%;
@@ -92,6 +92,7 @@
             border-top: 1px solid var(--border-color);
             background-color: var(--primary-color);
             align-items: center;
+            gap: 10px; /* Adiciona um pequeno espaçamento entre os elementos */
         }
         #chat-input {
             flex-grow: 1;
@@ -110,17 +111,63 @@
             background-color: #30363d;
             cursor: not-allowed;
         }
-        #send-btn, #upload-btn {
+        #send-btn { /* Removido #upload-btn pois não será mais usado */
             background: none;
             border: none;
             color: var(--text-color);
             font-size: 1.8rem;
             cursor: pointer;
-            margin-left: 1rem;
             transition: color 0.3s;
+            padding: 0; /* Remove padding padrão do botão */
         }
-        #send-btn:hover, #upload-btn:hover {
+        #send-btn:hover {
             color: var(--accent-color);
+        }
+
+        /* Estilo para o novo botão de link */
+        .link-button {
+            background-color: var(--accent-color);
+            color: var(--heading-color);
+            padding: 0.8rem 1.2rem;
+            border-radius: 20px;
+            text-decoration: none;
+            display: inline-block; /* Para que o padding e margin funcionem */
+            margin-top: 0.5rem; /* Espaço acima do botão */
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+            border: none; /* Garante que não tenha borda */
+            cursor: pointer; /* Indica que é clicável */
+            font-family: 'Poppins', sans-serif; /* Mantém a fonte consistente */
+            font-size: 1rem; /* Tamanho da fonte */
+        }
+
+        .link-button:hover {
+            background-color: #28a745; /* Um tom ligeiramente diferente para o hover */
+        }
+
+        /* Media Queries para Responsividade */
+        @media (max-width: 768px) {
+            body {
+                padding: 0.5rem;
+                align-items: flex-end; /* Alinha o chat-container à parte inferior em telas menores */
+            }
+            .chat-container {
+                height: 100vh; /* Ocupa a altura total em telas menores */
+                max-height: 100vh; /* Garante que não exceda 100vh */
+                border-radius: 0; /* Remove bordas arredondadas em tela cheia */
+            }
+            .chat-messages {
+                padding: 1rem;
+            }
+            .chat-input-area {
+                padding: 0.8rem;
+            }
+            #chat-input {
+                padding: 0.6rem 1rem;
+            }
+            #send-btn {
+                font-size: 1.5rem;
+            }
         }
     </style>
 </head>
@@ -134,10 +181,6 @@
         <div class="chat-messages" id="chat-messages">
             </div>
         <div class="chat-input-area">
-            <label for="file-upload" class="custom-file-upload">
-                <i class='bx bx-paperclip' id="upload-btn"></i>
-            </label>
-            <input id="file-upload" type="file" style="display:none;" accept="image/*">
             <input type="text" id="chat-input" placeholder="Digite sua mensagem...">
             <button id="send-btn"><i class='bx bxs-paper-plane'></i></button>
         </div>
@@ -147,13 +190,40 @@
         const chatMessages = document.getElementById('chat-messages');
         const chatInput = document.getElementById('chat-input');
         const sendBtn = document.getElementById('send-btn');
-        const uploadBtn = document.getElementById('upload-btn');
-        const fileUpload = document.getElementById('file-upload');
+        // uploadBtn e fileUpload foram removidos, pois não são mais necessários
 
         function addMessage(text, sender) {
             const messageElement = document.createElement('div');
             messageElement.classList.add('message', sender);
-            messageElement.textContent = text;
+
+            // Verifica se a mensagem contém o link do Telegram e substitui por um botão
+            // O padrão "Acesse nosso grupo exclusivo no Telegram através deste link:"
+            // seguido por um URL é o que vamos procurar.
+            const telegramLinkPattern = /(Acesse nosso grupo exclusivo no Telegram através deste link:)\s*(https:\/\/[^\s]+)/;
+            const match = text.match(telegramLinkPattern);
+
+            if (sender === 'bot' && match) {
+                const preText = match[1]; // "Acesse nosso grupo exclusivo no Telegram através deste link:"
+                const actualLink = match[2]; // O link real
+                
+                // Cria um span para o texto que antecede o botão
+                const textSpan = document.createElement('span');
+                textSpan.textContent = preText;
+                messageElement.appendChild(textSpan);
+
+                // Cria o botão
+                const linkButton = document.createElement('a');
+                linkButton.href = actualLink;
+                linkButton.target = "_blank"; // Abre em nova aba
+                linkButton.rel = "noopener noreferrer"; // Boa prática de segurança
+                linkButton.classList.add('link-button');
+                linkButton.textContent = "Acessar Grupo do Telegram";
+                messageElement.appendChild(linkButton);
+
+            } else {
+                messageElement.textContent = text;
+            }
+            
             chatMessages.appendChild(messageElement);
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
@@ -173,7 +243,7 @@
                     body: JSON.stringify({ message: userText })
                 });
                 const data = await response.json();
-                addMessage(data.reply, 'bot');
+                addMessage(data.reply, 'bot'); // Usa a função addMessage que agora lida com o botão
             } catch (error) {
                 console.error("Erro ao enviar mensagem:", error);
                 addMessage("Desculpe, ocorreu um erro de conexão. Tente novamente.", 'bot');
@@ -183,41 +253,37 @@
             }
         }
         
-        fileUpload.addEventListener('change', async (event) => {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            addMessage(`(Enviando imagem '${file.name}' para validação...)`, 'user');
-            chatInput.disabled = true;
-
-            const formData = new FormData();
-            formData.append('screenshot', file);
-
-            try {
-                const response = await fetch('/upload', {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await response.json();
-                addMessage(data.reply, 'bot');
-            } catch (error) {
-                console.error("Erro ao enviar imagem:", error);
-                addMessage("Desculpe, não consegui validar sua imagem. Tente novamente.", 'bot');
-            } finally {
-                chatInput.disabled = false;
-                chatInput.focus();
-            }
-        });
+        // Remove os event listeners relacionados ao upload de imagem
+        // fileUpload.addEventListener('change', async (event) => { ... });
+        // uploadBtn.addEventListener('click', () => fileUpload.click());
 
         sendBtn.addEventListener('click', handleSend);
         chatInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') handleSend();
         });
-        uploadBtn.addEventListener('click', () => fileUpload.click());
 
         // Mensagem inicial do bot ao carregar a página
         window.addEventListener('load', () => {
-            addMessage("Olá! Eu sou o Assistente Jet. Estou aqui para te ajudar a obter acesso ao robô Aviator. Para começar, por favor, realize seu cadastro no nosso site parceiro e me envie uma captura de tela da página de confirmação.", 'bot');
+            // A mensagem inicial será gerenciada pelo servidor (server.js)
+            // para que as instruções sobre o link de afiliado sejam apresentadas
+            // pelo Gemini conforme o prompt configurado.
+            // Aqui, podemos adicionar uma mensagem de "carregando" se quisermos
+            // ou deixar vazio e aguardar a primeira resposta do Gemini.
+            // Para um início mais fluido, vamos enviar uma mensagem vazia para o servidor
+            // para que ele inicie o chat com o prompt do assistente.
+            fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: 'iniciar_chat' }) // Mensagem dummy para iniciar o chat no backend
+            })
+            .then(response => response.json())
+            .then(data => {
+                addMessage(data.reply, 'bot');
+            })
+            .catch(error => {
+                console.error("Erro ao iniciar chat:", error);
+                addMessage("Desculpe, não consegui iniciar a conversa. Tente recarregar a página.", 'bot');
+            });
         });
     </script>
 </body>
