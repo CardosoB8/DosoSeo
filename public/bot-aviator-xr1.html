@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0D1117">
+    <title>BOT AVIATOR XR1</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <style>
+        :root {
+            --primary-color: #0D1117;
+            --secondary-color: #161B22;
+            --accent-color: #2ECC71;
+            --text-color: #C9D1D9;
+            --heading-color: #FFFFFF;
+            --border-color: #30363D;
+            --tap-highlight: rgba(46, 204, 113, 0.2);
+        }
+
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: var(--tap-highlight);
+            -webkit-touch-callout: none;
+        }
+        
+        html { 
+            scroll-behavior: smooth;
+            font-size: 16px;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            overflow-x: hidden;
+            touch-action: manipulation;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        /* Container principal */
+        .container { 
+            max-width: 900px; 
+            margin: 0 auto; 
+            padding: 0 1.2rem; 
+        }
+
+        /* --- Seção do Título Principal --- */
+        .page-title-section {
+            padding: 4rem 0 2.5rem 0;
+            text-align: center;
+            opacity: 0;
+            animation: fadeIn 1s ease-in-out 0.2s forwards;
+        }
+
+        .page-title-section h1 {
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: var(--heading-color);
+            line-height: 1.2;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-title-section h1 span {
+            color: var(--accent-color);
+            display: inline-block;
+        }
+
+        .page-title-section p.subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* --- Seção de Apresentação --- */
+        .presentation-section {
+            padding: 2.5rem 0 3.5rem 0;
+            opacity: 0;
+            animation: fadeIn 1s ease-in-out 0.6s forwards;
+        }
+
+        .presentation-section .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2.5rem;
+        }
+
+        .presentation-image-container {
+            width: 100%;
+            max-width: 350px;
+            height: auto;
+            aspect-ratio: 1/1;
+            flex-shrink: 0;
+        }
+
+        .presentation-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 2px solid var(--border-color);
+        }
+
+        .presentation-text {
+            width: 100%;
+        }
+
+        .presentation-text h2 {
+            font-size: 1.7rem;
+            font-weight: 600;
+            color: var(--heading-color);
+            margin-bottom: 1.2rem;
+            text-align: center;
+        }
+
+        .presentation-text p {
+            font-size: 1rem;
+            line-height: 1.7;
+            text-align: justify;
+            hyphens: auto;
+        }
+
+        /* --- Seção da Galeria Deslizante --- */
+        .slider-section {
+            padding: 3rem 0;
+            background-color: var(--secondary-color);
+        }
+        
+        .slider-section h2 {
+            font-size: 1.7rem;
+            font-weight: 600;
+            color: var(--heading-color);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .slider-wrapper {
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+            -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+            mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+        }
+        
+        .slider {
+            display: flex;
+            width: calc(220px * 8);
+            animation: slide 25s linear infinite;
+            will-change: transform;
+        }
+        
+        .slide { 
+            width: 220px; 
+            height: 220px; 
+            margin: 0 0.8rem; 
+            flex-shrink: 0; 
+        }
+        
+        .slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 2px solid var(--border-color);
+            transition: transform 0.4s ease;
+        }
+        
+        .slide img:active { 
+            transform: scale(1.05); 
+        }
+
+        /* --- Seção de Acesso --- */
+        .access-section { 
+            padding: 4rem 0; 
+            text-align: center; 
+        }
+        
+        .access-section h2 {
+            font-size: 1.7rem;
+            font-weight: 600;
+            color: var(--heading-color);
+            margin-bottom: 1.2rem;
+        }
+        
+        .access-section p {
+            font-size: 1rem;
+            line-height: 1.7;
+            max-width: 600px;
+            margin: 0 auto 2rem auto;
+            text-align: center;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(45deg, var(--accent-color), #27ae60);
+            color: var(--heading-color);
+            padding: 1.2rem 2.8rem;
+            font-size: 1.15rem;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 40px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 4px 12px rgba(46, 204, 113, 0.4);
+            min-width: 260px;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cta-button:active {
+            transform: scale(0.98);
+            box-shadow: 0 2px 8px rgba(46, 204, 113, 0.4);
+        }
+        
+        .cta-button i { 
+            margin-right: 0.6rem; 
+            vertical-align: middle; 
+        }
+
+        /* Efeito de ripple para feedback tátil */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+        }
+
+        @keyframes ripple {
+            to {
+                transform: scale(2.5);
+                opacity: 0;
+            }
+        }
+
+        /* --- Rodapé --- */
+        .footer {
+            background-color: var(--secondary-color);
+            padding: 2.5rem 0;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+        }
+        
+        .footer .logo {
+            font-size: 1.3rem;
+            font-weight: 700; 
+            color: var(--heading-color);
+            text-decoration: none; 
+            margin-bottom: 0.8rem; 
+            display: inline-block;
+        }
+        
+        .footer .logo i { 
+            color: var(--accent-color); 
+            margin-right: 0.4rem; 
+        }
+        
+        .footer p { 
+            margin-bottom: 1rem; 
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+        
+        .footer-links {
+            margin-top: 1.2rem;
+        }
+        
+        .footer-links a {
+            color: var(--text-color);
+            text-decoration: none;
+            margin: 0 0.8rem;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+            display: inline-block;
+            padding: 0.5rem;
+        }
+        
+        .footer-links a:hover, 
+        .footer-links a:active { 
+            color: var(--accent-color); 
+        }
+
+        /* Animações */
+        @keyframes fadeIn { 
+            to { opacity: 1; } 
+        }
+        
+        @keyframes slide {
+            from { transform: translateX(0); }
+            to { transform: translateX(calc(-220px * 4)); }
+        }
+
+        /* Media Queries para Android e telas pequenas */
+        @media (max-width: 992px) {
+            .page-title-section {
+                padding: 3.5rem 0 2rem 0;
+            }
+            
+            .page-title-section h1 {
+                font-size: 2rem;
+            }
+            
+            .presentation-section {
+                padding: 2rem 0 3rem 0;
+            }
+            
+            .presentation-section .container {
+                gap: 2rem;
+            }
+            
+            .presentation-text h2 {
+                font-size: 1.5rem;
+            }
+            
+            .slider-section h2,
+            .access-section h2 {
+                font-size: 1.5rem;
+            }
+            
+            .slide { 
+                width: 200px; 
+                height: 200px; 
+            }
+            
+            .slider { 
+                width: calc(200px * 8); 
+                animation: slide-mobile 25s linear infinite;
+            }
+            
+            @keyframes slide-mobile {
+                from { transform: translateX(0); }
+                to { transform: translateX(calc(-200px * 4)); }
+            }
+        }
+        
+        @media (max-width: 768px) {
+            html {
+                font-size: 15px;
+            }
+            
+            .container {
+                padding: 0 1rem;
+            }
+            
+            .page-title-section h1 {
+                font-size: 1.8rem;
+            }
+            
+            .page-title-section p.subtitle {
+                font-size: 1rem;
+            }
+            
+            .presentation-text h2 {
+                font-size: 1.4rem;
+            }
+            
+            .slider-section h2,
+            .access-section h2 {
+                font-size: 1.4rem;
+            }
+            
+            .cta-button {
+                padding: 1.1rem 2.5rem;
+                font-size: 1.1rem;
+                min-width: 240px;
+            }
+            
+            .slide { 
+                width: 180px; 
+                height: 180px; 
+                margin: 0 0.6rem;
+            }
+            
+            .slider { 
+                width: calc(180px * 8); 
+            }
+        }
+        
+        @media (max-width: 480px) {
+            html {
+                font-size: 14px;
+            }
+            
+            .page-title-section {
+                padding: 3rem 0 1.8rem 0;
+            }
+            
+            .page-title-section h1 {
+                font-size: 1.6rem;
+            }
+            
+            .presentation-section {
+                padding: 1.8rem 0 2.5rem 0;
+            }
+            
+            .presentation-text h2 {
+                font-size: 1.3rem;
+            }
+            
+            .slider-section {
+                padding: 2.5rem 0;
+            }
+            
+            .slider-section h2 {
+                font-size: 1.3rem;
+                margin-bottom: 1.5rem;
+            }
+            
+            .access-section {
+                padding: 3rem 0;
+            }
+            
+            .access-section h2 {
+                font-size: 1.3rem;
+            }
+            
+            .cta-button {
+                padding: 1rem 2.2rem;
+                font-size: 1.05rem;
+                min-width: 220px;
+            }
+            
+            .slide { 
+                width: 160px; 
+                height: 160px; 
+            }
+            
+            .slider { 
+                width: calc(160px * 8); 
+            }
+            
+            .footer {
+                padding: 2rem 0;
+            }
+            
+            .footer-links a {
+                display: block;
+                margin: 0.7rem 0;
+            }
+        }
+        
+        @media (max-width: 360px) {
+            .page-title-section h1 {
+                font-size: 1.5rem;
+            }
+            
+            .presentation-text h2 {
+                font-size: 1.2rem;
+            }
+            
+            .cta-button {
+                min-width: 200px;
+                padding: 0.9rem 2rem;
+            }
+            
+            .slide { 
+                width: 150px; 
+                height: 150px; 
+            }
+            
+            .slider { 
+                width: calc(150px * 8); 
+            }
+        }
+        
+        /* Orientação paisagem */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .page-title-section {
+                padding: 2rem 0 1.5rem 0;
+            }
+            
+            .presentation-section {
+                padding: 1.5rem 0 2rem 0;
+            }
+            
+            .presentation-section .container {
+                flex-direction: row;
+                align-items: center;
+                gap: 1.5rem;
+            }
+            
+            .presentation-image-container {
+                max-width: 200px;
+            }
+            
+            .presentation-text h2 {
+                text-align: left;
+                margin-bottom: 0.8rem;
+            }
+            
+            .presentation-text p {
+                font-size: 0.9rem;
+                line-height: 1.6;
+            }
+            
+            .slider-section {
+                padding: 1.5rem 0;
+            }
+            
+            .access-section {
+                padding: 2rem 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <section class="page-title-section">
+            <div class="container">
+                <h1>FERRAMENTA SCRETA PARA LUCRAR NO <span>Aviator</span></h1>
+                <p class="subtitle">AGENT Script 2.0</p>
+            </div>
+        </section>
+
+        <section class="presentation-section">
+            <div class="container">
+                <div class="presentation-image-container">
+                    <img src="https://i.ibb.co/NnswFbQd/Whisk-e41f270d82.jpg" alt="Robô Aviator" class="presentation-image">
+                </div>
+                <div class="presentation-text">
+                    <h2>BOT AVIATOR XR1</h2>
+                    <p>Voçe esta prestes a utilizar o nosso BOT AVIATOR XR1 com essa ferramemta voçe nunca vai perder. Nôs já provamos isso e vamos continuar a provar para vários e mais usuarios interresados que essa é realmente diferente. por isso não se sinta enganado voçe esta no lugar certo e na hora certa. deslisa para continuar...</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="slider-section">
+            <div class="container">
+                <h2>Veja nosso resultado nos ultimos dias</h2>
+                <div class="slider-wrapper">
+                    <div class="slider">
+                        <div class="slide"><img src="https://i.ibb.co/1fNRmWwD/IMG-20250705-WA0010-2.jpg" alt="Resultado Vela Alta 1"></div>
+                        <div class="slide"><img src="https://i.ibb.co/wFpMZXzM/IMG-20250705-WA0009-2.jpg" alt="Sinal do Robô"></div>
+                        <div class="slide"><img src="https://i.ibb.co/sdYdBd9t/2025070511070376.jpg" alt="Resultado Vela Alta 2"></div>
+                        <div class="slide"><img src="https://i.ibb.co/cSP3W0mY/meticais.jpg" alt="Feedback de Usuário"></div>
+                        <div class="slide"><img src="https://i.ibb.co/1fNRmWwD/IMG-20250705-WA0010-2.jpg" alt="Resultado Vela Alta 3"></div>
+                        <div class="slide"><img src="https://i.ibb.co/ycc57qyB/2025070518383727.jpg" alt="Gráfico de Desempenho"></div>
+                        <div class="slide"><img src="https://i.ibb.co/wFpMZXzM/IMG-20250705-WA0009-2.jpg" alt="Interface Mobile"></div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="access-section">
+            <div class="container">
+                <h2>Oque voce precisa fazer para obter o BOT AVIATOR XR1?</h2>
+                <p>Para isso o Processo é muito simples e rápido, lembrando que liberamos o acesso apenas para quem segue o passo a passo: Clica no Botão abaixo e vais ser direcionado a uma pagina do NOSSO BOT DE ATENDIMENTO ele vai te guiar o passo a passo completo para obter o acesso.</p>
+                <a href="atendimento.html" target="_blank" class="cta-button" id="ctaBtn">
+                    <i class='bx bx-bot'></i> Iniciar Atendimento
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <a href="#" class="logo"><i class='bx bxs-paper-plane'></i> AVIATOR BOT</a>
+            <p>© 2025 AVIATOR BOT. Todos os direitos reservados. <br> Jogue com responsabilidade. Produto destinado a maiores de 18 anos.</p>
+            
+        </div>
+    </footer>
+
+    <script>
+        // Adicionar efeito de ripple para feedback tátil
+        document.getElementById('ctaBtn').addEventListener('click', function(e) {
+            const rect = this.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const ripple = document.createElement('span');
+            ripple.classList.add('ripple');
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            
+            this.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        });
+        
+        // Pausar animações quando não visíveis para economizar bateria
+        let sliders = document.querySelectorAll('.slider');
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationPlayState = 'running';
+                } else {
+                    entry.target.style.animationPlayState = 'paused';
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        sliders.forEach(slider => {
+            observer.observe(slider);
+        });
+        
+        // Prevenir zoom em toques duplos
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+    </script>
+</body>
+</html>
