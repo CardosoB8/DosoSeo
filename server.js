@@ -35,7 +35,7 @@ const telegramLink = "https://t.me/ferramentaaviator"; // EX: "https://t.me/grup
 // Ex: Se o link válido é "https://meusite.com/registro", e o usuário envia "https://meusite.com/registro?ref=123", o 'includes' vai funcionar.
 const validRegistrationLinks = [
     "https://seusiteparceiro.com/confirmacao-cadastro",
-    "https://outrosite.com/registro-concluido",
+    "https://www.olabet.co.mz/thank-you/",
     "https://www.placard.co.mz/thank-you/",
     // Adicione todos os URLs base das suas páginas de confirmação de cadastro aqui
     // IMPORTANTE: Inclua também o domínio base do seu link de afiliado, caso a confirmação seja no mesmo domínio.
