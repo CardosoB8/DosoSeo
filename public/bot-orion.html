@@ -22,11 +22,12 @@
 
         body {
             font-family: 'Montserrat', sans-serif;
+            font-size: 15px; /* Fonte base ajustada para um bom tamanho geral */
             margin: 0;
             padding: 0;
             display: flex;
-            justify-content: center; /* Centraliza horizontalmente */
-            align-items: center; /* Centraliza verticalmente */
+            justify-content: center; /* Centraliza horizontalmente o app-container */
+            align-items: center; /* Centraliza verticalmente o app-container */
             min-height: 100vh; /* Garante que o body ocupe a altura total da viewport para o fundo */
             background: var(--gradient-bg);
             color: var(--text-light);
@@ -38,22 +39,21 @@
         /* --- Global Container for Centering --- */
         .app-container {
             width: 100%;
-            max-width: 420px; /* Mais "apertado" para celular */
-            height: 100vh; /* Ocupa a altura total da viewport para as páginas */
-            padding: 20px;
+            max-width: 400px; /* Largura um pouco mais generosa para legibilidade */
+            height: 100vh; /* Ocupa a altura total da viewport */
+            padding: 20px; /* Padding ajustado */
             box-sizing: border-box;
             text-align: center;
             display: flex;
-            font-size: 10px;
+            font-size: 12px;
             flex-direction: column;
-            justify-content: center; /* Centraliza verticalmente o conteúdo do container */
-            align-items: center; /* Centraliza horizontalmente o conteúdo do container */
+            justify-content: center; /* Centraliza verticalmente o conteúdo interno */
+            align-items: center; /* Centraliza horizontalmente o conteúdo interno */
             position: relative;
-            background: var(--background-dark); /* Fundo do "app" */
-            border-radius: 0; /* Sem bordas no contêiner principal */
-            box-shadow: 0 0 50px rgba(0, 230, 118, 0.15); /* Sutil brilho geral */
+            background: var(--background-dark);
+            border-radius: 0;
+            box-shadow: 0 0 50px rgba(0, 230, 118, 0.15);
             animation: appLoad 0.8s ease-out;
-            /* Removido font-size: 11px; aqui para que as fontes sejam controladas pelos 'em' */
         }
 
         @keyframes appLoad {
@@ -65,29 +65,29 @@
         .page {
             background-color: var(--card-background);
             border-radius: var(--border-radius);
-            padding: 35px 25px;
+            padding: 30px 25px; /* Padding ajustado para mais espaço */
             box-shadow: 0 10px 30px var(--shadow-strong);
-            display: none; /* Inicia escondida */
-            width: 100%; /* Preenche o app-container */
-            height: 100%; /* Garante que a página ocupe a altura total do app-container */
+            display: none;
+            width: 100%;
+            height: 100%; /* A página ocupará toda a altura do app-container */
+            min-height: 85vh; /* Garante uma altura mínima para visualização em telas menores, sem forçar rolagem excessiva */
             box-sizing: border-box;
-            min-height: unset; /* Remove a altura mínima fixa para permitir adaptação */
             flex-direction: column;
-            justify-content: space-between; /* Espaço entre o conteúdo: empurra topo/fundo */
+            justify-content: center; /* CENTRALIZA TODOS OS ELEMENTOS VERTICALMENTE */
             align-items: center;
-            position: absolute; /* Para transições suaves */
+            position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%); /* Centraliza na tela */
+            transform: translate(-50%, -50%);
             opacity: 0;
             transition: opacity 0.6s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
         .page.active {
-            display: flex; /* Exibe a página ativa */
+            display: flex;
             opacity: 1;
             transform: translate(-50%, -50%) scale(1);
-            position: relative; /* Para ocupar espaço no fluxo do container principal */
+            position: relative;
         }
 
         .page.anim-in {
@@ -111,20 +111,20 @@
         /* --- Header / Title --- */
         h1, h2 {
             color: var(--primary-color);
-            margin-bottom: 15px;
-            font-family: 'Orbitron', sans-serif; /* Fonte futurista */
+            margin-bottom: 15px; /* Margem padrão */
+            font-family: 'Orbitron', sans-serif;
             font-weight: 700;
             text-shadow: 0 0 10px rgba(0, 230, 118, 0.5);
             letter-spacing: 1px;
         }
 
         h1 {
-            font-size: 2.4em;
+            font-size: 2.3em; /* Ajustado */
             line-height: 1.2;
         }
 
         h2 {
-            font-size: 1.8em;
+            font-size: 1.7em; /* Ajustado */
             color: var(--text-light);
             text-shadow: none;
             font-family: 'Montserrat', sans-serif;
@@ -133,27 +133,27 @@
         }
 
         p {
-            font-size: 1.1em;
+            font-size: 1.05em; /* Ajustado para melhor legibilidade */
             line-height: 1.6;
-            margin-bottom: 25px;
+            margin-bottom: 25px; /* Margem padrão para separar do próximo elemento */
             color: var(--text-muted);
             opacity: 0.9;
-            flex-grow: 1; /* Permite que o parágrafo ocupe espaço flexível no meio */
+            /* Removido flex-grow para evitar que o parágrafo ocupe espaço excessivo */
             display: flex;
-            align-items: center; /* Centraliza o texto do parágrafo verticalmente dentro dele */
-            justify-content: center; /* Centraliza o texto do parágrafo horizontalmente dentro dele */
+            align-items: center;
+            justify-content: center;
             flex-direction: column;
             padding: 0 10px;
         }
 
         /* --- Icon / Illustration --- */
         .illustration {
-            width: 150px; /* Tamanho ajustado para maior visibilidade */
-            height: 150px; /* Tamanho ajustado para maior visibilidade */
-            margin-bottom: 30px;
+            width: 120px; /* Tamanho ajustado para equilíbrio */
+            height: 120px; /* Tamanho ajustado para equilíbrio */
+            margin-bottom: 30px; /* Margem padrão */
             animation: pulse 2s infinite ease-in-out;
             filter: drop-shadow(0 0 20px var(--primary-color));
-            pointer-events: none; /* Ignora eventos de clique */
+            pointer-events: none;
         }
 
         @keyframes pulse {
@@ -168,7 +168,7 @@
             display: flex;
             flex-direction: column;
             gap: 15px; /* Espaçamento entre botões */
-            margin-top: auto; /* Empurra os botões para baixo */
+            margin-top: 30px; /* Adiciona margem acima para separar do conteúdo */
         }
 
         .button {
@@ -177,17 +177,17 @@
             justify-content: center;
             background-color: var(--primary-color);
             color: var(--background-dark);
-            padding: 16px 25px;
+            padding: 14px 25px; /* Padding ajustado */
             border-radius: 50px;
             text-decoration: none;
-            font-weight: 800; /* Mais forte */
-            font-size: 1.2em;
+            font-weight: 800;
+            font-size: 1.15em; /* Fonte ajustada */
             border: none;
             cursor: pointer;
             transition: all 0.3s ease, box-shadow 0.4s ease;
             box-shadow: 0 8px 20px rgba(0, 230, 118, 0.4);
             letter-spacing: 0.5px;
-            width: 100%; /* Ocupa a largura total do grupo */
+            width: 100%;
             box-sizing: border-box;
             position: relative;
             overflow: hidden;
@@ -204,7 +204,6 @@
             box-shadow: 0 5px 10px rgba(0, 230, 118, 0.4);
         }
 
-        /* Ripple effect */
         .button::after {
             content: '';
             position: absolute;
@@ -255,32 +254,30 @@
         }
 
         .button-icon {
-            width: 24px;
-            height: 24px;
-            margin-right: 12px;
-            filter: invert(1); /* Inverte a cor para branco */
+            width: 22px; /* Ícone do botão */
+            height: 22px; /* Ícone do botão */
+            margin-right: 10px; /* Margem do ícone */
+            filter: invert(1);
         }
 
         .button-secondary .button-icon {
-            filter: invert(0) brightness(0) saturate(100%) hue-rotate(90deg) brightness(1.2) contrast(1.2); /* Deixa verde */
+            filter: invert(0) brightness(0) saturate(100%) hue-rotate(90deg) brightness(1.2) contrast(1.2);
         }
-        /* Ajuste para o ícone do botão desabilitado */
         .button.disabled .button-icon {
-            filter: brightness(0.5) grayscale(100%); /* Deixa o ícone cinza */
+            filter: brightness(0.5) grayscale(100%);
         }
-
 
         /* --- Checkbox Styling --- */
         .checkbox-container {
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 30px 0;
+            margin: 25px 0; /* Margem ajustada */
             cursor: pointer;
             user-select: none;
             position: relative;
-            padding-left: 40px; /* Space for custom checkbox */
-            font-size: 1.1em;
+            padding-left: 35px; /* Espaço para checkbox customizado */
+            font-size: 1em; /* Fonte ajustada */
             color: var(--text-muted);
         }
 
@@ -295,8 +292,8 @@
         .checkmark {
             position: absolute;
             left: 0;
-            height: 30px; /* Maior para toque */
-            width: 30px;
+            height: 28px; /* Checkbox ajustado */
+            width: 28px; /* Checkbox ajustado */
             background-color: #333;
             border-radius: 8px;
             border: 2px solid #555;
@@ -319,63 +316,62 @@
         }
 
         .checkbox-container .checkmark:after {
-            left: 10px;
+            left: 9px;
             top: 5px;
-            width: 8px;
-            height: 15px;
+            width: 7px;
+            height: 14px;
             border: solid var(--background-dark);
-            border-width: 0 4px 4px 0;
+            border-width: 0 3px 3px 0;
             transform: rotate(45deg);
         }
 
         /* --- Disclaimer --- */
         .disclaimer {
-            font-size: 0.85em;
+            font-size: 0.85em; /* Fonte do disclaimer */
             color: rgba(255, 255, 255, 0.6);
-            margin-top: 25px;
+            margin-top: 25px; /* Margem padrão */
             line-height: 1.5;
         }
 
         /* --- Responsive Adjustments (Ensuring mobile-first) --- */
         @media (max-width: 450px) {
             .app-container {
-                padding: 15px;
-                min-height: 100vh; /* Garante que ocupe a tela inteira em celulares */
-                border-radius: 0;
+                padding: 15px; /* Padding para telas pequenas */
             }
             .page {
-                padding: 30px 20px;
-                border-radius: 0; /* Sem bordas na página para se integrar ao container */
-                /* min-height: calc(100vh - 30px); REMOVIDO para permitir que o flexbox se ajuste */
-                height: 100%; /* Garante que ocupe o espaço disponível */
+                padding: 25px 20px; /* Padding para telas pequenas */
+                min-height: 80vh; /* Ajuste a min-height para se adequar ao conteúdo sem rolar */
             }
-            h1 { font-size: 2.1em; }
-            h2 { font-size: 1.6em; }
-            p { font-size: 1em; }
-            .illustration { width: 130px; height: 130px; margin-bottom: 25px; }
-            .button { padding: 14px 20px; font-size: 1.1em; }
-            .checkbox-container { font-size: 1em; padding-left: 35px; }
+            h1 { font-size: 2em; }
+            h2 { font-size: 1.5em; }
+            p { font-size: 0.95em; margin-bottom: 20px; }
+            .illustration { width: 100px; height: 100px; margin-bottom: 25px; }
+            .button { padding: 12px 20px; font-size: 1.05em; }
+            .button-group { gap: 12px; margin-top: 25px; }
+            .checkbox-container { font-size: 0.95em; padding-left: 30px; margin: 20px 0; }
             .checkmark { width: 26px; height: 26px; }
-            .checkmark:after { left: 9px; top: 4px; width: 7px; height: 13px; }
+            .checkmark:after { left: 8px; top: 4px; width: 6px; height: 12px; }
             .button-icon { width: 20px; height: 20px; margin-right: 8px; }
+            .disclaimer { margin-top: 20px; font-size: 0.8em; }
         }
 
         @media (max-height: 700px) and (min-width: 450px) { /* Adjust for landscape on larger phones */
             .page {
-                min-height: unset; /* Allow height to adjust */
-                max-height: 90vh; /* Prevent overflow */
-                padding: 25px 20px;
+                min-height: unset; /* Permite que a altura se ajuste ao conteúdo */
+                max-height: 90vh; /* Previne overflow */
+                padding: 20px 15px;
             }
             .illustration {
-                width: 100px;
-                height: 100px;
+                width: 90px;
+                height: 90px;
                 margin-bottom: 20px;
             }
-            h1 { font-size: 2em; }
-            h2 { font-size: 1.5em; }
-            p { font-size: 1em; margin-bottom: 20px; }
-            .button { padding: 12px 20px; font-size: 1.1em; }
-            .disclaimer { margin-top: 15px; }
+            h1 { font-size: 1.9em; }
+            h2 { font-size: 1.4em; }
+            p { font-size: 0.9em; margin-bottom: 15px; }
+            .button { padding: 10px 18px; font-size: 1em; }
+            .button-group { gap: 10px; margin-top: 20px; }
+            .disclaimer { margin-top: 15px; font-size: 0.75em; }
         }
     </style>
 </head>
@@ -418,7 +414,7 @@
             <p>Seu acesso ao Robô Aviator foi concedido com sucesso. Clique nos botões abaixo e comece a ganhar no Aviator ainda hoje</p>
             <div class="button-group">
                 <a href="https://www.mediafire.com/file/829pb2n21s13hfh/BOT_ORION_1.0.apk/file" target="_blank" class="button">
-                     Baixar Robô Aviator ORION
+ Baixar Robô Aviator ORION
                 </a>
                 <a href="https://chat.whatsapp.com/DD7Ll7qHjzg4vn1PlZ2biI?mode=r_c" target="_blank" class="button button-secondary">
  Entrar no Grupo Oficial
@@ -435,25 +431,26 @@
             const currentPageElement = document.getElementById(currentPageId);
             const nextPageElement = document.getElementById(pageId);
 
-            if (currentPageElement && currentPageElement.id !== pageId) {
-                currentPageElement.classList.remove('active', 'anim-in');
-                currentPageElement.classList.add('anim-out');
-                currentPageElement.style.pointerEvents = 'none';
+            if (currentPageElement && currentPageElement.id !== pageId) { // Se há uma página atual e não é a mesma que a próxima
+                currentPageElement.classList.remove('active', 'anim-in'); // Remove active e anim-in da página atual
+                currentPageElement.classList.add('anim-out'); // Adiciona animação de saída
+                currentPageElement.style.pointerEvents = 'none'; // Desabilita cliques na página saindo
 
+                // Esconde a página *após* a animação de saída terminar
                 setTimeout(() => {
                     currentPageElement.style.display = 'none';
-                    currentPageElement.classList.remove('anim-out');
+                    currentPageElement.classList.remove('anim-out'); // Limpa a classe de animação
                 }, 700); // Duração da animação em CSS
             }
 
             if (nextPageElement) {
-                nextPageElement.style.display = 'flex'; // Garante que a próxima página seja visível
-                nextPageElement.classList.remove('anim-out');
-                nextPageElement.classList.add('active', 'anim-in');
-                nextPageElement.style.pointerEvents = 'auto';
+                nextPageElement.style.display = 'flex'; // Garante que a próxima página seja visível para a animação
+                nextPageElement.classList.remove('anim-out'); // Remove anim-out se por acaso houver
+                nextPageElement.classList.add('active', 'anim-in'); // Adiciona active e anim-in
+                nextPageElement.style.pointerEvents = 'auto'; // Habilita cliques na página entrando
             }
 
-            currentPageId = pageId;
+            currentPageId = pageId; // Atualiza a página atual
         }
 
         function nextPage(nextPageId) {
@@ -470,7 +467,7 @@
                 // Se o ícone não existir, cria e adiciona
                 if (!buttonIcon) {
                     const icon = document.createElement('img');
-                    icon.src = 'https://www.svgrepo.com/show/448202/lock.svg'; // Caminho do seu ícone de cadeado
+                    icon.src = 'https://www.svgrepo.com/show/448202/lock.svg'; // Caminho do seu ícone de cadeado (se estiver faltando)
                     icon.alt = 'Cadeado';
                     icon.classList.add('button-icon');
                     proceedButton.prepend(icon); // Adiciona o ícone antes do texto
@@ -490,6 +487,7 @@
             const ageConfirmation = document.getElementById('ageConfirmation');
             const proceedButton = document.getElementById('proceedButton');
 
+            // Só prossegue se o checkbox estiver marcado E o botão não estiver desabilitado (garantindo que toggleProceedButton já agiu)
             if (ageConfirmation.checked && !proceedButton.classList.contains('disabled')) {
                 showPage('page3');
             } else if (!ageConfirmation.checked) {
