@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Robô Aviator | ORION</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #00E676; /* Verde Esmeralda Vibrante */
+            --secondary-color: #FF1744; /* Vermelho Aviso */
+            --background-dark: #121212;
+            --card-background: #1F1F1F;
+            --text-light: #E0E0E0;
+            --text-muted: #BDBDBD;
+            --accent-glow: #00c853; /* Brilho do botão primário */
+            --border-radius: 20px;
+            --shadow-strong: rgba(0, 0, 0, 0.5);
+            --shadow-light: rgba(0, 0, 0, 0.2);
+            --gradient-bg: linear-gradient(135deg, #0A0A0A 0%, #1A1A1A 100%);
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center; /* Centraliza horizontalmente */
+            align-items: center; /* Centraliza verticalmente */
+            min-height: 100vh; /* Garante que o body ocupe a altura total da viewport para o fundo */
+            background: var(--gradient-bg);
+            color: var(--text-light);
+            overflow: hidden; /* Mantido overflow hidden para controle das páginas */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* --- Global Container for Centering --- */
+        .app-container {
+            width: 100%;
+            max-width: 420px; /* Mais "apertado" para celular */
+            height: 100vh; /* Ocupa a altura total da viewport para as páginas */
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+            display: flex;
+            font-size: 10px;
+            flex-direction: column;
+            justify-content: center; /* Centraliza verticalmente o conteúdo do container */
+            align-items: center; /* Centraliza horizontalmente o conteúdo do container */
+            position: relative;
+            background: var(--background-dark); /* Fundo do "app" */
+            border-radius: 0; /* Sem bordas no contêiner principal */
+            box-shadow: 0 0 50px rgba(0, 230, 118, 0.15); /* Sutil brilho geral */
+            animation: appLoad 0.8s ease-out;
+            /* Removido font-size: 11px; aqui para que as fontes sejam controladas pelos 'em' */
+        }
+
+        @keyframes appLoad {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* --- Page Styling --- */
+        .page {
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            padding: 35px 25px;
+            box-shadow: 0 10px 30px var(--shadow-strong);
+            display: none; /* Inicia escondida */
+            width: 100%; /* Preenche o app-container */
+            height: 100%; /* Garante que a página ocupe a altura total do app-container */
+            box-sizing: border-box;
+            min-height: unset; /* Remove a altura mínima fixa para permitir adaptação */
+            flex-direction: column;
+            justify-content: space-between; /* Espaço entre o conteúdo: empurra topo/fundo */
+            align-items: center;
+            position: absolute; /* Para transições suaves */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%); /* Centraliza na tela */
+            opacity: 0;
+            transition: opacity 0.6s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .page.active {
+            display: flex; /* Exibe a página ativa */
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+            position: relative; /* Para ocupar espaço no fluxo do container principal */
+        }
+
+        .page.anim-in {
+            animation: slideInFromRight 0.7s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+        }
+
+        .page.anim-out {
+            animation: slideOutToLeft 0.7s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+        }
+
+        @keyframes slideInFromRight {
+            from { transform: translate(100%, -50%) scale(0.9); opacity: 0; }
+            to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        @keyframes slideOutToLeft {
+            from { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            to { transform: translate(-150%, -50%) scale(0.9); opacity: 0; }
+        }
+
+        /* --- Header / Title --- */
+        h1, h2 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-family: 'Orbitron', sans-serif; /* Fonte futurista */
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(0, 230, 118, 0.5);
+            letter-spacing: 1px;
+        }
+
+        h1 {
+            font-size: 2.4em;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 1.8em;
+            color: var(--text-light);
+            text-shadow: none;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+
+        p {
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            color: var(--text-muted);
+            opacity: 0.9;
+            flex-grow: 1; /* Permite que o parágrafo ocupe espaço flexível no meio */
+            display: flex;
+            align-items: center; /* Centraliza o texto do parágrafo verticalmente dentro dele */
+            justify-content: center; /* Centraliza o texto do parágrafo horizontalmente dentro dele */
+            flex-direction: column;
+            padding: 0 10px;
+        }
+
+        /* --- Icon / Illustration --- */
+        .illustration {
+            width: 150px; /* Tamanho ajustado para maior visibilidade */
+            height: 150px; /* Tamanho ajustado para maior visibilidade */
+            margin-bottom: 30px;
+            animation: pulse 2s infinite ease-in-out;
+            filter: drop-shadow(0 0 20px var(--primary-color));
+            pointer-events: none; /* Ignora eventos de clique */
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); filter: drop-shadow(0 0 15px var(--primary-color)); }
+            50% { transform: scale(1.05); filter: drop-shadow(0 0 25px var(--primary-color)); }
+            100% { transform: scale(1); filter: drop-shadow(0 0 15px var(--primary-color)); }
+        }
+
+        /* --- Buttons --- */
+        .button-group {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 15px; /* Espaçamento entre botões */
+            margin-top: auto; /* Empurra os botões para baixo */
+        }
+
+        .button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--primary-color);
+            color: var(--background-dark);
+            padding: 16px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 800; /* Mais forte */
+            font-size: 1.2em;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease, box-shadow 0.4s ease;
+            box-shadow: 0 8px 20px rgba(0, 230, 118, 0.4);
+            letter-spacing: 0.5px;
+            width: 100%; /* Ocupa a largura total do grupo */
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .button:hover {
+            background-color: var(--accent-glow);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(0, 230, 118, 0.6);
+        }
+
+        .button:active {
+            transform: translateY(0);
+            box-shadow: 0 5px 10px rgba(0, 230, 118, 0.4);
+        }
+
+        /* Ripple effect */
+        .button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            opacity: 0;
+            transform: scale(1) translate(-50%, -50%);
+            transition: transform 0.4s ease, opacity 0.4s ease;
+        }
+
+        .button:not(.disabled):active::after {
+            transform: scale(100) translate(-50%, -50%);
+            opacity: 1;
+            transition: 0s;
+        }
+
+        .button-secondary {
+            background-color: var(--card-background);
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            box-shadow: 0 4px 15px rgba(0, 230, 118, 0.2);
+        }
+
+        .button-secondary:hover {
+            background-color: rgba(0, 230, 118, 0.1);
+            color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 230, 118, 0.3);
+        }
+
+        .button-secondary:active {
+            transform: translateY(0);
+            box-shadow: 0 3px 10px rgba(0, 230, 118, 0.2);
+        }
+
+        .button.disabled {
+            background-color: #333;
+            color: #888;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+            opacity: 0.7;
+            border: none;
+        }
+
+        .button-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 12px;
+            filter: invert(1); /* Inverte a cor para branco */
+        }
+
+        .button-secondary .button-icon {
+            filter: invert(0) brightness(0) saturate(100%) hue-rotate(90deg) brightness(1.2) contrast(1.2); /* Deixa verde */
+        }
+        /* Ajuste para o ícone do botão desabilitado */
+        .button.disabled .button-icon {
+            filter: brightness(0.5) grayscale(100%); /* Deixa o ícone cinza */
+        }
+
+
+        /* --- Checkbox Styling --- */
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 30px 0;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            padding-left: 40px; /* Space for custom checkbox */
+            font-size: 1.1em;
+            color: var(--text-muted);
+        }
+
+        .checkbox-container input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+
+        .checkmark {
+            position: absolute;
+            left: 0;
+            height: 30px; /* Maior para toque */
+            width: 30px;
+            background-color: #333;
+            border-radius: 8px;
+            border: 2px solid #555;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .checkbox-container input:checked ~ .checkmark {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .checkmark:after {
+            content: "";
+            position: absolute;
+            display: none;
+        }
+
+        .checkbox-container input:checked ~ .checkmark:after {
+            display: block;
+        }
+
+        .checkbox-container .checkmark:after {
+            left: 10px;
+            top: 5px;
+            width: 8px;
+            height: 15px;
+            border: solid var(--background-dark);
+            border-width: 0 4px 4px 0;
+            transform: rotate(45deg);
+        }
+
+        /* --- Disclaimer --- */
+        .disclaimer {
+            font-size: 0.85em;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 25px;
+            line-height: 1.5;
+        }
+
+        /* --- Responsive Adjustments (Ensuring mobile-first) --- */
+        @media (max-width: 450px) {
+            .app-container {
+                padding: 15px;
+                min-height: 100vh; /* Garante que ocupe a tela inteira em celulares */
+                border-radius: 0;
+            }
+            .page {
+                padding: 30px 20px;
+                border-radius: 0; /* Sem bordas na página para se integrar ao container */
+                /* min-height: calc(100vh - 30px); REMOVIDO para permitir que o flexbox se ajuste */
+                height: 100%; /* Garante que ocupe o espaço disponível */
+            }
+            h1 { font-size: 2.1em; }
+            h2 { font-size: 1.6em; }
+            p { font-size: 1em; }
+            .illustration { width: 130px; height: 130px; margin-bottom: 25px; }
+            .button { padding: 14px 20px; font-size: 1.1em; }
+            .checkbox-container { font-size: 1em; padding-left: 35px; }
+            .checkmark { width: 26px; height: 26px; }
+            .checkmark:after { left: 9px; top: 4px; width: 7px; height: 13px; }
+            .button-icon { width: 20px; height: 20px; margin-right: 8px; }
+        }
+
+        @media (max-height: 700px) and (min-width: 450px) { /* Adjust for landscape on larger phones */
+            .page {
+                min-height: unset; /* Allow height to adjust */
+                max-height: 90vh; /* Prevent overflow */
+                padding: 25px 20px;
+            }
+            .illustration {
+                width: 100px;
+                height: 100px;
+                margin-bottom: 20px;
+            }
+            h1 { font-size: 2em; }
+            h2 { font-size: 1.5em; }
+            p { font-size: 1em; margin-bottom: 20px; }
+            .button { padding: 12px 20px; font-size: 1.1em; }
+            .disclaimer { margin-top: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div id="page1" class="page active">
+            <img src="logo1.webp" alt="Bot Orion" class="illustration">
+            <h1>BOT ORION</h1>
+            <p>O Novo aplicativo que entrou no mercado de ferramentas para ganhar no Aviator.
+            O aplicativo tem acesso direto da Na plataforma Aviator oque dá bons resultados ao usar, ele coleta dados e analisa em tempo real, experimente agora</p>
+            <div class="button-group">
+                <button class="button" onclick="nextPage('page2')">
+                    Começar a Lucrar Agora
+                </button>
+            </div>
+        </div>
+
+        <div id="page2" class="page">
+            <img src="logo1.webp" alt="Bot Orion" class="illustration">
+            <h2>Atenção Importante!</h2>
+            <p>Para sua segurança e conformidade com as políticas, lembramos que jogos como o Aviator são destinados apenas para usuários maiores de 18 anos.</p>
+            <label class="checkbox-container">
+                <input type="checkbox" id="ageConfirmation" onchange="toggleProceedButton()">
+                <span class="checkmark"></span>
+                Declaro que tenho 18 anos ou mais e aceito os termos.
+            </label>
+            <div class="button-group">
+                <button class="button disabled" id="proceedButton" onclick="checkAgeAndProceed()">
+                    Liberar Meu Acesso
+                </button>
+            </div>
+            <p class="disclaimer">Jogue com responsabilidade. Apostar envolve riscos e pode ser viciante.</p>
+        </div>
+
+        <div id="page3" class="page">
+            <img src="logo1.webp" alt="Bot Orion" class="illustration">
+            <h1>Acesso Liberado!</h1>
+            <h2>Parabéns! Você está pronto para decolar!</h2>
+            <p>Seu acesso ao Robô Aviator foi concedido com sucesso. Clique nos botões abaixo e comece a ganhar no Aviator ainda hoje</p>
+            <div class="button-group">
+                <a href="https://www.mediafire.com/file/829pb2n21s13hfh/BOT_ORION_1.0.apk/file" target="_blank" class="button">
+                     Baixar Robô Aviator ORION
+                </a>
+                <a href="https://chat.whatsapp.com/DD7Ll7qHjzg4vn1PlZ2biI?mode=r_c" target="_blank" class="button button-secondary">
+ Entrar no Grupo Oficial
+                </a>
+            </div>
+            <p class="disclaimer">**Aviso:** Utilize o robô com estratégia e responsabilidade. O sucesso depende também de suas escolhas.</p>
+        </div>
+    </div>
+
+    <script>
+        let currentPageId = 'page1'; // Inicia com a primeira página
+
+        function showPage(pageId) {
+            const currentPageElement = document.getElementById(currentPageId);
+            const nextPageElement = document.getElementById(pageId);
+
+            if (currentPageElement && currentPageElement.id !== pageId) {
+                currentPageElement.classList.remove('active', 'anim-in');
+                currentPageElement.classList.add('anim-out');
+                currentPageElement.style.pointerEvents = 'none';
+
+                setTimeout(() => {
+                    currentPageElement.style.display = 'none';
+                    currentPageElement.classList.remove('anim-out');
+                }, 700); // Duração da animação em CSS
+            }
+
+            if (nextPageElement) {
+                nextPageElement.style.display = 'flex'; // Garante que a próxima página seja visível
+                nextPageElement.classList.remove('anim-out');
+                nextPageElement.classList.add('active', 'anim-in');
+                nextPageElement.style.pointerEvents = 'auto';
+            }
+
+            currentPageId = pageId;
+        }
+
+        function nextPage(nextPageId) {
+            showPage(nextPageId);
+        }
+
+        function toggleProceedButton() {
+            const ageConfirmation = document.getElementById('ageConfirmation');
+            const proceedButton = document.getElementById('proceedButton');
+            let buttonIcon = proceedButton.querySelector('.button-icon'); // Tenta encontrar o ícone existente
+
+            if (ageConfirmation.checked) {
+                proceedButton.classList.remove('disabled');
+                // Se o ícone não existir, cria e adiciona
+                if (!buttonIcon) {
+                    const icon = document.createElement('img');
+                    icon.src = 'https://www.svgrepo.com/show/448202/lock.svg'; // Caminho do seu ícone de cadeado
+                    icon.alt = 'Cadeado';
+                    icon.classList.add('button-icon');
+                    proceedButton.prepend(icon); // Adiciona o ícone antes do texto
+                    buttonIcon = icon; // Atualiza a referência do ícone
+                }
+                buttonIcon.style.filter = 'invert(1)'; // Ícone branco
+            } else {
+                proceedButton.classList.add('disabled');
+                // Se o ícone existe, muda seu filtro para cinza
+                if (buttonIcon) {
+                    buttonIcon.style.filter = 'brightness(0.5) grayscale(100%)';
+                }
+            }
+        }
+
+        function checkAgeAndProceed() {
+            const ageConfirmation = document.getElementById('ageConfirmation');
+            const proceedButton = document.getElementById('proceedButton');
+
+            if (ageConfirmation.checked && !proceedButton.classList.contains('disabled')) {
+                showPage('page3');
+            } else if (!ageConfirmation.checked) {
+                alert('Por favor, confirme que você tem 18 anos ou mais para continuar.');
+            }
+        }
+
+        // Garante que a primeira página esteja ativa e o estado do botão de idade seja verificado ao carregar
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('page1').style.display = 'flex';
+            document.getElementById('page1').classList.add('active');
+            toggleProceedButton(); // Inicializa o estado do botão "Liberar Acesso" e o ícone
+        });
+    </script>
+</body>
+</html>
