@@ -1,273 +1,322 @@
-
 <!DOCTYPE html>
-<html lang="pt-MZ">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sinal Aviator 2.0 - Ferramenta de Previsão</title>
-    
+    <title>Desafio de Multiplicação - Transforma 10 MZN em 1000 MZN</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <!-- Meta Pixel Code -->
-<script>
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '1195493318996889');
-fbq('track', 'PageView');
-</script>
-<noscript><img height="1" width="1" style="display:none"
-src="https://www.facebook.com/tr?id=1195493318996889&ev=PageView&noscript=1"
-/></noscript>
-<!-- End Meta Pixel Code -->
-    
-    <style>
-        body {
-            background-color: #0d1117;
-            background-image: linear-gradient(rgba(13, 17, 23, 0.95), rgba(13, 17, 23, 0.95)), url('https://www.transparenttextures.com/patterns/clean-textile.png');
-            font-family: 'Courier New', Courier, monospace;
-            color: #c9d1d9;
-            -webkit-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'neon-green': '#32ff32',
+                        'neon-blue': '#00d4ff',
+                        'dark-bg': '#0a0a0a',
+                        'dark-card': '#1a1a1a'
+                    }
+                }
+            }
         }
-        .text-glow-green { text-shadow: 0 0 8px #23d160, 0 0 10px #23d160; }
-        .text-glow-blue { text-shadow: 0 0 8px #3273dc; }
-        .box-glow { box-shadow: 0 0 15px rgba(35, 209, 96, 0.4), inset 0 0 10px rgba(35, 209, 96, 0.2); }
-        .blinking-cursor { animation: blink 1s step-end infinite; }
-        @keyframes blink { from, to { color: transparent; } 50% { color: #23d160; } }
-        #bot-interface, #ganhos-log { background-color: rgba(0,0,0,0.4); border: 1px solid #30363d; border-radius: 8px; padding: 20px; font-size: 14px; }
-        #bot-interface { height: 300px; overflow-y: auto; }
-        #ganhos-log { height: 192px; overflow-y: auto; }
-        #bot-interface p { margin-bottom: 8px; line-height: 1.5; }
-        #bot-interface .text-green-400 { color: #23d160; }
-        #bot-interface .text-yellow-400 { color: #d29922; }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); z-index: 250; display: none; align-items: center; justify-content: center; }
-        .modal-content { background-color: #161b22; border: 1px solid #30363d; padding: 2rem; border-radius: 10px; text-align: center; max-width: 90%; width: 500px; }
-    </style>
+    </script>
 </head>
-<body class="p-4 md:p-8">
-
-    <audio id="start-sound" src="songs.mp3" preload="auto"></audio>
-    <audio id="signal-sound" src="sojm.mp3" preload="auto"></audio>
-
-    <div id="entry-gate" class="modal-overlay" style="display: flex;">
-        <div class="modal-content">
-            <h1 class="text-4xl font-bold text-glow-green mb-4">Sinal Aviator 2.0</h1>
-            <p class="text-gray-400 mb-8">Clique abaixo para inicializar a ferramenta</p>
-            <button id="start-button" class="bg-green-600 hover:bg-green-700 text-white font-bold text-2xl py-4 px-10 rounded-lg shadow-lg animate-pulse">
-                <i class="fas fa-power-off mr-2"></i> INICIAR BOT
-            </button>
-        </div>
+<body class="bg-dark-bg text-white overflow-x-hidden">
+    <!-- Background Effects -->
+    <div class="fixed inset-0 z-0">
+        <div class="absolute top-20 left-10 w-96 h-96 bg-neon-green opacity-5 rounded-full blur-3xl animate-pulse"></div>
+        <div class="absolute bottom-20 right-10 w-80 h-80 bg-neon-blue opacity-5 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-purple-500 opacity-3 rounded-full blur-3xl animate-pulse delay-2000"></div>
     </div>
 
-    <main id="main-content" class="hidden">
-        <div class="max-w-4xl mx-auto text-center">
-            <h1 class="text-3xl md:text-5xl font-bold mb-2"><span class="text-glow-green">FERRAMENTA REVELADA</span></h1>
-            <p class="text-lg text-gray-400 mb-6">O 'Bot' de Sinais que poucos Moçambicanos conhecem e usam para antecipar as 'Velas Rosas' do Aviator.</p>
-            <div id="bot-interface">
-                <div id="log-output"></div>
-                <span class="blinking-cursor">_</span>
+    <!-- Header -->
+    <header class="relative z-10 py-6 px-4">
+        <nav class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-coins text-neon-green text-2xl animate-spin-slow"></i>
+                <span class="text-xl font-bold bg-gradient-to-r from-neon-green to-neon-blue bg-clip-text text-transparent">DesafioMZN</span>
             </div>
-            <div class="mt-4 bg-yellow-900 bg-opacity-30 border border-yellow-700 text-yellow-300 py-2 px-4 rounded-lg">
-                Atenção: Vagas para usar a ferramenta são limitadas para evitar deteção. Vagas disponíveis: <span id="vagas" class="font-bold">7</span>
+            <div class="hidden md:flex space-x-6">
+                <a href="#inicio" class="hover:text-neon-green transition-colors duration-300">Início</a>
+                <a href="#como-funciona" class="hover:text-neon-green transition-colors duration-300">Como Funciona</a>
+                <a href="#faq" class="hover:text-neon-green transition-colors duration-300">FAQ</a>
             </div>
-            <div id="signal-box" class="hidden mt-6 border-4 border-green-500 rounded-xl p-6 box-glow">
-                <h2 class="text-3xl font-bold text-glow-green animate-pulse mb-4">SINAL ENCONTRADO!</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
-                    <div class="bg-gray-800 p-4 rounded-lg">
-                        <p class="text-sm text-gray-400">ENTRADA RECOMENDADA</p>
-                        <p class="text-xl font-bold">Próximas 2 Rodadas</p>
-                    </div>
-                    <div class="bg-gray-800 p-4 rounded-lg">
-                        <p class="text-sm text-gray-400">SAÍDA (CANDLE)</p>
-                        <p class="text-xl font-bold">Acima de <span id="vela-alvo">8.50x</span></p>
-                    </div>
-                    <div class="bg-gray-800 p-4 rounded-lg">
-                        <p class="text-sm text-gray-400">CONFIANÇA DO SINAL</p>
-                        <p class="text-xl font-bold text-green-400">96.4%</p>
-                    </div>
-                </div>
-                <button id="ativar-sinais-button" class="block w-full mt-6 bg-green-600 hover:bg-green-700 text-white font-bold text-2xl py-4 px-8 rounded-lg shadow-lg">
-                    <i class="fas fa-bolt mr-2"></i> ATIVAR SINAIS NA MINHA CONTA
-                </button>
-            </div>
-             <div class="mt-16 text-left">
-                <h3 class="text-2xl font-bold text-center mb-8">Como Funciona em 3 Passos</h3>
-                <div class="grid md:grid-cols-3 gap-8">
-                    <div class="bg-gray-800 bg-opacity-50 p-6 rounded-lg border border-gray-700">
-                        <i class="fas fa-user-plus fa-2x text-blue-400 mb-4"></i>
-                        <h4 class="text-xl font-bold mb-2">PASSO 1: Crie a Conta</h4>
-                        <p class="text-gray-400">Clique em "Ativar Sinais" e registe-se na plataforma oficial. É onde o nosso Bot funciona.</p>
-                    </div>
-                    <div class="bg-gray-800 bg-opacity-50 p-6 rounded-lg border border-gray-700">
-                        <i class="fas fa-satellite-dish fa-2x text-blue-400 mb-4"></i>
-                        <h4 class="text-xl font-bold mb-2">PASSO 2: Ative a Ligação</h4>
-                        <p class="text-gray-400">Faça um depósito mínimo para validar a conta e ativar a ligação com a nossa ferramenta.</p>
-                    </div>
-                    <div class="bg-gray-800 bg-opacity-50 p-6 rounded-lg border border-gray-700">
-                        <i class="fas fa-rocket fa-2x text-blue-400 mb-4"></i>
-                        <h4 class="text-xl font-bold mb-2">PASSO 3: Receba Sinais</h4>
-                        <p class="text-gray-400">Volte aqui após o registo e acesse o nosso robô</p>
-                    </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="inicio" class="relative z-10 py-20 px-4">
+        <div class="container mx-auto text-center">
+            <!-- Countdown Timer -->
+            <div class="mb-8">
+                <div class="inline-block bg-red-600 bg-opacity-20 border border-red-500 rounded-lg px-4 py-2 md:px-6 md:py-3 pulse">
+                    <p class="text-red-400 text-xs md:text-sm mb-1 md:mb-2">Inscrições encerram em:</p>
+                    <div id="countdown" class="text-lg md:text-2xl font-bold text-red-300"></div>
                 </div>
             </div>
-             <div class="mt-16 text-left">
-                 <h3 class="text-2xl font-bold text-center mb-8"><span class="text-glow-blue">Log de Ganhos Recentes</span></h3>
-                 <div id="ganhos-log"></div>
-             </div>
-        </div>
-    </main>
 
-    <div id="bridge-popup" class="modal-overlay">
-        <div class="modal-content">
-            <i class="fas fa-directions fa-3x text-blue-400 mb-4"></i>
-            <h2 class="text-2xl font-bold mb-4">Passo Importante!</h2>
-            <p class="text-gray-400 mb-6">Ao clicar 'OK', você será redirecionado para a página de registo da plataforma que o nosso robô funciona atualmente. Crie a sua conta e, após completar, **volte a esta página** para liberar o acesso final para o nosso robô.</p>
-            <button id="popup-ok-button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xl py-3 px-8 rounded-lg">
-                OK, IR PARA O REGISTO
+            <!-- Main Headline -->
+            <h1 class="text-2xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight">
+                <span class="bg-gradient-to-r from-neon-green to-neon-blue bg-clip-text text-transparent">
+                    Transforma 10 MZN
+                </span>
+                <br>
+                <span class="text-white">em até</span>
+                <br>
+                <span class="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent glow-text">
+                    1000 MZN
+                </span>
+                <br>
+                <span class="text-white">em minutos!</span>
+            </h1>
+
+            <!-- Subtitle -->
+            <p class="text-lg md:text-xl mb-8 text-gray-300 max-w-3xl mx-auto leading-relaxed px-4">
+                Participa do <span class="text-neon-green font-semibold">Desafio de Multiplicação</span> — 
+                Testa tua sorte e habilidade em jogos rápidos. 
+                <span class="text-neon-blue font-semibold">Recompensas instantâneas</span> para os melhores!
+            </p>
+
+            <!-- Floating Coins -->
+            <div class="relative mb-12">
+                <div class="coin coin-1">
+                    <i class="fas fa-coins text-yellow-400 text-2xl"></i>
+                </div>
+                <div class="coin coin-2">
+                    <i class="fas fa-coins text-yellow-400 text-xl"></i>
+                </div>
+                <div class="coin coin-3">
+                    <i class="fas fa-coins text-yellow-400 text-3xl"></i>
+                </div>
+            </div>
+
+            <!-- CTA Button -->
+            <button class="cta-button group relative inline-flex items-center justify-center px-6 py-3 text-base md:text-lg font-bold rounded-full overflow-hidden transition-all duration-300 hover:scale-105 mx-4">
+                <span class="relative z-10 flex items-center">
+                    <i class="fas fa-rocket mr-2 group-hover:animate-bounce"></i>
+                    Participar do Desafio Agora
+                    <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                </span>
             </button>
-        </div>
-    </div>
-    
-    <div id="return-content" class="hidden text-center max-w-2xl mx-auto">
-        <i class="fas fa-check-circle fa-5x text-green-400 mb-6 animate-pulse"></i>
-        <h1 class="text-4xl font-bold mb-4">Parabéns e Bem-vindo!</h1>
-        <p class="text-lg text-gray-300 mb-8">Liberamos o acesso para a nossa ferramenta, certifique-se que crio conta através da nossa ferramenta caso não os sinais não vão funcionar na tua conta. O passo final para receber os sinais é entrar no nosso canal exclusivo do Telegram, onde o nosso Bot oficial opera 24/7.</p>
-        <a href="https://t.me/ferramentaaviator" target="_blank" class="inline-block w-full md:w-auto bg-blue-500 hover:bg-blue-600 text-white font-bold text-2xl py-5 px-12 rounded-lg shadow-lg">
-            <i class="fab fa-telegram-plane mr-3"></i> ENTRAR NO CANAL DE SINAIS
-        </a>
-    </div>
 
-    <footer id="main-footer" class="hidden text-center py-8 px-4 mt-8">
-        <div class="max-w-4xl mx-auto border-t border-gray-700 pt-6">
-             <p class="text-xs text-gray-500 mb-4"><strong>AVISO LEGAL:</strong>Este site não é afiliado ao Facebook ou a qualquer entidade do Facebook. Depois de sair do Facebook, a responsabilidade não é deles e sim do nosso site.</p>
-            <p class="text-xs text-gray-600">As oportunidades aqui apresentadas destinam-se a plataformas de entretenimento para maiores de 18 anos. Recomendamos sempre o jogo responsável e que nunca arrisque mais do que pode perder.</p>
+            <!-- Trust Indicators -->
+            <div class="mt-8 flex flex-wrap justify-center items-center gap-4 text-gray-400 text-sm px-4">
+                <div class="flex items-center">
+                    <i class="fas fa-shield-alt text-neon-green mr-1"></i>
+                    <span>100% Seguro</span>
+                </div>
+                <div class="flex items-center">
+                    <i class="fas fa-clock text-neon-blue mr-1"></i>
+                    <span>Resultados Instantâneos</span>
+                </div>
+                <div class="flex items-center">
+                    <i class="fas fa-users text-purple-400 mr-1"></i>
+                    <span>+10,000 Participantes</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Social Proof Section -->
+    <section class="relative z-10 py-16 px-4 bg-gradient-to-r from-dark-card to-transparent">
+        <div class="container mx-auto px-4">
+            <h2 class="text-xl md:text-2xl lg:text-3xl font-bold text-center mb-8 bg-gradient-to-r from-neon-green to-neon-blue bg-clip-text text-transparent">
+                Últimos Ganhadores
+            </h2>
+            <div class="grid md:grid-cols-3 gap-4 max-w-3xl mx-auto">
+                <div class="winner-card bg-dark-card border border-neon-green border-opacity-30 rounded-lg p-4 text-center hover:border-opacity-60 transition-all duration-300">
+                    <div class="w-12 h-12 bg-gradient-to-r from-neon-green to-blue-500 rounded-full mx-auto mb-3 flex items-center justify-center">
+                        <i class="fas fa-user text-white text-lg"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">Carlos</h3>
+                    <p class="text-neon-green text-xl font-bold">+800 MZN</p>
+                    <p class="text-gray-400 text-xs mt-1">há 5 minutos</p>
+                </div>
+                <div class="winner-card bg-dark-card border border-neon-blue border-opacity-30 rounded-lg p-4 text-center hover:border-opacity-60 transition-all duration-300">
+                    <div class="w-12 h-12 bg-gradient-to-r from-neon-blue to-purple-500 rounded-full mx-auto mb-3 flex items-center justify-center">
+                        <i class="fas fa-user text-white text-lg"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">Joana</h3>
+                    <p class="text-neon-blue text-xl font-bold">+320 MZN</p>
+                    <p class="text-gray-400 text-xs mt-1">há 12 minutos</p>
+                </div>
+                <div class="winner-card bg-dark-card border border-yellow-500 border-opacity-30 rounded-lg p-4 text-center hover:border-opacity-60 transition-all duration-300">
+                    <div class="w-12 h-12 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto mb-3 flex items-center justify-center">
+                        <i class="fas fa-user text-white text-lg"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">Mauro</h3>
+                    <p class="text-yellow-400 text-xl font-bold">+1200 MZN</p>
+                    <p class="text-gray-400 text-xs mt-1">há 18 minutos</p>
+                </div>
+            </div>
+            <div class="text-center mt-8">
+                <p class="text-gray-400">
+                    <i class="fas fa-trophy text-yellow-400 mr-2"></i>
+                    Podes ser o próximo grande ganhador!
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="como-funciona" class="relative z-10 py-16 px-4">
+        <div class="container mx-auto px-4">
+            <h2 class="text-xl md:text-2xl lg:text-3xl font-bold text-center mb-8 bg-gradient-to-r from-neon-blue to-purple-400 bg-clip-text text-transparent">
+                Como Funciona
+            </h2>
+            <div class="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                <div class="text-center step-card">
+                    <div class="w-16 h-16 bg-gradient-to-r from-neon-green to-blue-500 rounded-full mx-auto mb-4 flex items-center justify-center step-icon">
+                        <span class="text-xl font-bold">1</span>
+                    </div>
+                    <h3 class="text-lg font-bold mb-3">Regista-te</h3>
+                    <p class="text-gray-300 text-sm">Cria tua conta em segundos e recebe acesso imediato aos desafios</p>
+                </div>
+                <div class="text-center step-card">
+                    <div class="w-16 h-16 bg-gradient-to-r from-neon-blue to-purple-500 rounded-full mx-auto mb-4 flex items-center justify-center step-icon">
+                        <span class="text-xl font-bold">2</span>
+                    </div>
+                    <h3 class="text-lg font-bold mb-3">Deposita</h3>
+                    <p class="text-gray-300 text-sm">Adiciona teu saldo inicial de apenas 10 MZN para começar</p>
+                </div>
+                <div class="text-center step-card">
+                    <div class="w-16 h-16 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto mb-4 flex items-center justify-center step-icon">
+                        <span class="text-xl font-bold">3</span>
+                    </div>
+                    <h3 class="text-lg font-bold mb-3">Multiplica</h3>
+                    <p class="text-gray-300 text-sm">Joga estrategicamente e multiplica teu saldo até 100x!</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="relative z-10 py-16 px-4 bg-gradient-to-b from-transparent to-dark-card">
+        <div class="container mx-auto max-w-3xl px-4">
+            <h2 class="text-xl md:text-2xl lg:text-3xl font-bold text-center mb-8 bg-gradient-to-r from-neon-green to-neon-blue bg-clip-text text-transparent">
+                Perguntas Frequentes
+            </h2>
+            <div class="space-y-4">
+                <div class="faq-item bg-dark-card border border-gray-700 rounded-lg overflow-hidden">
+                    <button class="faq-question w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-800 transition-colors">
+                        <span class="font-semibold">Preciso pagar?</span>
+                        <i class="fas fa-chevron-down transition-transform"></i>
+                    </button>
+                    <div class="faq-answer px-6 py-4 border-t border-gray-700 hidden">
+                        <p class="text-gray-300">Não. Só precisas de saldo inicial como entrada para participar dos desafios.</p>
+                    </div>
+                </div>
+                <div class="faq-item bg-dark-card border border-gray-700 rounded-lg overflow-hidden">
+                    <button class="faq-question w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-800 transition-colors">
+                        <span class="font-semibold">É seguro?</span>
+                        <i class="fas fa-chevron-down transition-transform"></i>
+                    </button>
+                    <div class="faq-answer px-6 py-4 border-t border-gray-700 hidden">
+                        <p class="text-gray-300">Totalmente. Parceiros certificados de pagamentos digitais garantem tua segurança.</p>
+                    </div>
+                </div>
+                <div class="faq-item bg-dark-card border border-gray-700 rounded-lg overflow-hidden">
+                    <button class="faq-question w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-800 transition-colors">
+                        <span class="font-semibold">Preciso de cadastro?</span>
+                        <i class="fas fa-chevron-down transition-transform"></i>
+                    </button>
+                    <div class="faq-answer px-6 py-4 border-t border-gray-700 hidden">
+                        <p class="text-gray-300">Sim, para que possas receber tuas recompensas de forma segura e rápida.</p>
+                    </div>
+                </div>
+                <div class="faq-item bg-dark-card border border-gray-700 rounded-lg overflow-hidden">
+                    <button class="faq-question w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-800 transition-colors">
+                        <span class="font-semibold">Quanto posso ganhar?</span>
+                        <i class="fas fa-chevron-down transition-transform"></i>
+                    </button>
+                    <div class="faq-answer px-6 py-4 border-t border-gray-700 hidden">
+                        <p class="text-gray-300">Depende da tua estratégia e sorte. Alguns jogadores multiplicaram seu saldo em mais de 100x!</p>
+                    </div>
+                </div>
+                <div class="faq-item bg-dark-card border border-gray-700 rounded-lg overflow-hidden">
+                    <button class="faq-question w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-800 transition-colors">
+                        <span class="font-semibold">Como recebo meus ganhos?</span>
+                        <i class="fas fa-chevron-down transition-transform"></i>
+                    </button>
+                    <div class="faq-answer px-6 py-4 border-t border-gray-700 hidden">
+                        <p class="text-gray-300">Transferência instantânea para tua conta E-mola ou M-pesa</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA Section -->
+    <section class="relative z-10 py-20 px-4 text-center">
+        <div class="container mx-auto">
+            <h2 class="text-4xl font-bold mb-6">
+                <span class="bg-gradient-to-r from-neon-green to-neon-blue bg-clip-text text-transparent">
+                    Não Percas Esta Oportunidade!
+                </span>
+            </h2>
+            <p class="text-lg mb-8 text-gray-300 max-w-xl mx-auto px-4">
+                Milhares já multiplicaram seus valores. Junta-te aos vencedores hoje mesmo!
+            </p>
+            <button class="cta-button-secondary group relative inline-flex items-center justify-center px-6 py-3 text-base md:text-lg font-bold rounded-full overflow-hidden transition-all duration-300 hover:scale-105 mb-8 mx-4">
+                <span class="relative z-10 flex items-center">
+                    <i class="fas fa-play mr-2 group-hover:animate-pulse"></i>
+                    Começar Agora - Apenas 10 MZN
+                    <i class="fas fa-lightning ml-2 group-hover:animate-bounce"></i>
+                </span>
+            </button>
+            <div class="flex justify-center items-center space-x-6 text-sm text-gray-400">
+                <div class="flex items-center">
+                    <i class="fas fa-lock text-green-400 mr-2"></i>
+                    <span>Transações Seguras</span>
+                </div>
+                <div class="flex items-center">
+                    <i class="fas fa-mobile-alt text-blue-400 mr-2"></i>
+                    <span>100% Mobile</span>
+                </div>
+                <div class="flex items-center">
+                    <i class="fas fa-headset text-purple-400 mr-2"></i>
+                    <span>Suporte 24/7</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="relative z-10 py-8 px-4 bg-dark-card border-t border-gray-800">
+        <div class="container mx-auto text-center">
+            <div class="flex justify-center items-center space-x-2 mb-4">
+                <i class="fas fa-coins text-neon-green text-xl"></i>
+                <span class="text-lg font-bold bg-gradient-to-r from-neon-green to-neon-blue bg-clip-text text-transparent">DesafioMZN</span>
+            </div>
+            <p class="text-gray-400 text-sm mb-4">
+                Site apenas para maiores de 18 anos. Esta experiência pode conter elementos de risco. Jogue com responsabilidade.
+            </p>
+            <div class="flex justify-center space-x-6 text-gray-500 text-sm">
+                <a href="#" class="hover:text-neon-green transition-colors">Termos de Uso</a>
+                <a href="#" class="hover:text-neon-green transition-colors">Política de Privacidade</a>
+                <a href="#" class="hover:text-neon-green transition-colors">Suporte</a>
+            </div>
+            <p class="text-gray-600 text-xs mt-4">
+                © 2025 DesafioMZN. Todos os direitos reservados.
+            </p>
         </div>
     </footer>
 
-    <script>
-        document.addEventListener('contextmenu', event => event.preventDefault());
-        document.addEventListener('keydown', event => {
-            if (event.ctrlKey) {
-                const forbiddenKeys = ['c', 'u', 's', 'p', 'x'];
-                if (forbiddenKeys.includes(event.key.toLowerCase())) {
-                    event.preventDefault();
-                }
-            }
-        });
+    <!-- Success Popup Modal -->
+    <div id="successModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="bg-dark-card border border-neon-green rounded-lg p-6 mx-4 max-w-sm w-full text-center popup-content">
+            <div class="w-16 h-16 bg-gradient-to-r from-neon-green to-neon-blue rounded-full mx-auto mb-4 flex items-center justify-center">
+                <i class="fas fa-rocket text-white text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-3 text-neon-green">Redirecionando...</h3>
+            <p class="text-gray-300 mb-4">Aguarda um momento! Estás a ser redirecionado para o desafio.</p>
+            <div class="flex justify-center">
+                <div class="loading-spinner"></div>
+            </div>
+        </div>
+    </div>
 
-        const entryGate = document.getElementById('entry-gate');
-        const startButton = document.getElementById('start-button');
-        const mainContent = document.getElementById('main-content');
-        const mainFooter = document.getElementById('main-footer');
-        const returnContent = document.getElementById('return-content');
-        const bridgePopup = document.getElementById('bridge-popup');
-        const ativarSinaisButton = document.getElementById('ativar-sinais-button');
-        const popupOkButton = document.getElementById('popup-ok-button');
-        const startSound = document.getElementById('start-sound');
-        const signalSound = document.getElementById('signal-sound');
-        const logOutput = document.getElementById('log-output');
-        const vagasSpan = document.getElementById('vagas');
-        const ganhosLog = document.getElementById('ganhos-log');
-        const velaAlvoSpan = document.getElementById('vela-alvo');
-
-        const AFFILIATE_LINK = "https://media1.placard.co.mz/redirect.aspx?pid=5905&bid=1690";
-
-        const getCurrentTime = () => new Date().toLocaleTimeString('pt-MZ', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-
-        const logMessages = [
-            { text: "Conectando aos servidores do Aviator...", class: "text-gray-400" },
-            { text: `Servidor de Moçambique (Nampula) localizado. Conexão Segura Estabelecida.`, class: "text-green-400" },
-            { text: "Analisando padrões das últimas 1,250 rodadas...", class: "text-gray-400" },
-            { text: "Algoritmo de Probabilidade v2.7 ativado.", class: "text-gray-400" },
-            { text: "Buscando por assinaturas de 'vela alta' (>10.00x)...", class: "text-yellow-400" },
-            { text: "AGUARDE...", class: "text-yellow-400", delay: 1500 },
-            { text: "PADRÃO DE ALTA PROBABILIDADE DETETADO!", class: "text-green-400 font-bold text-lg" }
-        ];
-
-        let messageIndex = 0;
-        function typeLog() {
-            if (messageIndex >= logMessages.length) {
-                signalSound.play();
-                const velaRandom = (Math.random() * (30 - 8) + 8).toFixed(2);
-                velaAlvoSpan.textContent = `${velaRandom}x`;
-                document.getElementById('signal-box').classList.remove('hidden');
-                document.querySelector('.blinking-cursor').style.display = 'none';
-                return;
-            }
-            const msg = logMessages[messageIndex];
-            const p = document.createElement('p');
-            p.className = msg.class || 'text-gray-400';
-            p.innerHTML = `[${getCurrentTime()}] ${msg.text}`;
-            logOutput.appendChild(p);
-            logOutput.scrollTop = logOutput.scrollHeight;
-            messageIndex++;
-            setTimeout(typeLog, msg.delay || 1200);
-        }
-
-        const cidades = ["Nampula", "Maputo", "Beira", "Nacala", "Quelimane", "Tete", "Pemba"];
-        const ganhos = ["7,540 MT", "12,810 MT", "5,990 MT", "18,250 MT", "9,800 MT"];
-        function showGanhos() {
-            const cidade = cidades[Math.floor(Math.random() * cidades.length)];
-            const ganho = ganhos[Math.floor(Math.random() * ganhos.length)];
-            const user = `****${Math.floor(Math.random() * 90) + 10}`;
-
-            const p = document.createElement('p');
-            p.className = 'text-blue-300';
-            p.innerHTML = `[${getCurrentTime()}] Utilizador ${user} (${cidade}) lucrou ${ganho} com o último sinal.`;
-            ganhosLog.prepend(p);
-            if (ganhosLog.children.length > 10) {
-                ganhosLog.lastChild.remove();
-            }
-        }
-        
-        window.onload = () => {
-            if (localStorage.getItem('hasBeenRedirected') === 'true') {
-                entryGate.style.display = 'none';
-                mainContent.classList.add('hidden');
-                mainFooter.classList.add('hidden');
-                returnContent.classList.remove('hidden');
-            } else {
-                entryGate.style.display = 'flex';
-            }
-        };
-        
-        startButton.addEventListener('click', () => {
-            startSound.play();
-            entryGate.style.display = 'none';
-            mainContent.classList.remove('hidden');
-            mainFooter.classList.remove('hidden');
-
-            setTimeout(typeLog, 1000);
-            setTimeout(() => {
-                let vagas = 7;
-                const vagasInterval = setInterval(() => { if (vagas > 2) vagasSpan.textContent = --vagas; else clearInterval(vagasInterval); }, 25000);
-                showGanhos();
-                setInterval(showGanhos, 9000);
-            }, 5000);
-        });
-
-        ativarSinaisButton.addEventListener('click', () => {
-            bridgePopup.style.display = 'flex';
-        });
-
-        popupOkButton.addEventListener('click', () => {
-            localStorage.setItem('hasBeenRedirected', 'true');
-
-            window.open(AFFILIATE_LINK, '_blank');
-            
-            bridgePopup.style.display = 'none';
-            document.getElementById('signal-box').innerHTML = `
-                <h2 class="text-2xl font-bold text-yellow-400">Aguardando Confirmação...</h2>
-                <p class="text-gray-400 mt-4">Após completar o seu registo, volte a esta página ou atualize-a para liberar o seu acesso.</p>
-            `;
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
