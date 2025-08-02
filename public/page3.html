@@ -3,23 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Processando...</title>
+    <title>seodoso net</title>
     <link rel="stylesheet" href="/style.css">
+    <style>
+        /* Estilos adicionais para o novo layout */
+        .content-area {
+            background-color: #f0f0f0; /* Um fundo claro para o conteúdo */
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            color: #333;
+            line-height: 1.6;
+        }
+        .content-area h2 {
+            color: #555;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+            text-align: center;
+        }
+        .content-area p {
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        .tags {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .tag {
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin: 5px;
+            font-size: 0.9em;
+        }
+        .scroll-hint {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 1.2em;
+            color: #666;
+            font-weight: bold;
+            display: none; /* Inicia oculto e é mostrado pelo JS */
+        }
+        /* Ajustes para o contador ficar menor e no topo */
+        .countdown-page .card {
+            order: -1; /* Move o card para cima */
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            background-color: #fff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            width: fit-content; /* Ajusta a largura ao conteúdo */
+            max-width: 90%; /* Limite para telas pequenas */
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .countdown-page h1 {
+            font-size: 1.5em; /* Título do contador menor */
+            margin-bottom: 10px;
+        }
+        .countdown-page p {
+            font-size: 1em; /* Texto do contador menor */
+        }
+        .loading-bar {
+            height: 10px; /* Barra de progresso menor */
+            margin-top: 10px;
+        }
+        .next-button {
+            margin-top: 20px; /* Espaçamento após a barra */
+            padding: 12px 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
     <div class="container countdown-page">
         <div class="card">
-            <h1>Processando Seu Link...</h1>
-            <p>Aguarde <span id="countdown">15</span> segundos.</p>
+            <h1>Por favor, aguarde...</h1>
+            <p>Seu conteúdo está sendo liberado em <span id="countdown">15</span> segundos.</p>
             <div class="loading-bar">
                 <div class="progress" id="progressBar"></div>
             </div>
+            <p id="scrollHint" class="scroll-hint">Deslize para baixo e clique em "Continuar"!</p>
             <button id="nextStepBtn" class="button next-button" style="display:none;">Continuar</button>
+        </div>
+
+        <div class="content-area">
+            <h2>Dicas Essenciais para Otimizar Seu Negócio!</h2>
+            <p>
+                A otimização de mecanismos de busca (SEO) é fundamental para a visibilidade online.
+                Ao alinhar seu conteúdo com as palavras-chave certas, você pode atrair mais tráfego orgânico
+                e qualificado para seu site. Lembre-se, o conteúdo de valor e a experiência do usuário
+                são prioridades para os algoritmos de busca.
+            </p>
+            <p>
+                Além do SEO, a velocidade do seu site e a responsividade em dispositivos móveis
+                são cruciais. Um site rápido e amigável para celular não só melhora o ranking
+                nos motores de busca, mas também oferece uma melhor experiência para seus visitantes,
+                reduzindo a taxa de rejeição.
+            </p>
+            <div class="tags">
+                <span class="tag">SEO</span>
+                <span class="tag">Marketing Digital</span>
+                <span class="tag">Tráfego Orgânico</span>
+                <span class="tag">Experiência do Usuário</span>
+                <span class="tag">Design Responsivo</span>
+            </div>
+            <p>
+                Continue aprendendo e aplicando as melhores práticas para ver seus resultados crescerem!
+            </p>
         </div>
     </div>
     <script src="/script.js"></script>
     <script>
-        // Extrai a etapa da página da URL (ex: /page1 -> 1, /page2 -> 2)
         const pathMatch = window.location.pathname.match(/page(\d+)/);
         const currentPageStep = pathMatch ? parseInt(pathMatch[1]) : NaN;
         
@@ -27,7 +126,7 @@
             initCountdown(currentPageStep);
         } else {
             console.error('Não foi possível determinar a etapa da página. Redirecionando para o início.');
-            window.location.href = '/'; // Redireciona para a home se a etapa for inválida
+            window.location.href = '/'; 
         }
     </script>
 </body>
