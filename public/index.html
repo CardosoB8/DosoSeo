@@ -1,322 +1,51 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Desafio de Multiplicação - Transforma 10 MZN em 1000 MZN</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'neon-green': '#32ff32',
-                        'neon-blue': '#00d4ff',
-                        'dark-bg': '#0a0a0a',
-                        'dark-card': '#1a1a1a'
-                    }
-                }
-            }
-        }
-    </script>
+    <title>Meu Hub de Links</title>
+    <link rel="stylesheet" href="/style.css">
 </head>
-<body class="bg-dark-bg text-white overflow-x-hidden">
-    <!-- Background Effects -->
-    <div class="fixed inset-0 z-0">
-        <div class="absolute top-20 left-10 w-96 h-96 bg-neon-green opacity-5 rounded-full blur-3xl animate-pulse"></div>
-        <div class="absolute bottom-20 right-10 w-80 h-80 bg-neon-blue opacity-5 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-purple-500 opacity-3 rounded-full blur-3xl animate-pulse delay-2000"></div>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bem-vindo ao Meu Hub de Links!</h1>
+            <p>Aqui você encontra acesso rápido ao meu conteúdo e muito mais.</p>
+        </header>
+
+        <section class="about-channel">
+            <h2>Sobre Meu Canal no YouTube</h2>
+            <p>
+                Este é o lugar onde compartilho tutoriais, dicas e análises sobre tecnologia,
+                desenvolvimento e aplicativos. Meu objetivo é descomplicar o mundo digital
+                e ajudar você a aprender algo novo todos os dias. Inscreva-se para não perder nada!
+            </p>
+        </section>
+
+        <section class="links-section">
+            <h2>Links Úteis</h2>
+            <ul>
+                <li>
+                    <a href="https://www.youtube.com/channel/SEU_ID_DO_CANAL" target="_blank" class="button youtube">
+                        Meu Canal no YouTube
+                    </a>
+                </li>
+                <li>
+                    <a href="https://chat.whatsapp.com/SEU_CODIGO_DO_GRUPO" target="_blank" class="button whatsapp">
+                        Meu Grupo no WhatsApp
+                    </a>
+                </li>
+                <li>
+                    <a href="mailto:seuemail@exemplo.com" class="button contact">
+                        Entre em Contato
+                    </a>
+                </li>
+            </ul>
+        </section>
+
+        <footer>
+            <p>&copy; 2024 Meu Hub de Links. Todos os direitos reservados.</p>
+        </footer>
     </div>
-
-    <!-- Header -->
-    <header class="relative z-10 py-6 px-4">
-        <nav class="container mx-auto flex justify-between items-center">
-            <div class="flex items-center space-x-2">
-                <i class="fas fa-coins text-neon-green text-2xl animate-spin-slow"></i>
-                <span class="text-xl font-bold bg-gradient-to-r from-neon-green to-neon-blue bg-clip-text text-transparent">DesafioMZN</span>
-            </div>
-            <div class="hidden md:flex space-x-6">
-                <a href="#inicio" class="hover:text-neon-green transition-colors duration-300">Início</a>
-                <a href="#como-funciona" class="hover:text-neon-green transition-colors duration-300">Como Funciona</a>
-                <a href="#faq" class="hover:text-neon-green transition-colors duration-300">FAQ</a>
-            </div>
-        </nav>
-    </header>
-
-    <!-- Hero Section -->
-    <section id="inicio" class="relative z-10 py-20 px-4">
-        <div class="container mx-auto text-center">
-            <!-- Countdown Timer -->
-            <div class="mb-8">
-                <div class="inline-block bg-red-600 bg-opacity-20 border border-red-500 rounded-lg px-4 py-2 md:px-6 md:py-3 pulse">
-                    <p class="text-red-400 text-xs md:text-sm mb-1 md:mb-2">Inscrições encerram em:</p>
-                    <div id="countdown" class="text-lg md:text-2xl font-bold text-red-300"></div>
-                </div>
-            </div>
-
-            <!-- Main Headline -->
-            <h1 class="text-2xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight">
-                <span class="bg-gradient-to-r from-neon-green to-neon-blue bg-clip-text text-transparent">
-                    Transforma 10 MZN
-                </span>
-                <br>
-                <span class="text-white">em até</span>
-                <br>
-                <span class="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent glow-text">
-                    1000 MZN
-                </span>
-                <br>
-                <span class="text-white">em minutos!</span>
-            </h1>
-
-            <!-- Subtitle -->
-            <p class="text-lg md:text-xl mb-8 text-gray-300 max-w-3xl mx-auto leading-relaxed px-4">
-                Participa do <span class="text-neon-green font-semibold">Desafio de Multiplicação</span> — 
-                Testa tua sorte e habilidade em jogos rápidos. 
-                <span class="text-neon-blue font-semibold">Recompensas instantâneas</span> para os melhores!
-            </p>
-
-            <!-- Floating Coins -->
-            <div class="relative mb-12">
-                <div class="coin coin-1">
-                    <i class="fas fa-coins text-yellow-400 text-2xl"></i>
-                </div>
-                <div class="coin coin-2">
-                    <i class="fas fa-coins text-yellow-400 text-xl"></i>
-                </div>
-                <div class="coin coin-3">
-                    <i class="fas fa-coins text-yellow-400 text-3xl"></i>
-                </div>
-            </div>
-
-            <!-- CTA Button -->
-            <button class="cta-button group relative inline-flex items-center justify-center px-6 py-3 text-base md:text-lg font-bold rounded-full overflow-hidden transition-all duration-300 hover:scale-105 mx-4">
-                <span class="relative z-10 flex items-center">
-                    <i class="fas fa-rocket mr-2 group-hover:animate-bounce"></i>
-                    Participar do Desafio Agora
-                    <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
-                </span>
-            </button>
-
-            <!-- Trust Indicators -->
-            <div class="mt-8 flex flex-wrap justify-center items-center gap-4 text-gray-400 text-sm px-4">
-                <div class="flex items-center">
-                    <i class="fas fa-shield-alt text-neon-green mr-1"></i>
-                    <span>100% Seguro</span>
-                </div>
-                <div class="flex items-center">
-                    <i class="fas fa-clock text-neon-blue mr-1"></i>
-                    <span>Resultados Instantâneos</span>
-                </div>
-                <div class="flex items-center">
-                    <i class="fas fa-users text-purple-400 mr-1"></i>
-                    <span>+10,000 Participantes</span>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Social Proof Section -->
-    <section class="relative z-10 py-16 px-4 bg-gradient-to-r from-dark-card to-transparent">
-        <div class="container mx-auto px-4">
-            <h2 class="text-xl md:text-2xl lg:text-3xl font-bold text-center mb-8 bg-gradient-to-r from-neon-green to-neon-blue bg-clip-text text-transparent">
-                Últimos Ganhadores
-            </h2>
-            <div class="grid md:grid-cols-3 gap-4 max-w-3xl mx-auto">
-                <div class="winner-card bg-dark-card border border-neon-green border-opacity-30 rounded-lg p-4 text-center hover:border-opacity-60 transition-all duration-300">
-                    <div class="w-12 h-12 bg-gradient-to-r from-neon-green to-blue-500 rounded-full mx-auto mb-3 flex items-center justify-center">
-                        <i class="fas fa-user text-white text-lg"></i>
-                    </div>
-                    <h3 class="text-lg font-bold mb-2">Carlos</h3>
-                    <p class="text-neon-green text-xl font-bold">+800 MZN</p>
-                    <p class="text-gray-400 text-xs mt-1">há 5 minutos</p>
-                </div>
-                <div class="winner-card bg-dark-card border border-neon-blue border-opacity-30 rounded-lg p-4 text-center hover:border-opacity-60 transition-all duration-300">
-                    <div class="w-12 h-12 bg-gradient-to-r from-neon-blue to-purple-500 rounded-full mx-auto mb-3 flex items-center justify-center">
-                        <i class="fas fa-user text-white text-lg"></i>
-                    </div>
-                    <h3 class="text-lg font-bold mb-2">Joana</h3>
-                    <p class="text-neon-blue text-xl font-bold">+320 MZN</p>
-                    <p class="text-gray-400 text-xs mt-1">há 12 minutos</p>
-                </div>
-                <div class="winner-card bg-dark-card border border-yellow-500 border-opacity-30 rounded-lg p-4 text-center hover:border-opacity-60 transition-all duration-300">
-                    <div class="w-12 h-12 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto mb-3 flex items-center justify-center">
-                        <i class="fas fa-user text-white text-lg"></i>
-                    </div>
-                    <h3 class="text-lg font-bold mb-2">Mauro</h3>
-                    <p class="text-yellow-400 text-xl font-bold">+1200 MZN</p>
-                    <p class="text-gray-400 text-xs mt-1">há 18 minutos</p>
-                </div>
-            </div>
-            <div class="text-center mt-8">
-                <p class="text-gray-400">
-                    <i class="fas fa-trophy text-yellow-400 mr-2"></i>
-                    Podes ser o próximo grande ganhador!
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <!-- How It Works Section -->
-    <section id="como-funciona" class="relative z-10 py-16 px-4">
-        <div class="container mx-auto px-4">
-            <h2 class="text-xl md:text-2xl lg:text-3xl font-bold text-center mb-8 bg-gradient-to-r from-neon-blue to-purple-400 bg-clip-text text-transparent">
-                Como Funciona
-            </h2>
-            <div class="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-                <div class="text-center step-card">
-                    <div class="w-16 h-16 bg-gradient-to-r from-neon-green to-blue-500 rounded-full mx-auto mb-4 flex items-center justify-center step-icon">
-                        <span class="text-xl font-bold">1</span>
-                    </div>
-                    <h3 class="text-lg font-bold mb-3">Regista-te</h3>
-                    <p class="text-gray-300 text-sm">Cria tua conta em segundos e recebe acesso imediato aos desafios</p>
-                </div>
-                <div class="text-center step-card">
-                    <div class="w-16 h-16 bg-gradient-to-r from-neon-blue to-purple-500 rounded-full mx-auto mb-4 flex items-center justify-center step-icon">
-                        <span class="text-xl font-bold">2</span>
-                    </div>
-                    <h3 class="text-lg font-bold mb-3">Deposita</h3>
-                    <p class="text-gray-300 text-sm">Adiciona teu saldo inicial de apenas 10 MZN para começar</p>
-                </div>
-                <div class="text-center step-card">
-                    <div class="w-16 h-16 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto mb-4 flex items-center justify-center step-icon">
-                        <span class="text-xl font-bold">3</span>
-                    </div>
-                    <h3 class="text-lg font-bold mb-3">Multiplica</h3>
-                    <p class="text-gray-300 text-sm">Joga estrategicamente e multiplica teu saldo até 100x!</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- FAQ Section -->
-    <section id="faq" class="relative z-10 py-16 px-4 bg-gradient-to-b from-transparent to-dark-card">
-        <div class="container mx-auto max-w-3xl px-4">
-            <h2 class="text-xl md:text-2xl lg:text-3xl font-bold text-center mb-8 bg-gradient-to-r from-neon-green to-neon-blue bg-clip-text text-transparent">
-                Perguntas Frequentes
-            </h2>
-            <div class="space-y-4">
-                <div class="faq-item bg-dark-card border border-gray-700 rounded-lg overflow-hidden">
-                    <button class="faq-question w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-800 transition-colors">
-                        <span class="font-semibold">Preciso pagar?</span>
-                        <i class="fas fa-chevron-down transition-transform"></i>
-                    </button>
-                    <div class="faq-answer px-6 py-4 border-t border-gray-700 hidden">
-                        <p class="text-gray-300">Não. Só precisas de saldo inicial como entrada para participar dos desafios.</p>
-                    </div>
-                </div>
-                <div class="faq-item bg-dark-card border border-gray-700 rounded-lg overflow-hidden">
-                    <button class="faq-question w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-800 transition-colors">
-                        <span class="font-semibold">É seguro?</span>
-                        <i class="fas fa-chevron-down transition-transform"></i>
-                    </button>
-                    <div class="faq-answer px-6 py-4 border-t border-gray-700 hidden">
-                        <p class="text-gray-300">Totalmente. Parceiros certificados de pagamentos digitais garantem tua segurança.</p>
-                    </div>
-                </div>
-                <div class="faq-item bg-dark-card border border-gray-700 rounded-lg overflow-hidden">
-                    <button class="faq-question w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-800 transition-colors">
-                        <span class="font-semibold">Preciso de cadastro?</span>
-                        <i class="fas fa-chevron-down transition-transform"></i>
-                    </button>
-                    <div class="faq-answer px-6 py-4 border-t border-gray-700 hidden">
-                        <p class="text-gray-300">Sim, para que possas receber tuas recompensas de forma segura e rápida.</p>
-                    </div>
-                </div>
-                <div class="faq-item bg-dark-card border border-gray-700 rounded-lg overflow-hidden">
-                    <button class="faq-question w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-800 transition-colors">
-                        <span class="font-semibold">Quanto posso ganhar?</span>
-                        <i class="fas fa-chevron-down transition-transform"></i>
-                    </button>
-                    <div class="faq-answer px-6 py-4 border-t border-gray-700 hidden">
-                        <p class="text-gray-300">Depende da tua estratégia e sorte. Alguns jogadores multiplicaram seu saldo em mais de 100x!</p>
-                    </div>
-                </div>
-                <div class="faq-item bg-dark-card border border-gray-700 rounded-lg overflow-hidden">
-                    <button class="faq-question w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-800 transition-colors">
-                        <span class="font-semibold">Como recebo meus ganhos?</span>
-                        <i class="fas fa-chevron-down transition-transform"></i>
-                    </button>
-                    <div class="faq-answer px-6 py-4 border-t border-gray-700 hidden">
-                        <p class="text-gray-300">Transferência instantânea para tua conta E-mola ou M-pesa</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Final CTA Section -->
-    <section class="relative z-10 py-20 px-4 text-center">
-        <div class="container mx-auto">
-            <h2 class="text-4xl font-bold mb-6">
-                <span class="bg-gradient-to-r from-neon-green to-neon-blue bg-clip-text text-transparent">
-                    Não Percas Esta Oportunidade!
-                </span>
-            </h2>
-            <p class="text-lg mb-8 text-gray-300 max-w-xl mx-auto px-4">
-                Milhares já multiplicaram seus valores. Junta-te aos vencedores hoje mesmo!
-            </p>
-            <button class="cta-button-secondary group relative inline-flex items-center justify-center px-6 py-3 text-base md:text-lg font-bold rounded-full overflow-hidden transition-all duration-300 hover:scale-105 mb-8 mx-4">
-                <span class="relative z-10 flex items-center">
-                    <i class="fas fa-play mr-2 group-hover:animate-pulse"></i>
-                    Começar Agora - Apenas 10 MZN
-                    <i class="fas fa-lightning ml-2 group-hover:animate-bounce"></i>
-                </span>
-            </button>
-            <div class="flex justify-center items-center space-x-6 text-sm text-gray-400">
-                <div class="flex items-center">
-                    <i class="fas fa-lock text-green-400 mr-2"></i>
-                    <span>Transações Seguras</span>
-                </div>
-                <div class="flex items-center">
-                    <i class="fas fa-mobile-alt text-blue-400 mr-2"></i>
-                    <span>100% Mobile</span>
-                </div>
-                <div class="flex items-center">
-                    <i class="fas fa-headset text-purple-400 mr-2"></i>
-                    <span>Suporte 24/7</span>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="relative z-10 py-8 px-4 bg-dark-card border-t border-gray-800">
-        <div class="container mx-auto text-center">
-            <div class="flex justify-center items-center space-x-2 mb-4">
-                <i class="fas fa-coins text-neon-green text-xl"></i>
-                <span class="text-lg font-bold bg-gradient-to-r from-neon-green to-neon-blue bg-clip-text text-transparent">DesafioMZN</span>
-            </div>
-            <p class="text-gray-400 text-sm mb-4">
-                Site apenas para maiores de 18 anos. Esta experiência pode conter elementos de risco. Jogue com responsabilidade.
-            </p>
-            <div class="flex justify-center space-x-6 text-gray-500 text-sm">
-                <a href="#" class="hover:text-neon-green transition-colors">Termos de Uso</a>
-                <a href="#" class="hover:text-neon-green transition-colors">Política de Privacidade</a>
-                <a href="#" class="hover:text-neon-green transition-colors">Suporte</a>
-            </div>
-            <p class="text-gray-600 text-xs mt-4">
-                © 2025 DesafioMZN. Todos os direitos reservados.
-            </p>
-        </div>
-    </footer>
-
-    <!-- Success Popup Modal -->
-    <div id="successModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
-        <div class="bg-dark-card border border-neon-green rounded-lg p-6 mx-4 max-w-sm w-full text-center popup-content">
-            <div class="w-16 h-16 bg-gradient-to-r from-neon-green to-neon-blue rounded-full mx-auto mb-4 flex items-center justify-center">
-                <i class="fas fa-rocket text-white text-2xl"></i>
-            </div>
-            <h3 class="text-xl font-bold mb-3 text-neon-green">Redirecionando...</h3>
-            <p class="text-gray-300 mb-4">Aguarda um momento! Estás a ser redirecionado para o desafio.</p>
-            <div class="flex justify-center">
-                <div class="loading-spinner"></div>
-            </div>
-        </div>
-    </div>
-
-    <script src="script.js"></script>
 </body>
 </html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecionando... Etapa X</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container countdown-page">
+        <div class="card">
+            <h1>Preparando seu Link...</h1>
+            <p>Por favor, aguarde <span id="countdown">15</span> segundos.</p>
+            <div class="loading-bar">
+                <div class="progress" id="progressBar"></div>
+            </div>
+            <p class="message" id="message">Não feche esta página.</p>
+            <button id="nextStepBtn" class="button next-button" style="display:none;">Continuar</button>
+        </div>
+    </div>
+    <script src="/script.js"></script>
+    <script>
+        // Define qual etapa esta página representa
+        const currentPageStep = parseInt(window.location.pathname.match(/page(\d+)\.html/)[1]);
+        initCountdown(currentPageStep);
+    </script>
+</body>
+</html>
