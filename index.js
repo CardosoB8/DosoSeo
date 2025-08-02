@@ -23,49 +23,55 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// --- ROTA CORRIGIDA ABAIXO ---
+
+/**
+ * Rota para avançar para a próxima etapa do redirecionamento.
+ * ESTA ROTA DEVE VIR ANTES DA ROTA GENÉRICA /:alias
+ */
+app.get('/next-step', (req, res) => {
+    const alias = req.query.alias;
+    const currentStep = parseInt(req.query.currentStep);
+
+    console.log(`[NEXT-STEP] Requisição recebida. Alias: ${alias}, Etapa Atual: ${currentStep}`);
+
+    const link = linksData.links.find(l => l.alias === alias);
+
+    if (!link) {
+        console.error(`[NEXT-STEP] ERRO: Link não encontrado para o alias: ${alias}`);
+        return res.status(400).json({ error: 'Link associado não encontrado. Por favor, recomece o processo.', redirect: '/' });
+    }
+
+    console.log(`[NEXT-STEP] Link encontrado: ${link.alias}. URL Original: ${link.original_url}`);
+
+    if (!alias || isNaN(currentStep) || !link) {
+        console.error(`[NEXT-STEP] ERRO: Validação falhou. Alias: ${alias}, Step: ${currentStep}, Link existe: ${!!link}`);
+        return res.status(400).json({ error: 'Parâmetros de link inválidos ou link não encontrado. Por favor, recomece o processo.', redirect: '/' });
+    }
+
+    if (currentStep === 3) {
+        console.log(`[NEXT-STEP] Última etapa (${currentStep}). Redirecionando para URL final: ${link.original_url}`);
+        return res.json({ redirect: link.original_url });
+    } else {
+        const nextStep = currentStep + 1;
+        console.log(`[NEXT-STEP] Avançando para a próxima etapa (${nextStep}). Redirecionando para: /page${nextStep}`);
+        return res.json({ redirect: `/page${nextStep}?alias=${alias}` });
+    }
+});
+
 /**
  * Rota principal de redirecionamento: captura aliases como /meu-apk-exemplo
- * Inicia o fluxo de redirecionamento para a primeira página de espera.
- * NOTA: Não passa a originalUrl aqui.
+ * Esta rota genérica DEVE VIR DEPOIS de /next-step.
  */
 app.get('/:alias', (req, res) => {
     const alias = req.params.alias;
     const link = linksData.links.find(l => l.alias === alias);
 
     if (link) {
-        // Redireciona para page1, passando apenas o alias como parâmetro de query
         res.redirect(`/page1?alias=${alias}`);
     } else {
         res.status(404).sendFile(path.join(__dirname, 'public', 'index.html'));
         console.warn(`Alias '${alias}' não encontrado. Redirecionando para a home.`);
-    }
-});
-
-/**
- * Rota para avançar para a próxima etapa do redirecionamento.
- * Chamada pelo JavaScript do frontend. A originalUrl é re-encontrada aqui.
- */
-app.get('/next-step', (req, res) => {
-    const alias = req.query.alias; // Pega o alias da URL
-    const currentStep = parseInt(req.query.currentStep); // A etapa que acabou de ser concluída
-
-    // Re-encontra a originalUrl usando o alias
-    const link = linksData.links.find(l => l.alias === alias);
-
-    // Validação dos parâmetros e do link
-    if (!alias || isNaN(currentStep) || !link) {
-        return res.status(400).json({ error: 'Parâmetros de link inválidos ou link não encontrado. Por favor, recomece o processo.', redirect: '/' });
-    }
-
-    // Se a etapa atual for a 3 (última página de espera), então a próxima é a URL final.
-    if (currentStep === 3) {
-        return res.json({ redirect: link.original_url }); // Retorna a URL final para o frontend
-    } else {
-        // Caso contrário, calcula a próxima etapa (página de espera)
-        const nextStep = currentStep + 1;
-        // E instrui o frontend a redirecionar para a próxima página de espera,
-        // passando apenas o alias novamente.
-        return res.json({ redirect: `/page${nextStep}?alias=${alias}` });
     }
 });
 
