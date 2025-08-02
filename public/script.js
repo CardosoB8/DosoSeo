@@ -22,11 +22,11 @@ function initCountdown(currentPageStep) {
 
     if (!countdownElement || !progressBar || !nextStepBtn) {
         console.error('Elementos do contador não encontrados. Verifique o HTML.');
+        // Se os elementos não existirem, não inicia o contador para evitar erros.
         return;
     }
 
-    // Garante que o botão esteja oculto no início
-    nextStepBtn.style.display = 'none';
+    nextStepBtn.style.display = 'none'; // Garante que o botão esteja oculto no início
 
     const timer = setInterval(() => {
         timeLeft--;
@@ -40,8 +40,7 @@ function initCountdown(currentPageStep) {
             countdownElement.textContent = "0";
             progressBar.style.width = '100%'; // Completa a barra de progresso
 
-            // Exibe e configura o botão "Continuar" ou "Obter Link Final"
-            nextStepBtn.style.display = 'block';
+            nextStepBtn.style.display = 'block'; // Exibe o botão
             nextStepBtn.textContent = (currentPageStep === 3) ? 'Obter Link Final' : 'Continuar';
             nextStepBtn.onclick = () => advanceToNextStep(currentPageStep);
         }
@@ -53,30 +52,26 @@ function initCountdown(currentPageStep) {
  * @param {number} currentStep - A etapa que acabou de ser concluída.
  */
 async function advanceToNextStep(currentStep) {
-    const alias = getQueryParam('alias');
-    const originalUrl = getQueryParam('originalUrl');
+    const alias = getQueryParam('alias'); // Pega o alias da URL
 
-    if (!alias || !originalUrl) {
-        alert('Erro: Parâmetros de link não encontrados. Por favor, recomece o processo.');
-        window.location.href = '/'; // Redireciona para a home
+    if (!alias) {
+        alert('Erro: Alias não encontrado. Redirecionando para o início.');
+        window.location.href = '/';
         return;
     }
 
     try {
-        // Envia os parâmetros necessários ao servidor para a próxima etapa
-        const response = await fetch(`/next-step?alias=${alias}&originalUrl=${originalUrl}&currentStep=${currentStep}`);
+        // Envia apenas o alias e a etapa atual para o servidor
+        const response = await fetch(`/next-step?alias=${alias}&currentStep=${currentStep}`);
         const data = await response.json();
 
         if (response.ok && data.redirect) {
-            // Redireciona o navegador para a URL fornecida pelo servidor
-            window.location.href = data.redirect;
+            window.location.href = data.redirect; // Redireciona o navegador
         } else {
-            // Lida com erros do servidor ou redireciona para a home
             alert(data.error || 'Ocorreu um erro ao avançar. Por favor, tente novamente.');
             window.location.href = '/';
         }
     } catch (error) {
-        // Lida com erros de rede
         console.error('Erro de rede ou servidor:', error);
         alert('Ocorreu um erro inesperado na comunicação. Por favor, tente novamente.');
         window.location.href = '/';
