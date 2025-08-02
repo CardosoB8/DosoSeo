@@ -2,7 +2,7 @@
 
 const express = require('express');
 const path = require('path');
-const crypto = require('crypto'); // Biblioteca nativa do Node.js para criptografia
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -11,8 +11,12 @@ const PORT = process.env.PORT || 3000;
 // Esta chave DEVE ser uma string aleatória longa e única.
 // NUNCA compartilhe esta chave!
 // Em produção, use uma variável de ambiente da Vercel: process.env.SESSION_SECRET_KEY
-// Por exemplo, você pode gerar uma string como "sua_chave_secreta_muito_longa_e_aleatoria_123abcDEF456..."
-const SESSION_SECRET_KEY = process.env.SESSION_SECRET_KEY || 'uma_chave_secreta_super_segura_e_longa_para_desenvolvimento_apenas_nunca_use_esta_em_producao_mude_isso_agora';
+// Exemplo: process.env.SESSION_SECRET_KEY ou uma string de fallback para desenvolvimento local (NÃO PARA PRODUÇÃO)
+const SESSION_SECRET_KEY = process.env.SESSION_SECRET_KEY || 'sua_chave_secreta_deve_ser_definida_nas_variaveis_de_ambiente_do_vercel_e_ser_unica_para_producao';
+
+if (SESSION_SECRET_KEY === 'sua_chave_secreta_deve_ser_definida_nas_variaveis_de_ambiente_do_vercel_e_ser_unica_para_producao') {
+    console.warn("AVISO: A chave secreta SESSION_SECRET_KEY não foi definida como variável de ambiente! Usando uma chave padrão insegura para desenvolvimento.");
+}
 
 // Carrega seus links do arquivo data/links.js
 const allLinks = require('./data/links.js');
@@ -24,7 +28,6 @@ if (linksData.links.length === 0) {
 }
 
 // Funções para assinar e verificar o token
-// Este é um método simplificado para evitar dependências JWT.
 function signToken(payload) {
     const data = JSON.stringify(payload);
     const hmac = crypto.createHmac('sha256', SESSION_SECRET_KEY);
@@ -36,7 +39,10 @@ function signToken(payload) {
 function verifyToken(token) {
     try {
         const [encodedData, signature] = token.split('.');
-        if (!encodedData || !signature) return null;
+        if (!encodedData || !signature) {
+            console.error("verifyToken: Token sem formato esperado (missing dot or parts).");
+            return null;
+        }
 
         const data = Buffer.from(encodedData, 'base64url').toString('utf8');
         const hmac = crypto.createHmac('sha256', SESSION_SECRET_KEY);
@@ -46,9 +52,10 @@ function verifyToken(token) {
         if (signature === expectedSignature) {
             return JSON.parse(data);
         }
+        console.error("verifyToken: Assinatura do token inválida.");
         return null; // Assinatura inválida
     } catch (e) {
-        console.error("Erro ao verificar token:", e);
+        console.error("verifyToken: Erro na decodificação ou parsing do token:", e);
         return null; // Erro na decodificação ou parsing
     }
 }
@@ -61,38 +68,15 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-/**
- * Rota principal de redirecionamento: captura aliases como /meu-apk-exemplo
- * Gera um token assinado para a sessão.
- */
-app.get('/:alias', (req, res) => {
-    const alias = req.params.alias;
-    const link = linksData.links.find(l => l.alias === alias);
-
-    if (link) {
-        // Cria o payload do token: alias e a etapa inicial (1)
-        const tokenPayload = {
-            alias: alias,
-            step: 1, // Começa na etapa 1
-            exp: Date.now() + (60 * 60 * 1000) // Token expira em 1 hora (para evitar tokens órfãos)
-        };
-        const sessionToken = signToken(tokenPayload);
-
-        // Redireciona para page1, passando o token assinado
-        res.redirect(`/page1?token=${sessionToken}`);
-    } else {
-        res.status(404).sendFile(path.join(__dirname, 'public', 'index.html'));
-        console.warn(`Alias '${alias}' não encontrado. Redirecionando para a home.`);
-    }
-});
+// --- ATENÇÃO: ORDEM DAS ROTAS É CRÍTICA AQUI ---
 
 /**
- * Rota para avançar para a próxima etapa do redirecionamento.
- * Verifica o token assinado para garantir a integridade da sessão e o fluxo.
+ * Rota específica para avançar para a próxima etapa do redirecionamento.
+ * ESTA ROTA DEVE VIR ANTES de QUALQUER rota genérica como /:alias.
  */
 app.get('/next-step', (req, res) => {
-    const sessionToken = req.query.token; // Pega o token da URL
-    const currentStepClient = parseInt(req.query.currentStep); // Etapa que o cliente afirma estar
+    const sessionToken = req.query.token;
+    const currentStepClient = parseInt(req.query.currentStep);
 
     console.log(`[NEXT-STEP] Requisição recebida. Token: ${sessionToken}, Etapa Cliente: ${currentStepClient}`);
 
@@ -111,13 +95,12 @@ app.get('/next-step', (req, res) => {
     }
 
     // 3. Verifica a consistência da etapa
-    // A etapa no token (tokenPayload.step) deve ser igual à etapa que o cliente afirma estar.
     if (tokenPayload.step !== currentStepClient) {
         console.error(`[NEXT-STEP] ERRO: Desalinhamento de etapa. Token: ${tokenPayload.step}, Cliente: ${currentStepClient}.`);
         return res.status(400).json({ error: 'Fluxo de sessão inválido. Por favor, recomece o processo.', redirect: '/' });
     }
 
-    // 4. Re-encontra a originalUrl usando o alias do token (não do cliente)
+    // 4. Re-encontra a originalUrl usando o alias do token (garante que é o alias correto)
     const link = linksData.links.find(l => l.alias === tokenPayload.alias);
 
     if (!link) {
@@ -136,8 +119,8 @@ app.get('/next-step', (req, res) => {
         const nextStepServer = currentStepClient + 1;
         const newTokenPayload = {
             alias: tokenPayload.alias,
-            step: nextStepServer, // Atualiza a etapa para a próxima
-            exp: Date.now() + (60 * 60 * 1000) // Renova a expiração
+            step: nextStepServer,
+            exp: Date.now() + (60 * 60 * 1000) // Renova a expiração do token
         };
         const newSessionToken = signToken(newTokenPayload);
 
@@ -146,6 +129,30 @@ app.get('/next-step', (req, res) => {
     }
 });
 
+/**
+ * Rota genérica de redirecionamento para aliases (ex: /youtube-canal).
+ * ESTA ROTA DEVE VIR DEPOIS de rotas mais específicas como /next-step.
+ */
+app.get('/:alias', (req, res) => {
+    const alias = req.params.alias;
+    const link = linksData.links.find(l => l.alias === alias);
+
+    if (link) {
+        // Cria o payload do token: alias e a etapa inicial (1)
+        const tokenPayload = {
+            alias: alias,
+            step: 1, // Começa na etapa 1
+            exp: Date.now() + (60 * 60 * 1000) // Token expira em 1 hora
+        };
+        const sessionToken = signToken(tokenPayload);
+
+        console.log(`[ALIAS_REDIRECT] Alias '${alias}' encontrado. Gerado token. Redirecionando para page1.`);
+        res.redirect(`/page1?token=${sessionToken}`);
+    } else {
+        console.warn(`[ALIAS_REDIRECT] Alias '${alias}' não encontrado. Redirecionando para a home.`);
+        res.status(404).sendFile(path.join(__dirname, 'public', 'index.html'));
+    }
+});
 
 // Inicia o servidor na porta especificada
 app.listen(PORT, () => {
