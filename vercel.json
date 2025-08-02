@@ -12,7 +12,11 @@
   ],
   "routes": [
     {
-      "src": "/(.*\\.(?:css|js|html|ico|svg|png|jpg|jpeg|gif))$",
+      "src": "/favicon.ico",
+      "dest": "/public/favicon.ico"
+    },
+    {
+      "src": "/(.*\\.(?:css|js|html|png|jpg|jpeg|gif|svg|webp|json|txt|woff2|woff|ttf|eot))$",
       "dest": "/public/$1"
     },
     {
