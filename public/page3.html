@@ -19,15 +19,15 @@
     </div>
     <script src="/script.js"></script>
     <script>
-        // *** LINHA ATUALIZADA AQUI ***
-        const currentPageStep = parseInt(window.location.pathname.match(/page(\d+)/)[1]);
-        // Garante que é um número válido antes de chamar initCountdown
+        // Extrai a etapa da página da URL (ex: /page1 -> 1, /page2 -> 2)
+        const pathMatch = window.location.pathname.match(/page(\d+)/);
+        const currentPageStep = pathMatch ? parseInt(pathMatch[1]) : NaN;
+        
         if (!isNaN(currentPageStep)) {
             initCountdown(currentPageStep);
         } else {
-            console.error('Não foi possível determinar a etapa da página.');
-            // Opcional: redirecionar para home se a etapa não puder ser determinada
-            // window.location.href = '/';
+            console.error('Não foi possível determinar a etapa da página. Redirecionando para o início.');
+            window.location.href = '/'; // Redireciona para a home se a etapa for inválida
         }
     </script>
 </body>

@@ -18,15 +18,14 @@ function initCountdown(currentPageStep) {
     const countdownElement = document.getElementById('countdown');
     const progressBar = document.getElementById('progressBar');
     const nextStepBtn = document.getElementById('nextStepBtn');
-    let timeLeft = 15; // Duração do contador em segundos
+    let timeLeft = 15;
 
     if (!countdownElement || !progressBar || !nextStepBtn) {
         console.error('Elementos do contador não encontrados. Verifique o HTML.');
-        // Se os elementos não existirem, não inicia o contador para evitar erros.
         return;
     }
 
-    nextStepBtn.style.display = 'none'; // Garante que o botão esteja oculto no início
+    nextStepBtn.style.display = 'none';
 
     const timer = setInterval(() => {
         timeLeft--;
@@ -38,35 +37,36 @@ function initCountdown(currentPageStep) {
         if (timeLeft <= 0) {
             clearInterval(timer);
             countdownElement.textContent = "0";
-            progressBar.style.width = '100%'; // Completa a barra de progresso
+            progressBar.style.width = '100%';
 
-            nextStepBtn.style.display = 'block'; // Exibe o botão
+            nextStepBtn.style.display = 'block';
             nextStepBtn.textContent = (currentPageStep === 3) ? 'Obter Link Final' : 'Continuar';
             nextStepBtn.onclick = () => advanceToNextStep(currentPageStep);
         }
-    }, 1000); // Atualiza a cada 1 segundo
+    }, 1000);
 }
 
 /**
  * Avança para a próxima etapa do redirecionamento, comunicando-se com o servidor.
+ * Envia o token de sessão e a etapa atual para o servidor.
  * @param {number} currentStep - A etapa que acabou de ser concluída.
  */
 async function advanceToNextStep(currentStep) {
-    const alias = getQueryParam('alias'); // Pega o alias da URL
+    const sessionToken = getQueryParam('token'); // Pega o token da URL
 
-    if (!alias) {
-        alert('Erro: Alias não encontrado. Redirecionando para o início.');
+    if (!sessionToken) {
+        alert('Erro: Token de sessão não encontrado. Redirecionando para o início.');
         window.location.href = '/';
         return;
     }
 
     try {
-        // Envia apenas o alias e a etapa atual para o servidor
-        const response = await fetch(`/next-step?alias=${alias}&currentStep=${currentStep}`);
+        // Envia o token e a etapa atual para o servidor
+        const response = await fetch(`/next-step?token=${sessionToken}&currentStep=${currentStep}`);
         const data = await response.json();
 
         if (response.ok && data.redirect) {
-            window.location.href = data.redirect; // Redireciona o navegador
+            window.location.href = data.redirect;
         } else {
             alert(data.error || 'Ocorreu um erro ao avançar. Por favor, tente novamente.');
             window.location.href = '/';
