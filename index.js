@@ -4,85 +4,85 @@ const express = require('express');
 const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-const SESSION_DURATION = 15 * 1000;
+const PORT = process.env.PORT || 3000; // Define a porta do servidor, ou usa a do ambiente (Vercel)
 
-const userSessions = {};
-
+// Carrega seus links do arquivo data/links.js
+// Certifique-se de que o caminho './data/links.js' está correto!
 const allLinks = require('./data/links.js');
-const linksData = { links: allLinks };
+const linksData = { links: allLinks }; // Encapsula o array de links em um objeto
 
-console.log(`Links carregados: ${linksData.links.length}`);
+console.log(`Servidor iniciando. Total de links carregados: ${linksData.links.length}`);
+if (linksData.links.length === 0) {
+    console.warn('AVISO: Nenhum link foi carregado de data/links.js. Verifique o arquivo e o caminho.');
+}
 
+// Configura o Express para servir arquivos estáticos da pasta 'public'
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use((req, res, next) => {
-    if (!req.query.sessionId && !req.body.sessionId && !req.headers['x-session-id']) {
-        const sessionId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-        req.sessionId = sessionId;
-    } else {
-        req.sessionId = req.query.sessionId || req.body.sessionId || req.headers['x-session-id'];
-    }
-    next();
-});
-
+// Rota para a página inicial
+// Se a requisição for para a raiz (/), envia o index.html da pasta public.
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+/**
+ * Rota principal de redirecionamento: captura aliases como /meu-apk-exemplo
+ * Inicia o fluxo de redirecionamento para a primeira página de espera.
+ */
 app.get('/:alias', (req, res) => {
-    const alias = req.params.alias;
+    const alias = req.params.alias; // Extrai o alias da URL
+
+    // Procura o alias no seu array de links
     const link = linksData.links.find(l => l.alias === alias);
 
     if (link) {
-        const sessionId = req.sessionId;
-        userSessions[sessionId] = {
-            alias: alias,
-            original_url: link.original_url,
-            step: 1,
-            expiresAt: Date.now() + SESSION_DURATION
-        };
-        res.redirect(`/page1.html?sessionId=${sessionId}`);
+        // Se o alias for encontrado, redireciona para a página 1 de espera,
+        // passando o alias e a URL original como parâmetros de query.
+        // encodeURIComponent é usado para garantir que a URL seja segura para ser passada em query.
+        res.redirect(`/page1?alias=${alias}&originalUrl=${encodeURIComponent(link.original_url)}`);
     } else {
+        // Se o alias não for encontrado, envia a página inicial ou uma página 404.
         res.status(404).sendFile(path.join(__dirname, 'public', 'index.html'));
+        console.warn(`Alias '${alias}' não encontrado. Redirecionando para a home.`);
     }
 });
 
+/**
+ * Rota para avançar para a próxima etapa do redirecionamento.
+ * Chamada pelo JavaScript do frontend após o término de cada contador.
+ */
 app.get('/next-step', (req, res) => {
-    const sessionId = req.query.sessionId;
-    const currentStep = parseInt(req.query.currentStep);
+    const alias = req.query.alias;
+    const originalUrl = decodeURIComponent(req.query.originalUrl); // Decodifica a URL original
+    const currentStep = parseInt(req.query.currentStep); // A etapa que acabou de ser concluída
 
-    const session = userSessions[sessionId];
-
-    if (!session || session.step !== currentStep || Date.now() > session.expiresAt) {
-        delete userSessions[sessionId];
-        return res.status(400).json({ error: 'Sessão inválida ou expirada. Recomece.', redirect: '/' });
+    // Validação básica dos parâmetros recebidos
+    if (!alias || !originalUrl || isNaN(currentStep)) {
+        return res.status(400).json({ error: 'Parâmetros de link inválidos ou faltando. Por favor, recomece o processo.', redirect: '/' });
     }
 
-    session.expiresAt = Date.now() + SESSION_DURATION;
-    session.step++;
-
-    if (session.step === 4) {
-        const finalUrl = session.original_url;
-        delete userSessions[sessionId];
-        return res.json({ redirect: finalUrl });
+    // Se a etapa atual for a 3 (última página de espera), então a próxima é a URL final.
+    if (currentStep === 3) {
+        return res.json({ redirect: originalUrl }); // Retorna a URL final para o frontend redirecionar
     } else {
-        return res.json({ redirect: `/page${session.step}.html?sessionId=${sessionId}` });
+        // Caso contrário, calcula a próxima etapa (página de espera)
+        const nextStep = currentStep + 1;
+        // E instrui o frontend a redirecionar para a próxima página de espera,
+        // passando os mesmos parâmetros de link.
+        return res.json({ redirect: `/page${nextStep}?alias=${alias}&originalUrl=${encodeURIComponent(originalUrl)}` });
     }
 });
 
-app.get('/page:step\\.html', (req, res, next) => {
-    const step = parseInt(req.params.step);
-    const sessionId = req.query.sessionId;
-    const session = userSessions[sessionId];
-
-    if (!session || session.step !== step || Date.now() > session.expiresAt) {
-        delete userSessions[sessionId];
-        return res.redirect('/');
-    }
-    next();
-});
-
+// Inicia o servidor na porta especificada
 app.listen(PORT, () => {
-    console.log(`Servidor rodando na porta ${PORT}`);
+    console.log(`Servidor rodando em http://localhost:${PORT}`);
+    console.log('---');
+    console.log('URLs de exemplo para teste local:');
+    linksData.links.forEach(link => {
+        // Exclui os links da homepage (YouTube, WhatsApp, Contato) para não confundir nos exemplos de aliases
+        if (!['youtube-canal', 'grupo-whatsapp', 'contato-email'].includes(link.alias)) {
+            console.log(`http://localhost:${PORT}/${link.alias}`);
+        }
+    });
+    console.log('---');
 });
