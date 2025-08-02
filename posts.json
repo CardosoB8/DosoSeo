@@ -1,0 +1,29 @@
+{
+  "links": [
+    {
+      "alias": "youtube-canal",
+      "original_url": "https://www.youtube.com/channel/SEU_ID_DO_CANAL",
+      "description": "Meu canal oficial no YouTube!"
+    },
+    {
+      "alias": "grupo-whatsapp",
+      "original_url": "https://chat.whatsapp.com/SEU_CODIGO_DO_GRUPO",
+      "description": "Entre no nosso grupo do WhatsApp para novidades."
+    },
+    {
+      "alias": "contato-email",
+      "original_url": "mailto:seuemail@exemplo.com",
+      "description": "Fale comigo por e-mail."
+    },
+    {
+      "alias": "meu-apk-exemplo",
+      "original_url": "https://link-direto-para-seu-apk.com/exemplo.apk",
+      "description": "Baixe o aplicativo XYZ, versão 1.0."
+    },
+    {
+      "alias": "outro-arquivo",
+      "original_url": "https://servidor.com/documento.pdf",
+      "description": "Um documento importante para você."
+    }
+  ]
+}
