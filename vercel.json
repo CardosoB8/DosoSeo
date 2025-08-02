@@ -16,6 +16,18 @@
       "dest": "/public/favicon.ico"
     },
     {
+      "src": "/page1",
+      "dest": "/public/page1.html"
+    },
+    {
+      "src": "/page2",
+      "dest": "/public/page2.html"
+    },
+    {
+      "src": "/page3",
+      "dest": "/public/page3.html"
+    },
+    {
       "src": "/(.*\\.(?:css|js|html|png|jpg|jpeg|gif|svg|webp|json|txt|woff2|woff|ttf|eot))$",
       "dest": "/public/$1"
     },
