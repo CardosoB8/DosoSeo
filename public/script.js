@@ -168,7 +168,8 @@ async function advanceToNextStep(currentStep) {
     }
 }
 
-// Este bloco de script agora só chama a função initCountdown
+// Este bloco de script é crucial e deve estar no script.js
+// Ele chama a função initCountdown com a etapa correta
 document.addEventListener('DOMContentLoaded', () => {
     const pathMatch = window.location.pathname.match(/page(\d+)/);
     const currentPageStep = pathMatch ? parseInt(pathMatch[1], 10) : NaN; // Usar parseInt com radix 10
@@ -188,14 +189,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!isNaN(currentPageStep)) {
         initCountdown(currentPageStep);
     } else {
-        // Se não conseguir determinar a etapa, e não for a página inicial
-        // Isso pode acontecer se for 'index.html' ou outra página sem 'pageX' no nome
-        // Para a `page1.html` a regex deve funcionar bem.
-        // Se for a página inicial (index.html), talvez não precise de contador.
+        // Se não conseguir determinar a etapa (ex: se for index.html ou outra página sem 'pageX')
         if (window.location.pathname === '/' || window.location.pathname.endsWith('/index.html')) {
-            // Não faz nada, é a página inicial sem contador.
             console.log("Página inicial, sem contador.");
+            // Não faz nada, a página inicial não precisa do contador.
         } else {
+            // Se for uma página inesperada sem 'pageX' no nome, trata como erro de navegação
             showCustomAlert('Erro de Navegação', 'Não foi possível determinar a etapa da página. Redirecionando para o início.', true);
             setTimeout(() => {
                 window.location.href = '/';
