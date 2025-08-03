@@ -3,26 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>seodoso net</title>
+    <title>Hub de Links | Conecte-se</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
+    <div class="wave"></div>
+    
     <div class="container">
         <header>
-            <h1>Bem-vindo à seodoso net</h1>
+            <h1>Bem-vindo ao Meu Hub de Links!</h1>
+            <p>Aqui você encontra acesso rápido ao meu conteúdo e muito mais.</p>
         </header>
+
+        <section class="about-channel">
+            <h2><i class="fas fa-info-circle"></i> Sobre Meu Canal no YouTube</h2>
+            <p>
+                Este é o lugar onde compartilho tutoriais, dicas e análises sobre tecnologia,
+                desenvolvimento e aplicativos. Meu objetivo é descomplicar o mundo digital
+                e ajudar você a aprender algo novo todos os dias. Inscreva-se para não perder nada!
+            </p>
+        </section>
+
         <section class="links-section">
-            <h2>Escolha uma opção:</h2>
+            <h2><i class="fas fa-link"></i> Links Úteis</h2>
             <ul>
-                <li><a href="/page1.html?token=your_session_token_here" class="button">Link Principal 1</a></li>
-                <li><a href="/page2.html?token=your_session_token_here" class="button youtube">Link Principal 2 (YouTube)</a></li>
-                <li><a href="/page3.html?token=your_session_token_here" class="button whatsapp">Link Principal 3 (WhatsApp)</a></li>
-                <li><a href="/contact.html" class="button contact">Contato</a></li>
+                <li>
+                    <a href="https://www.youtube.com/channel/SEU_ID_DO_CANAL" target="_blank" class="button youtube">
+                        <i class="fab fa-youtube"></i>
+                        <span>Meu Canal no YouTube</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="https://chat.whatsapp.com/SEU_CODIGO_DO_GRUPO" target="_blank" class="button whatsapp">
+                        <i class="fab fa-whatsapp"></i>
+                        <span>Meu Grupo no WhatsApp</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="mailto:seuemail@exemplo.com" class="button contact">
+                        <i class="fas fa-envelope"></i>
+                        <span>Entre em Contato</span>
+                    </a>
+                </li>
             </ul>
         </section>
+
         <footer>
-            <p>&copy; 2025 seodoso net. Todos os direitos reservados.</p>
+            <p>© 2024 Meu Hub de Links. Todos os direitos reservados.</p>
         </footer>
     </div>
+
+    <div id="customAlertOverlay" class="custom-alert-overlay">
+        <div class="custom-alert-box">
+            <h3 id="customAlertTitle"></h3>
+            <p id="customAlertMessage"></p>
+            <button id="customAlertCloseBtn" class="close-btn">OK</button>
+        </div>
+    </div>
+    
+    <script src="/script.js"></script>
+    <script>
+        // Animações adicionais para os elementos
+        document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('section');
+            
+            sections.forEach((section, index) => {
+                // Adiciona um pequeno delay para cada seção
+                section.style.animationDelay = `${index * 0.1}s`;
+            });
+            
+            // Efeito de onda animado - movido para script.js se for global
+            // Se o efeito de onda for apenas para esta página, pode permanecer aqui
+            const wave = document.querySelector('.wave');
+            if (wave) { // Garante que o elemento existe
+                let scrollPosition = 0;
+                function moveWave() {
+                    scrollPosition += 0.5;
+                    wave.style.backgroundPositionX = -scrollPosition + 'px';
+                    requestAnimationFrame(moveWave);
+                }
+                moveWave();
+            }
+        });
+    </script>
 </body>
 </html>
