@@ -69,13 +69,14 @@ function initCountdown(currentPageStep) {
         console.error('Erro: Um ou mais elementos do contador ou da dica de rolagem não foram encontrados no HTML.');
         showCustomAlert('Erro Crítico', 'Um problema na inicialização da página impede a contagem. Por favor, tente novamente.', true);
         setTimeout(() => {
-            window.location.href = '/'; 
-        }, 3000); 
-        return; 
+            window.location.href = '/';
+        }, 3000);
+        return;
     }
 
-    // Oculta o botão de continuar e a dica de rolagem no início
-    nextStepBtn.style.display = 'none'; // Continua com display none para ocultar completamente
+    // Oculta o botão de continuar (já tratado pelo CSS inicial)
+    // nextStepBtn.style.opacity = '0'; // Agora controlado por CSS .next-button
+    // nextStepBtn.style.pointerEvents = 'none'; // Agora controlado por CSS .next-button
     scrollHint.style.opacity = '0'; // Define a opacidade para 0 para ser animado pelo CSS
 
     // Inicia o contador regressivo
@@ -98,12 +99,12 @@ function initCountdown(currentPageStep) {
             countdownElement.textContent = "0"; // Garante que o texto seja zero
             progressBar.style.width = '100%'; // Completa a barra de progresso
 
-            // Exibe o botão de continuar e oculta a dica de rolagem (opcional, pode deixar a dica visível)
-            nextStepBtn.style.display = 'inline-flex'; // Usa inline-flex para o novo design
+            // Exibe o botão de continuar e oculta a dica de rolagem
+            nextStepBtn.classList.add('show'); // Adiciona classe para tornar visível e ativo
             scrollHint.style.opacity = '0'; // Oculta a dica de rolagem
 
             // Define o texto do botão com base na etapa atual
-            nextStepBtn.textContent = (currentPageStep === 3) ? 'Obter Link Final' : 'Continuar';
+            nextStepBtn.innerHTML = `<i class="fas fa-arrow-right"></i> ${(currentPageStep === 3) ? 'Obter Link Final' : 'Continuar'}`;
             // Adiciona o evento de clique ao botão
             nextStepBtn.onclick = () => advanceToNextStep(currentPageStep);
         }
@@ -122,7 +123,7 @@ async function advanceToNextStep(currentStep) {
         showCustomAlert('Token Ausente', 'Token de sessão não encontrado. Por favor, recomece o processo.', true);
         setTimeout(() => {
             window.location.href = '/'; // Redireciona para a página inicial
-        }, 3000); 
+        }, 3000);
         return;
     }
 
@@ -131,6 +132,7 @@ async function advanceToNextStep(currentStep) {
         const nextStepBtn = document.getElementById('nextStepBtn');
         nextStepBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Carregando...';
         nextStepBtn.disabled = true; // Desabilita o botão para evitar múltiplos cliques
+        nextStepBtn.classList.remove('show'); // Opcional: Esconder durante o carregamento, mas o spinner já indica.
 
         const response = await fetch(`/next-step?token=${sessionToken}&currentStep=${currentStep}`);
         const data = await response.json();
@@ -163,6 +165,7 @@ async function advanceToNextStep(currentStep) {
              if (!response || !response.ok || !data.redirect) { // Se não houve redirecionamento bem-sucedido
                 nextStepBtn.innerHTML = `<i class="fas fa-arrow-right"></i> ${(currentStep === 3) ? 'Obter Link Final' : 'Continuar'}`;
                 nextStepBtn.disabled = false;
+                nextStepBtn.classList.add('show'); // Garante que o botão volte a ser visível e ativo após erro
             }
         }
     }
