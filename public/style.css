@@ -176,28 +176,7 @@ footer {
     font-size: 1.1em;
 }
 
-.tags {
-    margin-top: 25px;
-    text-align: center;
-    padding-top: 15px;
-    border-top: 1px dashed #ced4da; /* Separador para as tags */
-}
-
-.tag {
-    display: inline-block;
-    background-color: #6f42c1; /* Cor de tag roxa */
-    color: white;
-    padding: 7px 15px;
-    border-radius: 20px; /* Bordas mais arredondadas */
-    margin: 5px;
-    font-size: 0.95em;
-    font-weight: bold;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    transition: background-color 0.3s ease;
-}
-.tag:hover {
-    background-color: #5a37a0;
-}
+/* As regras de estilo para .tags e .tag foram removidas daqui */
 
 .scroll-hint {
     text-align: center;
