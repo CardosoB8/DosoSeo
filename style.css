@@ -31,6 +31,14 @@ body {
     position: relative;
     overflow-x: hidden;
     overflow-y: auto; /* Permitir rolagem vertical */
+
+    /* Desabilita a seleção de texto */
+    -webkit-user-select: none;  /* Safari */
+    -moz-user-select: none;     /* Firefox */
+    -ms-user-select: none;      /* Internet Explorer/Edge */
+    user-select: none;          /* Standard */
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-tap-highlight-color: transparent; /* Remove highlight on tap for iOS */
 }
 
 /* Efeito de background com círculos */
@@ -217,7 +225,7 @@ footer {
     animation: fadeIn 1s ease-out;
 }
 
-/* Estilos do page1.html (já estavam aqui da última correção) */
+/* Estilos do page1.html */
 .countdown-card {
     background: rgba(248, 249, 255, 0.8);
     border-radius: 15px;
@@ -310,31 +318,7 @@ footer {
     line-height: 1.8;
 }
 
-.tags {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 30px;
-}
-
-.tag {
-    display: inline-block;
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    color: white;
-    padding: 8px 20px;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-}
-
-.tag:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-}
-
+/* Botão "Continuar" - Inicialmente invisível e inativo para cliques */
 .next-button {
     display: inline-flex;
     align-items: center;
@@ -344,15 +328,24 @@ footer {
     border-radius: 12px;
     font-weight: 600;
     font-size: 1.1rem;
-    transition: all 0.3s ease;
+    transition: all 0.3s ease, opacity 0.5s ease; /* Adiciona transição para opacidade */
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
     background: linear-gradient(135deg, var(--primary), var(--secondary));
     color: white;
     border: none;
     cursor: pointer;
     margin-top: 20px;
-    opacity: 0;
-    transform: translateY(20px);
+    opacity: 0; /* Começa invisível */
+    pointer-events: none; /* Não permite interação do mouse */
+    transform: translateY(20px); /* Para animação de entrada suave */
+    animation: none; /* Remove animação de entrada inicial via CSS, controlada por JS */
+}
+
+/* Estado visível do botão, ativado por JS adicionando uma classe ou alterando inline */
+.next-button.show {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
 }
 
 .next-button:hover {
@@ -371,7 +364,7 @@ footer {
     color: var(--primary);
     font-weight: 600;
     animation: pulse 2s infinite;
-    opacity: 0;
+    opacity: 0; /* Oculta inicialmente */
     transition: opacity 0.5s ease;
 }
 
@@ -399,13 +392,6 @@ footer {
     }
 }
 
-@keyframes fadeInUp {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
 @keyframes pulse {
     0% { transform: scale(1); opacity: 0.8; }
     50% { transform: scale(1.05); opacity: 1; }
@@ -417,16 +403,16 @@ footer {
     .container {
         padding: 30px 20px;
     }
-    
+
     header h1, .countdown-card h1, .content-area h2, section h2 {
         font-size: 1.5rem; /* Ajuste para títulos em telas menores */
     }
-    
+
     .countdown-card, .content-area, section {
         padding: 20px;
     }
-    
-    .button {
+
+    .button, .next-button {
         padding: 16px;
         font-size: 1rem;
     }
@@ -436,19 +422,19 @@ footer {
     body {
         padding: 15px;
     }
-    
+
     header h1 {
         font-size: 1.8rem;
     }
-    
+
     header p {
         font-size: 1rem;
     }
-    
+
     #countdown {
         font-size: 2rem;
     }
-    
+
     .content-area p {
         font-size: 1rem;
     }
