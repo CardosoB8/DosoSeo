@@ -74,9 +74,6 @@ function initCountdown(currentPageStep) {
         return;
     }
 
-    // Oculta o botão de continuar (já tratado pelo CSS inicial)
-    // nextStepBtn.style.opacity = '0'; // Agora controlado por CSS .next-button
-    // nextStepBtn.style.pointerEvents = 'none'; // Agora controlado por CSS .next-button
     scrollHint.style.opacity = '0'; // Define a opacidade para 0 para ser animado pelo CSS
 
     // Inicia o contador regressivo
@@ -170,3 +167,39 @@ async function advanceToNextStep(currentStep) {
         }
     }
 }
+
+// Este bloco de script agora só chama a função initCountdown
+document.addEventListener('DOMContentLoaded', () => {
+    const pathMatch = window.location.pathname.match(/page(\d+)/);
+    const currentPageStep = pathMatch ? parseInt(pathMatch[1], 10) : NaN; // Usar parseInt com radix 10
+
+    // Animação da onda (se for exclusiva desta página)
+    const wave = document.querySelector('.wave');
+    if (wave) {
+        let scrollPosition = 0;
+        function moveWave() {
+            scrollPosition += 0.5;
+            wave.style.backgroundPositionX = -scrollPosition + 'px';
+            requestAnimationFrame(moveWave);
+        }
+        moveWave();
+    }
+
+    if (!isNaN(currentPageStep)) {
+        initCountdown(currentPageStep);
+    } else {
+        // Se não conseguir determinar a etapa, e não for a página inicial
+        // Isso pode acontecer se for 'index.html' ou outra página sem 'pageX' no nome
+        // Para a `page1.html` a regex deve funcionar bem.
+        // Se for a página inicial (index.html), talvez não precise de contador.
+        if (window.location.pathname === '/' || window.location.pathname.endsWith('/index.html')) {
+            // Não faz nada, é a página inicial sem contador.
+            console.log("Página inicial, sem contador.");
+        } else {
+            showCustomAlert('Erro de Navegação', 'Não foi possível determinar a etapa da página. Redirecionando para o início.', true);
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 3000);
+        }
+    }
+});
