@@ -62,13 +62,11 @@ function initCountdown(currentPageStep) {
     const countdownElement = document.getElementById('countdown');
     const progressBar = document.getElementById('progressBar');
     const nextStepBtn = document.getElementById('nextStepBtn');
-    const scrollHint = document.getElementById('scrollHint'); // Elemento da dica de rolagem
+    const scrollHint = document.getElementById('scrollHint');
     let timeLeft = 15; // Duração do contador em segundos
 
-    // Verifica se todos os elementos necessários estão presentes no HTML
     if (!countdownElement || !progressBar || !nextStepBtn || !scrollHint) {
         console.error('Erro: Um ou mais elementos do contador ou da dica de rolagem não foram encontrados no HTML.');
-        // Usando o pop-up personalizado para este erro também
         showCustomAlert('Erro Crítico', 'Um problema na inicialização da página impede a contagem. Por favor, tente novamente.', true);
         setTimeout(() => {
             window.location.href = '/'; 
@@ -77,8 +75,8 @@ function initCountdown(currentPageStep) {
     }
 
     // Oculta o botão de continuar e a dica de rolagem no início
-    nextStepBtn.style.display = 'none';
-    scrollHint.style.display = 'none';
+    nextStepBtn.style.display = 'none'; // Continua com display none para ocultar completamente
+    scrollHint.style.opacity = '0'; // Define a opacidade para 0 para ser animado pelo CSS
 
     // Inicia o contador regressivo
     const timer = setInterval(() => {
@@ -89,15 +87,20 @@ function initCountdown(currentPageStep) {
         const progress = ((15 - timeLeft) / 15) * 100;
         progressBar.style.width = `${progress}%`;
 
+        // Mostrar dica de scroll quando faltar 5 segundos
+        if (timeLeft === 5) {
+            scrollHint.style.opacity = '1';
+        }
+
         // Quando o contador chega a zero
         if (timeLeft <= 0) {
             clearInterval(timer); // Para o contador
             countdownElement.textContent = "0"; // Garante que o texto seja zero
             progressBar.style.width = '100%'; // Completa a barra de progresso
 
-            // Exibe o botão de continuar e a dica de rolagem
-            nextStepBtn.style.display = 'block';
-            scrollHint.style.display = 'block';
+            // Exibe o botão de continuar e oculta a dica de rolagem (opcional, pode deixar a dica visível)
+            nextStepBtn.style.display = 'inline-flex'; // Usa inline-flex para o novo design
+            scrollHint.style.opacity = '0'; // Oculta a dica de rolagem
 
             // Define o texto do botão com base na etapa atual
             nextStepBtn.textContent = (currentPageStep === 3) ? 'Obter Link Final' : 'Continuar';
@@ -115,7 +118,6 @@ function initCountdown(currentPageStep) {
 async function advanceToNextStep(currentStep) {
     const sessionToken = getQueryParam('token'); // Pega o token de sessão da URL
 
-    // Se o token não for encontrado, alerta o usuário e redireciona
     if (!sessionToken) {
         showCustomAlert('Token Ausente', 'Token de sessão não encontrado. Por favor, recomece o processo.', true);
         setTimeout(() => {
@@ -125,35 +127,43 @@ async function advanceToNextStep(currentStep) {
     }
 
     try {
-        // Envia o token e a etapa atual para o endpoint do servidor '/next-step'
-        const response = await fetch(`/next-step?token=${sessionToken}&currentStep=${currentStep}`);
-        const data = await response.json(); // Tenta parsear a resposta como JSON
+        // Altera o texto do botão enquanto carrega
+        const nextStepBtn = document.getElementById('nextStepBtn');
+        nextStepBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Carregando...';
+        nextStepBtn.disabled = true; // Desabilita o botão para evitar múltiplos cliques
 
-        // Se a resposta for bem-sucedida e contiver uma URL de redirecionamento
+        const response = await fetch(`/next-step?token=${sessionToken}&currentStep=${currentStep}`);
+        const data = await response.json();
+
         if (response.ok && data.redirect) {
-            // Se o conteúdo foi liberado com sucesso, exibe um pop-up de sucesso
-            if (currentStep === 3) { // Supondo que 3 é a última etapa
+            if (currentStep === 3) {
                 showCustomAlert('Sucesso!', 'Conteúdo liberado com sucesso! Redirecionando...');
                 setTimeout(() => {
-                    window.location.href = data.redirect; // Redireciona o navegador após o pop-up
-                }, 2000); // Dá um tempo para o usuário ler o pop-up de sucesso
+                    window.location.href = data.redirect;
+                }, 2000);
             } else {
-                // Para outras etapas, redireciona diretamente
                 window.location.href = data.redirect;
             }
         } else {
-            // Caso contrário, exibe uma mensagem de erro do servidor ou uma genérica
             showCustomAlert('Erro no Servidor', data.error || 'Ocorreu um erro ao avançar. Por favor, tente novamente.', true);
             setTimeout(() => {
-                window.location.href = '/'; // Redireciona para a página inicial em caso de erro
-            }, 3000); 
+                window.location.href = '/';
+            }, 3000);
         }
     } catch (error) {
-        // Captura erros de rede ou outros erros inesperados durante a requisição
         console.error('Erro de rede ou servidor:', error);
         showCustomAlert('Erro de Conexão', 'Ocorreu um erro inesperado na comunicação com o servidor. Por favor, verifique sua conexão e tente novamente.', true);
         setTimeout(() => {
-            window.location.href = '/'; // Redireciona para a página inicial
-        }, 3000); 
+            window.location.href = '/';
+        }, 3000);
+    } finally {
+        // Restaura o botão se houver erro e não houver redirecionamento imediato
+        const nextStepBtn = document.getElementById('nextStepBtn');
+        if (nextStepBtn) { // Verifica se o elemento ainda existe
+             if (!response || !response.ok || !data.redirect) { // Se não houve redirecionamento bem-sucedido
+                nextStepBtn.innerHTML = `<i class="fas fa-arrow-right"></i> ${(currentStep === 3) ? 'Obter Link Final' : 'Continuar'}`;
+                nextStepBtn.disabled = false;
+            }
+        }
     }
 }
