@@ -1,4 +1,5 @@
-// public/script.js
+// script ai - mr doso
+// mesmo que você copie o código mas não vais ter o mesmo sistema, isso aqui usa um servidor backend que ninguém pode ter acesso
 
 /**
  * Retorna o valor de um parâmetro da URL.
