@@ -12,8 +12,8 @@ const links = [
     "description": "Entre no nosso grupo do WhatsApp para interagir e receber novidades."
   },
   {
-    "alias": "contato-email",
-    "original_url": "mailto:seuemail@exemplo.com",
+    "alias": "fx-tunnel",
+    "original_url": "https://www.mediafire.com/file/b6x9zc0xrrrlarr/Fx_Tunnel_3.5.apks/file",
     "description": "Fale comigo por e-mail para qualquer dúvida ou parceria."
   },
   {
