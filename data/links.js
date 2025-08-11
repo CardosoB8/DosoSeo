@@ -17,9 +17,9 @@ const links = [
     "description": "Fale comigo por e-mail para qualquer dúvida ou parceria."
   },
   {
-    "alias": "meu-apk-exemplo",
-    "original_url": "https://link-direto-para-seu-apk.com/exemplo.apk",
-    "description": "Baixe a versão mais recente do aplicativo XYZ, cheio de novidades!"
+    "alias": "arquivo-ehi-mrdoso",
+    "original_url": "https://www.mediafire.com/file/208o5re460sek67/Net_Free_Mr_Doso.ehi/file",
+    "description": "Baixe a versão mais recente, cheio de novidades!"
   },
   {
     "alias": "outro-arquivo",
