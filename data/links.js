@@ -22,8 +22,8 @@ const links = [
     "description": "Baixe a versão mais recente, cheio de novidades!"
   },
   {
-    "alias": "outro-arquivo",
-    "original_url": "https://servidor-de-arquivos.net/documento.pdf",
+    "alias": "starkvpn-arquivo-fast",
+    "original_url": "https://www.mediafire.com/file/jxs0i2mcsu63xn6/NetFast-SNI-MrDoso.stk/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
   }
 ];
