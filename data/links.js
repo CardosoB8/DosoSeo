@@ -2,8 +2,8 @@
 
 const links = [
   {
-    "alias": "youtube-canal",
-    "original_url": "https://www.youtube.com/seu_canal_aqui",
+    "alias": "apna-tunnel",
+    "original_url": "https://play.google.com/store/apps/details?id=com.apnatunnel.lite",
     "description": "Meu canal oficial no YouTube com tutoriais e dicas!"
   },
   {
