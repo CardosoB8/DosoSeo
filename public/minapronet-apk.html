@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download do Aplicativo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <script src="https://fpyf8.com/88/tag.min.js" data-zone="162663" async data-cfasync="false">
+    </script>
+    <script async="async" data-cfasync="false" src="//pl27551656.revenuecpmgate.com/57af132f9a89824d027d70445ba09a9a/invoke.js"></script>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --accent: #f72585;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4cc9f0;
+            --border-radius: 12px;
+            --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: var(--light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            width: 100%;
+            max-width: 500px;
+            padding: 30px;
+            text-align: center;
+            color: var(--dark);
+            transition: var(--transition);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-radius: 50%;
+            font-size: 2rem;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: var(--secondary);
+            font-weight: 700;
+        }
+
+        .loading-container {
+            margin: 25px 0;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .progress {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .timer-text {
+            font-size: 1rem;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+
+        .countdown {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .download-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 25px;
+            padding: 16px 32px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-decoration: none;
+            color: white;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+            transition: var(--transition);
+            opacity: 0;
+            transform: translateY(10px);
+            cursor: pointer;
+        }
+
+        .download-button.show {
+            display: inline-flex;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .download-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+        }
+
+        .download-button i {
+            margin-right: 10px;
+        }
+
+        .loading-dots {
+            display: flex;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            margin: 0 5px;
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+
+        .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        .info-box {
+            background-color: #e9f7fe;
+            border-left: 4px solid var(--success);
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 25px;
+            text-align: left;
+        }
+
+        .info-box p {
+            font-size: 0.9rem;
+            color: #1a6e9a;
+            margin: 0;
+        }
+
+        .error-message {
+            color: #dc3545;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 12px;
+            border-radius: 4px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(0.8);
+                opacity: 0.7;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 576px) {
+            .container {
+                padding: 25px 20px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .download-button {
+                padding: 14px 26px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <i class="fas fa-download"></i>
+        </div>
+        
+        <h1 id="title">Preparando seu download...</h1>
+        
+        <div class="loading-container">
+            <div class="progress-bar">
+                <div class="progress" id="progress"></div>
+            </div>
+            <p class="timer-text">Por favor, aguarde <span class="countdown" id="countdown">15</span> segundos</p>
+            <div class="loading-dots">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+        </div>
+        <div id="container-57af132f9a89824d027d70445ba09a9a"></div>
+        
+        <a href="#" id="download-link" class="download-button">
+            <i class="fas fa-download"></i> Baixar Agora
+        </a>
+        
+        <div class="info-box">
+            <p><i class="fas fa-info-circle"></i> Seu download será liberado quando o tempo expirar.</p>
+        </div>
+        
+        <div id="error-message" class="error-message"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const countdownElement = document.getElementById('countdown');
+            const progressElement = document.getElementById('progress');
+            const downloadLink = document.getElementById('download-link');
+            const titleElement = document.getElementById('title');
+            const timerText = document.querySelector('.timer-text');
+            const errorMessage = document.getElementById('error-message');
+
+            // URL fixa para download
+            const downloadUrl = 'https://play.google.com/store/apps/details?id=vpn.minapronet.com.eg';
+            
+            let timeLeft = 15; // 15 segundos
+            countdownElement.textContent = timeLeft;
+            timerText.textContent = `Por favor, aguarde ${timeLeft} segundos`;
+
+            const countdown = setInterval(() => {
+                timeLeft--;
+                countdownElement.textContent = timeLeft;
+                timerText.textContent = `Por favor, aguarde ${timeLeft} segundos`;
+                
+                // Atualiza a barra de progresso
+                progressElement.style.width = ((15 - timeLeft) / 15 * 100) + '%';
+
+                if (timeLeft <= 0) {
+                    clearInterval(countdown);
+                    titleElement.textContent = 'Seu download está pronto!';
+                    downloadLink.href = downloadUrl;
+                    downloadLink.classList.add('show');
+                    
+                    // Esconder elementos desnecessários
+                    document.querySelector('.loading-dots').style.display = 'none';
+                    document.querySelector('.info-box').style.display = 'none';
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
