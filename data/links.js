@@ -7,8 +7,8 @@ const links = [
     "description": "Meu canal oficial no YouTube com tutoriais e dicas!"
   },
   {
-    "alias": "grupo-whatsapp",
-    "original_url": "https://chat.whatsapp.com/SEU_CODIGO_DO_GRUPO",
+    "alias": "arquivo-minapronet",
+    "original_url": "https://www.mediafire.com/file/7gjnbdu5v6jj33c/Net_Fast-MinaProNet-14Dias_20250903072607.mina/file",
     "description": "Entre no nosso grupo do WhatsApp para interagir e receber novidades."
   },
   {
