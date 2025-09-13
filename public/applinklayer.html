@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Acesse a link</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins','Segoe UI',sans-serif; }
+    body {
+      background: linear-gradient(135deg,#6a11cb 0%,#2575fc 100%);
+      min-height:100vh; display:flex; justify-content:center; align-items:center; padding:20px; color:#333;
+    }
+    .container {
+      background: rgba(255,255,255,0.95); border-radius:20px; box-shadow:0 15px 35px rgba(0,0,0,0.2);
+      width:100%; max-width:500px; padding:35px 30px; text-align:center; overflow:hidden;
+    }
+    h1 { color:#2575fc; margin-bottom:20px; font-weight:700; font-size:28px; }
+    p { color:#666; margin-bottom:25px; line-height:1.6; font-size:16px; }
+
+    /* Canal em vertical */
+    .youtube-channel {
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      margin:20px auto; padding:15px;
+      background:#f8f9fa; border-radius:12px; 
+      box-shadow:0 4px 8px rgba(0,0,0,0.05); 
+      width:max-content;
+    }
+    .youtube-icon {
+      width:60px; height:60px; border-radius:50%;
+      background:#FF0000; display:flex; align-items:center; justify-content:center;
+      color:white; font-size:28px; margin-bottom:10px;
+    }
+    .youtube-channel span { font-weight:600; color:#333; font-size:16px; text-align:center; }
+
+    .steps { display:flex; justify-content:space-between; margin:30px 0; position:relative; }
+    .steps::before { content:''; position:absolute; top:20px; left:0; right:0; height:4px; background:#e0e0e0; z-index:1; }
+    .step { display:flex; flex-direction:column; align-items:center; position:relative; z-index:2; flex:1; }
+    .step-number { width:40px; height:40px; border-radius:50%; background:#e0e0e0; color:#999; display:flex; align-items:center; justify-content:center; font-weight:bold; margin-bottom:10px; transition:all .3s ease; }
+    .step.active .step-number { background:#4285F4; color:#fff; box-shadow:0 0 0 5px rgba(66,133,244,0.3); }
+    .step.completed .step-number { background:#34A853; color:#fff; }
+    .step-text { font-size:14px; color:#999; font-weight:500; text-align:center; }
+    .step.active .step-text { color:#4285F4; }
+    .step.completed .step-text { color:#34A853; }
+
+    .button {
+      background-color:#FF0000; color:white; padding:16px 30px; border-radius:50px; font-size:16px; font-weight:600;
+      display:inline-flex; align-items:center; justify-content:center; width:100%; text-decoration:none; border:none;
+      box-shadow:0 4px 15px rgba(255,51,51,0.4); cursor:pointer; transition:all .3s ease; margin:10px 0;
+    }
+    .button:hover { background-color:#CC0000; transform:translateY(-2px); box-shadow:0 6px 20px rgba(255,51,51,0.5); }
+    .button i { margin-right:10px; font-size:20px; }
+    .button[disabled] { opacity:0.6; cursor:not-allowed; transform:none; box-shadow:none; }
+
+    .verify-box {
+      display:none; margin-top:12px; background:#f8f9fa; color:#333; padding:10px 12px; border-radius:10px; font-weight:600;
+    }
+
+    .success-message { background:#34A853; color:white; padding:15px; border-radius:10px; margin-top:20px; display:none; }
+    .link-container { margin-top:25px; display:none; }
+    .link-button {
+      background: linear-gradient(135deg,#6a11cb 0%,#2575fc 100%); color:white; padding:16px 30px; border-radius:50px;
+      text-decoration:none; font-weight:600; display:inline-block; width:100%; box-shadow:0 4px 15px rgba(38,117,252,0.4);
+    }
+    .link-button i { margin-right:10px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Acesse o link do Aplicativo LinkLayer VPN</h1>
+    <p>Para liberar o link, complete os dois passos abaixo no canal:</p>
+
+    <div class="youtube-channel">
+      <div class="youtube-icon"><i class="fab fa-youtube"></i></div>
+      <span>Mr Doso</span>
+    </div>
+
+    <div class="steps">
+      <div class="step active" id="step1">
+        <div class="step-number">1</div>
+        <div class="step-text">Inscrever-se</div>
+      </div>
+      <div class="step" id="step2">
+        <div class="step-number">2</div>
+        <div class="step-text">Ativar Notificações</div>
+      </div>
+    </div>
+
+    <div id="step1-container">
+      <button class="button" id="subscribe-btn">
+        <i class="fab fa-youtube"></i> Inscrever-se no Canal
+      </button>
+      <div id="verify1" class="verify-box">⏳ Verificando...</div>
+    </div>
+
+    <div id="step2-container" style="display:none;">
+      <button class="button" id="notification-btn" disabled>
+        <i class="fas fa-bell"></i> Ativar Notificações
+      </button>
+      <div id="verify2" class="verify-box">⏳ Verificando...</div>
+    </div>
+
+    <div class="success-message" id="success-message">
+      <i class="fas fa-check-circle"></i> Obrigado por completar
+    </div>
+
+    <div class="link-container" id="link-container">
+      <a href="https://play.google.com/store/apps/details?id=com.newtoolsworks.linklayer" class="link-button" target="_blank" rel="noopener noreferrer">
+        <i class="fas fa-link"></i> Acessar link liberado
+      </a>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const YOUTUBE_URL = 'https://youtube.com/@cardosofernando-x7v';
+      const VERIFY_DELAY = 10; // segundos
+      const subscribeBtn = document.getElementById('subscribe-btn');
+      const notificationBtn = document.getElementById('notification-btn');
+      const step1 = document.getElementById('step1');
+      const step2 = document.getElementById('step2');
+      const step1Container = document.getElementById('step1-container');
+      const step2Container = document.getElementById('step2-container');
+      const verify1 = document.getElementById('verify1');
+      const verify2 = document.getElementById('verify2');
+      const successMessage = document.getElementById('success-message');
+      const linkContainer = document.getElementById('link-container');
+
+      let verifying1 = false;
+      let verifying2 = false;
+
+      function openAndVerify(url, verifyBox, doneCallback) {
+        try { window.open(url, '_blank'); } catch (e) {}
+        if (verifyBox.dataset.running === '1') return;
+        verifyBox.dataset.running = '1';
+        verifyBox.style.display = 'block';
+
+        setTimeout(() => {
+          verifyBox.style.display = 'none';
+          verifyBox.dataset.running = '0';
+          doneCallback();
+        }, VERIFY_DELAY * 1000);
+      }
+
+      subscribeBtn.addEventListener('click', function() {
+        if (verifying1) return;
+        verifying1 = true;
+        subscribeBtn.disabled = true;
+
+        openAndVerify(YOUTUBE_URL, verify1, function() {
+          verifying1 = false;
+          step1.classList.remove('active'); step1.classList.add('completed');
+          step2.classList.add('active');
+          step1Container.style.display = 'none';
+          step2Container.style.display = 'block';
+          notificationBtn.disabled = false;
+        });
+      });
+
+      notificationBtn.addEventListener('click', function() {
+        if (verifying2) return;
+        verifying2 = true;
+        notificationBtn.disabled = true;
+
+        openAndVerify(YOUTUBE_URL, verify2, function() {
+          verifying2 = false;
+          step2.classList.remove('active'); step2.classList.add('completed');
+          successMessage.style.display = 'block';
+          setTimeout(() => {
+            successMessage.style.display = 'none';
+            linkContainer.style.display = 'block';
+          }, 1600);
+        });
+      });
+    });
+  </script>
+</body>
+</html>
