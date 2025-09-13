@@ -25,6 +25,11 @@ const links = [
     "alias": "starkvpn-arquivo-fast",
     "original_url": "https://www.mediafire.com/file/jxs0i2mcsu63xn6/NetFast-SNI-MrDoso.stk/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
+  },
+  {
+    "alias": "ilimitado-linklayervpn",
+    "original_url": "https://www.mediafire.com/file/m2pnq4rln6nrrl5/ilimitado-linklayerVpn.lnk/file",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
   }
 ];
 
