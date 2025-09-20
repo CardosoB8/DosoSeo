@@ -35,7 +35,12 @@ const links = [
     "alias": "projeto-botaviatorv1",
     "original_url": "https://www.mediafire.com/file/jr5flfoj8r56x4m/bot_v1.0_%2528com.bot.aviator%252C_1%2529_2025-09-15T092037.swb/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
-    }
+    },
+  {
+    "alias": "ff-ilimitado",
+    "original_url": "https://www.mediafire.com/file/x7wjnh63fo7afby/Ilimitado-ff.tls/file",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
+  }
 ];
 
 // Exporta o array de links para que index.js possa importá-lo
