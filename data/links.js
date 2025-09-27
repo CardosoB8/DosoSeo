@@ -40,6 +40,16 @@ const links = [
     "alias": "ff-ilimitado",
     "original_url": "https://www.mediafire.com/file/zqkfl98saw98m3f/ffIlimitado-mrdoso.tls/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
+  },
+  {
+    "alias": "ilimitado-tcx-tunnel",
+    "original_url": "https://www.seodoso.xyz/txc-tunnel-config.txt",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
+  },
+  {
+    "alias": "tcx-tunnel-apk",
+    "original_url": "https://play.google.com/store/apps/details?id=org.tcx.tunnel.plus",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
   }
 ];
 
