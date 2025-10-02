@@ -50,6 +50,11 @@ const links = [
     "alias": "tcx-tunnel-apk",
     "original_url": "https://play.google.com/store/apps/details?id=org.tcx.tunnel.plus",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
+  },
+  {
+    "alias": "projeto-botaviatorv1-novo",
+    "original_url": "https://www.mediafire.com/file/lfhjttgq64cbizr/bot+v1.0+(com.bot.aviator,+1)+2025-10-02T091417.swb/file",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
   }
 ];
 
