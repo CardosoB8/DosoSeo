@@ -55,6 +55,16 @@ const links = [
     "alias": "projeto-botaviatorv1-novo",
     "original_url": "https://www.mediafire.com/file/lfhjttgq64cbizr/bot+v1.0+(com.bot.aviator,+1)+2025-10-02T091417.swb/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
+  },
+  {
+    "alias": "arquivo-tls-rapido",
+    "original_url": "https://www.mediafire.com/file/h63wuwcdfhpmrch/NetFastTLS.tls/file",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
+  },
+  {
+    "alias": "aplicativo-tls-vpn",
+    "original_url": "https://play.google.com/store/apps/details?id=com.tlsvpn.tlstunnel",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
   }
 ];
 
