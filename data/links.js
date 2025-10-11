@@ -75,7 +75,13 @@ const links = [
     "alias": "net-http-shadow",
     "original_url": "https://www.mediafire.com/file/oboz1gzzd62kir1/NetHttp-mrDoso.ehi/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
+  },
+  {
+    "alias": "http-injector-apk",
+    "original_url": "https://play.google.com/store/apps/details?id=com.evozi.injector",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
   }
+  
 ];
 
 // Exporta o array de links para que index.js possa importá-lo
