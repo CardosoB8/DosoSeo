@@ -65,6 +65,16 @@ const links = [
     "alias": "aplicativo-tls-vpn",
     "original_url": "https://play.google.com/store/apps/details?id=com.tlsvpn.tlstunnel",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
+  },
+  {
+    "alias": "net-injector-vm",
+    "original_url": "https://www.mediafire.com/file/7o441e867znyu2k/NetFastHttp_MrDoso.ehi/file",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
+  },
+  {
+    "alias": "net-http-shadow",
+    "original_url": "https://www.mediafire.com/file/oboz1gzzd62kir1/NetHttp-mrDoso.ehi/file",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
   }
 ];
 
