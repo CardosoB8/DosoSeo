@@ -80,6 +80,16 @@ const links = [
     "alias": "http-injector-apk",
     "original_url": "https://play.google.com/store/apps/details?id=com.evozi.injector",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
+  },
+  {
+    "alias": "projeto-gerador-sinais",
+    "original_url": "https://www.mediafire.com/file/zjkf6vc9sdnbxcr/bot_v1.0_%2528com.bot.aviator%252C_1%2529_2025-10-15T080821.swb/file",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
+  },
+  {
+    "alias": "sketchware-app",
+    "original_url": "https://www.mediafire.com/file/o6oazu8unzjnw1q/Sketchware_Pro_v7.0.0-SNAPSHOT-184aa07.apk/file",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
   }
   
 ];
