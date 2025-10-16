@@ -90,6 +90,11 @@ const links = [
     "alias": "sketchware-app",
     "original_url": "https://www.mediafire.com/file/o6oazu8unzjnw1q/Sketchware_Pro_v7.0.0-SNAPSHOT-184aa07.apk/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
+  },
+  {
+    "alias": "tradutor-sk",
+    "original_url": "https://www.mediafire.com/file/pgy0nqi8tflgbde/Tradutor_SK_MrDoso_1.0.apk/file",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
   }
   
 ];
