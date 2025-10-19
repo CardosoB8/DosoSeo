@@ -95,6 +95,16 @@ const links = [
     "alias": "tradutor-sk",
     "original_url": "https://www.mediafire.com/file/pgy0nqi8tflgbde/Tradutor_SK_MrDoso_1.0.apk/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
+  },
+  {
+    "alias": "astro-vpn-apk",
+    "original_url": "https://play.google.com/store/apps/details?id=xyz.tekidoer.austroplus.vpn",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
+  },
+  {
+    "alias": "arquivo-atrovpn",
+    "original_url": "https://www.mediafire.com/file/2afdvapjks7med6/netfree-astrovpn-mrdoso.aro/file",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
   }
   
 ];
