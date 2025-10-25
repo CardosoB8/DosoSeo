@@ -68,7 +68,7 @@ const links = [
   },
   {
     "alias": "net-injector-vm",
-    "original_url": "https://www.mediafire.com/file/7o441e867znyu2k/NetFastHttp_MrDoso.ehi/file",
+    "original_url": "https://www.mediafire.com/file/2v5b309j07rz3rt/FastHttp-30dias-doso.ehi/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
   },
   {
