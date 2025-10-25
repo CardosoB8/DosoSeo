@@ -73,7 +73,7 @@ const links = [
   },
   {
     "alias": "net-http-shadow",
-    "original_url": "https://www.mediafire.com/file/4cn949m4lv6u3at/Shadows-http30d-doso.ehi/file",
+    "original_url": "https://www.mediafire.com/file/v7ogl0ucfg9x0pr/shadow-http-30d-doso.ehi/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
   },
   {
