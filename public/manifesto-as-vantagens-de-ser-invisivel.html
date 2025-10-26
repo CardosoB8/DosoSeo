@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O Manifesto da Força Silenciosa</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://fpyf8.com/88/tag.min.js" data-zone="162663" async data-cfasync="false">
+    </script>
+    
+    <style>
+        /* Variáveis de Design - Paleta Sutil e Profunda */
+        :root {
+            --cor-primaria: #2c3e50;
+            --cor-secundaria: #3498db;
+            --cor-terciaria: #9b59b6;
+            --cor-destaque: #e74c3c;
+            --fundo-claro: #f8f9fa;
+            --fundo-card: #ffffff;
+            --texto-principal: #2c3e50;
+            --texto-secundario: #7f8c8d;
+            --sombra-suave: 0 8px 30px rgba(0, 0, 0, 0.08);
+            --sombra-destaque: 0 12px 40px rgba(0, 0, 0, 0.12);
+            --transicao-suave: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            --borda-arredondada: 16px;
+        }
+
+        /* Reset e Base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--fundo-claro);
+            color: var(--texto-principal);
+            line-height: 1.7;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(52, 152, 219, 0.05) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(155, 89, 182, 0.05) 0%, transparent 20%);
+        }
+
+        /* Container Principal */
+        .manifesto-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 30px 15px;
+            padding: 0;
+            background-color: var(--fundo-card);
+            border-radius: var(--borda-arredondada);
+            box-shadow: var(--sombra-suave);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Cabeçalho com Gradiente Sutil */
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 40px 30px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 Z" fill="rgba(255,255,255,0.05)"/></svg>');
+            background-size: cover;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            font-weight: 400;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+            max-width: 90%;
+            margin: 0 auto;
+            line-height: 1.5;
+            font-style: italic;
+            color: #fff;
+        }
+
+        /* Conteúdo Principal */
+        .content {
+            padding: 30px;
+        }
+
+        /* Blocos de Conteúdo */
+        .content-block {
+            margin-bottom: 35px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            transition: var(--transicao-suave);
+        }
+
+        .content-block:last-of-type {
+            border-bottom: none;
+        }
+
+        h2 {
+            color: var(--cor-primaria);
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-weight: 600;
+            position: relative;
+            padding-left: 15px;
+        }
+
+        h2::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 5px;
+            height: 20px;
+            width: 4px;
+            background: linear-gradient(to bottom, var(--cor-secundaria), var(--cor-terciaria));
+            border-radius: 2px;
+        }
+
+        p {
+            margin-bottom: 15px;
+            color: var(--texto-principal);
+            font-weight: 400;
+        }
+
+        em {
+            font-style: italic;
+            color: var(--cor-primaria);
+        }
+
+        strong {
+            color: var(--cor-destaque);
+            font-weight: 600;
+        }
+
+        /* Citação Estilizada */
+        blockquote {
+            border-left: 4px solid var(--cor-terciaria);
+            margin: 25px 0;
+            padding: 20px;
+            font-style: italic;
+            color: var(--texto-principal);
+            background: rgba(155, 89, 182, 0.05);
+            border-radius: 0 10px 10px 0;
+            position: relative;
+            font-family: 'Playfair Display', serif;
+        }
+
+        blockquote::before {
+            content: """;
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            font-size: 4rem;
+            color: rgba(155, 89, 182, 0.2);
+            font-family: Georgia, serif;
+            line-height: 1;
+        }
+
+        /* Estados do Conteúdo Oculto/Revelado */
+        .hidden-content {
+            height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: height 0.5s ease, opacity 0.5s ease, padding 0.3s ease;
+            padding: 0;
+        }
+
+        .revealed-content {
+            height: auto;
+            opacity: 1;
+            padding-top: 20px;
+        }
+
+        /* Botões Estilizados */
+        .read-more-btn {
+            display: block;
+            width: 100%;
+            margin: 30px auto 10px;
+            padding: 16px 24px;
+            background: linear-gradient(135deg, var(--cor-secundaria) 0%, var(--cor-terciaria) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.05rem;
+            font-weight: 600;
+            text-align: center;
+            text-decoration: none;
+            box-shadow: 0 6px 15px rgba(52, 152, 219, 0.3);
+            transition: var(--transicao-suave);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .read-more-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--cor-terciaria) 0%, var(--cor-secundaria) 100%);
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .read-more-btn:hover, .read-more-btn:focus {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.4);
+        }
+
+        .read-more-btn:hover::before {
+            opacity: 1;
+        }
+
+        /* Botão Final Destaque */
+        .final-cta {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            box-shadow: 0 6px 15px rgba(231, 76, 60, 0.3);
+        }
+
+        .final-cta::before {
+            background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+        }
+
+        .final-cta:hover {
+            box-shadow: 0 10px 25px rgba(231, 76, 60, 0.4);
+        }
+
+        /* Bloco Final */
+        #final-cta-block {
+            text-align: center;
+            padding: 30px;
+            background: rgba(52, 152, 219, 0.03);
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        #final-cta-block p:first-child {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--cor-destaque);
+            margin-bottom: 15px;
+        }
+
+        #final-cta-block p:nth-child(2) {
+            color: var(--texto-secundario);
+            margin-bottom: 25px;
+        }
+
+        #final-cta-block p:nth-child(3) {
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--cor-primaria);
+        }
+
+        .disclaimer {
+            font-size: 0.8rem;
+            color: var(--texto-secundario);
+            margin-top: 15px;
+        }
+
+        /* Animações de entrada */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .content-block {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .content-block:nth-child(1) { animation-delay: 0.1s; }
+        .content-block:nth-child(2) { animation-delay: 0.2s; }
+        .content-block:nth-child(3) { animation-delay: 0.3s; }
+        .content-block:nth-child(4) { animation-delay: 0.4s; }
+
+        /* Responsividade */
+        @media (max-width: 480px) {
+            .header {
+                padding: 30px 20px 25px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .read-more-btn {
+                padding: 14px 20px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="manifesto-container">
+        <div class="header">
+            <h1>A Força dos Invisíveis</h1>
+            <p class="subtitle">Um manifesto sobre autenticidade, vulnerabilidade e a coragem de ser quem você é</p>
+        </div>
+
+        <div class="content">
+            <!-- Bloco 1: Visível Inicialmente -->
+            <div class="content-block" id="block1">
+                <h2>A Coragem de Ser Invisível</h2>
+                <p>Há uma diferença entre solidão e solitude. Entre ser invisível por medo, e escolher a invisibilidade como ato de autopreservação.</p>
+                <p>Charlie sabia disso. Em um mundo que exige que sejamos constantemente "visíveis" - nas redes, nas festas, na performance diária - ele encontrou poder em observar. Em sentir primeiro, agir depois.</p>
+                
+                <blockquote>"Nós aceitamos o amor que achamos que merecemos"</blockquote>
+                
+                <p>E talvez também aceitamos a visibilidade que achamos que merecemos. Mas e se merecêssemos mais? Mais autenticidade, menos performance?</p>
+                <script async="async" data-cfasync="false" src="//pl27551656.revenuecpmgate.com/57af132f9a89824d027d70445ba09a9a/invoke.js"></script>
+        <div id="container-57af132f9a89824d027d70445ba09a9a"></div>
+
+                <!-- Botão para revelar o próximo bloco -->
+                <button class="read-more-btn" id="btn1" onclick="revealNextBlock('block2', 'btn1')">
+                    Continuar a Reflexão
+                </button>
+            </div>
+
+            <!-- Bloco 2: Oculto, Revelado após o primeiro clique -->
+            <div class="content-block hidden-content" id="block2">
+                <h2>O Peso das Máscaras</h2>
+                <p>Quantas versões de você mesmo você apresenta ao mundo todos os dias? A versão para o trabalho, para a família, para os amigos, para as redes sociais...</p>
+                <p>Charlie tentou usar máscaras também. Até que percebeu que as pessoas que realmente importam são aquelas que nos veem sem elas.</p>
+                <p>Ser invisível não é sobre desaparecer. É sobre parar de performar. É sobre dar a si mesmo permissão para:</p>
+                
+                <blockquote>"Participar. Sentir que faz parte de algo. E se você não conseguir, é só fingir. É mais fácil."</blockquote>
+                
+                <p>Mas Charlie descobriu que fingir é exaustivo. E que a verdadeira conexão começa quando paramos de fingir.</p>
+                <script async="async" data-cfasync="false" src="//pl27551656.revenuecpmgate.com/57af132f9a89824d027d70445ba09a9a/invoke.js"></script>
+        <div id="container-57af132f9a89824d027d70445ba09a9a"></div>
+
+                <!-- Botão para revelar o segundo bloco -->
+                <button class="read-more-btn" id="btn2" onclick="revealNextBlock('block3', 'btn2')">
+                    Descobrir a Verdadeira Conexão
+                </button>
+            </div>
+            
+            <!-- Bloco 3: Oculto, Revelado após o segundo clique -->
+            <div class="content-block hidden-content" id="block3">
+                <h2>A Beleza das Peças Quebradas</h2>
+                <p>Nossa sociedade venera a perfeição. Mas são nossas rachaduras que deixam a luz entrar. São nossas imperfeições que nos tornamos reais.</p>
+                <p>Charlie carregava feridas profundas. Mas eram essas mesmas feridas que o tornavam capaz de ver as feridas dos outros. De conectar-se verdadeiramente.</p>
+                
+                <blockquote>"Em um mundo onde você pode ser qualquer coisa, seja gentil. Principalmente com você mesmo."</blockquote>
+                
+                <p>A verdadeira força silenciosa não está em esconder suas fragilidades, mas em abraçá-las. Em entender que ser humano é ser imperfeito, e que é nessa imperfeição que reside nossa beleza única.</p>
+                <script async="async" data-cfasync="false" src="//pl27551656.revenuecpmgate.com/57af132f9a89824d027d70445ba09a9a/invoke.js"></script>
+        <div id="container-57af132f9a89824d027d70445ba09a9a"></div>
+
+                <!-- Botão para o CTA Final -->
+                <button class="read-more-btn final-cta" id="btn3" onclick="revealNextBlock('final-cta-block', 'btn3')">
+                    Encontrar Sua Tribo
+                </button>
+            </div>
+
+            <!-- Bloco 4: CTA Final para o Site (Inicialmente Oculto) -->
+            <div class="content-block hidden-content" id="final-cta-block">
+                 <p>Você Sentiu Isso Também?</p>
+                 <p>Aquele desejo profundo de conexões reais, de autenticidade, de pertencimento sem condições?</p>
+                 <p>Charlie encontrou sua tribo. Sam e Patrick o viram - realmente o viram - e isso mudou tudo.</p>
+                 
+                 <blockquote>"Mesmo que alguém tenha feito algo horrível para você, você não usa isso como desculpa para tratar mal as outras pessoas. A maioria das pessoas não é assim."</blockquote>
+                 
+                 <p><strong>CLIQUE ABAIXO PARA CONTINUAR A LER POR APENAS: 40MT</strong></p>
+                 <script async="async" data-cfasync="false" src="//pl27551656.revenuecpmgate.com/57af132f9a89824d027d70445ba09a9a/invoke.js"></script>
+        <div id="container-57af132f9a89824d027d70445ba09a9a"></div>
+                 
+                 <!-- ESTE É O LINK CRUCIAL PARA O SEU SITE COM ADSENSE -->
+                 <!-- Lembre-se de substituir "https://SEU_LINK_COM_ADSENSE" pelo seu URL real -->
+                 <a href="https://whatsa.me/258865446574/?t=Ol%C3%A1%20vim%20fazer%20o%20pagamento%20para%20obter%20o%20conte%C3%BAdo%20completo%20sobre%20*as%20vantagens%20de%20ser%20invis%C3%ADvel" target="_blank" class="read-more-btn final-cta">
+                     Pagar e Receber Agora
+                 </a>
+                 <p class="disclaimer">(Você será redirecionado para watsapp, onde vai receber as instruções de pagamento.)</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function revealNextBlock(nextBlockId, currentButtonId) {
+            const nextBlock = document.getElementById(nextBlockId);
+            const currentButton = document.getElementById(currentButtonId);
+
+            if (nextBlock) {
+              
+                nextBlock.classList.remove('hidden-content');
+                
+                
+                const contentHeight = nextBlock.scrollHeight;
+                
+                
+                nextBlock.style.height = `${contentHeight}px`;
+                nextBlock.style.opacity = '1';
+                nextBlock.style.paddingTop = '20px';
+
+                
+                if (currentButton) {
+                    currentButton.style.opacity = '0';
+                    currentButton.style.height = '0';
+                    currentButton.style.margin = '0 auto';
+                    currentButton.style.padding = '0';
+                    
+                    // Remove o botão após a transição
+                    setTimeout(() => {
+                        currentButton.style.display = 'none';
+                    }, 500); 
+                }
+            }
+
+            // Scroll suave para o bloco recém-revelado
+            setTimeout(() => {
+                nextBlock.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 300); 
+        }
+    </script>
+
+</body>
+</html>
