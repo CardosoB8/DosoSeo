@@ -115,6 +115,11 @@ const links = [
     "alias": "vpnilimitado-freenet",
     "original_url": "https://www.mediafire.com/file/y11av5531ij0bz6/Xhypher_Tunnel_Pro_34.apks/filee",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
+  },
+  {
+    "alias": "hkh-vpn",
+    "original_url": "https://play.google.com/store/apps/details?id=app.hackkcah.xyz",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
   }
   
 ];
