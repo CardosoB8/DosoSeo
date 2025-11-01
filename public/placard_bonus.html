@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastre-se e Ganhe Bônus Exclusivo | Afiliado Confiável</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Reset e estilos base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #cdd3f4, #d8ddf7);
+            color: #1d3ff2;
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+        
+        /* Banner */
+        .banner {
+            width: 100%;
+            height: 180px;
+            background: #3630d2 url('banner.webp');
+            background-size: cover;
+            background-position: center;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .banner-content h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: #e8ecec;
+        }
+        
+        .banner-content p {
+            font-size: 1rem;
+            max-width: 600px;
+        }
+        
+        /* Header */
+        header {
+            text-align: center;
+            padding: 10px 0 20px;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: #fff;
+        }
+        
+        .tagline {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        /* Layout principal */
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-start;
+            margin: 10px 0;
+        }
+        
+        .benefits-section {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .cta-section {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Benefícios */
+        .section-title {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: #fff;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .benefit-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .benefit-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+        
+        .benefit-icon {
+            background: #fff;
+            color: #0c2461;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        
+        .benefit-text h3 {
+            margin-bottom: 3px;
+            font-size: 0.95rem;
+        }
+        
+        .benefit-text p {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+        
+        /* CTA Section */
+        .cta-title {
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            color: #fff;
+            text-align: center;
+        }
+        
+        .steps {
+            margin: 15px 0;
+        }
+        
+        .step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+        }
+        
+        .step-number {
+            background: #fff;
+            color: #0c2461;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+        
+        .btn-register {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(to right, #445ff4, #7e90f6);
+            color: #69d7f9;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            box-shadow: 0 4px 10px hsla(173.5,84.3%,58.4%,0.857);
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(226,241,242,0.873);
+        }
+        
+        .affiliate-note {
+            margin-top: 10px;
+            font-size: 0.75rem;
+            opacity: 0.8;
+            text-align: center;
+        }
+        
+        /* Banner de bônus */
+        .bonus-banner {
+            background: linear-gradient(to right, #fff, #fff);
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .bonus-banner h2 {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        
+        .bonus-banner p {
+            font-size: 0.8rem;
+        }
+        
+        /* FAQ */
+        .faq-section {
+            margin-top: 30px;
+        }
+        
+        .faq-title {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            color: #fff;
+        }
+        
+        .faq-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            font-size: 0.9rem;
+        }
+        
+        .faq-question {
+            padding: 12px 15px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .faq-answer {
+            padding: 0 15px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+            font-size: 0.85rem;
+        }
+        
+        .faq-item.active .faq-answer {
+            padding: 0 15px 12px;
+            max-height: 500px;
+        }
+        
+        .faq-toggle {
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .faq-item.active .faq-toggle {
+            transform: rotate(45deg);
+        }
+        
+        /* Rodapé */
+        footer {
+            text-align: center;
+            padding: 15px;
+            margin-top: 30px;
+            font-size: 0.8rem;
+            opacity: 0.7;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .benefits-section, .cta-section {
+                width: 100%;
+            }
+            
+            .banner {
+                height: 150px;
+            }
+            
+            .banner-content h1 {
+                font-size: 1.4rem;
+            }
+            
+            .banner-content p {
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* Animações */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="banner">
+            
+        </div>
+        
+        <header>
+            <div class="logo">APOSTAS ONLINE</div>
+            <p class="tagline">A plataforma de apostas mais confiável do mercado</p>
+                <h1>BÔNUS EXCLUSIVO PARA NOVOS USUÁRIOS</h1>
+                <p>Cadastre-se agora e ganhe 100% de bônus no primeiro depósito</p>
+            
+        </header>
+        
+        <div class="main-content">
+            <div class="benefits-section">
+                <h2 class="section-title">Vantagens Exclusivas</h2>
+                
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="fas fa-gift"></i>
+                    </div>
+                    <div class="benefit-text">
+                        <h3>Bônus de Boas-Vindas</h3>
+                        <p>Até 200% de bônus no primeiro depósito</p>
+                    </div>
+                </div>
+                
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <div class="benefit-text">
+                        <h3>Levantamentos Rápidos</h3>
+                        <p>Seu dinheiro em até 2 horas</p>
+                    </div>
+                </div>
+                
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="benefit-text">
+                        <h3>Segurança Máxima</h3>
+                        <p>Dados protegidos com criptografia</p>
+                    </div>
+                </div>
+                
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <div class="benefit-text">
+                        <h3>App Otimizado</h3>
+                        <p>Experiência perfeita em qualquer dispositivo</p>
+                    </div>
+                </div>
+                
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="benefit-text">
+                        <h3>Odds Competitivas</h3>
+                        <p>As melhores odds para maximizar ganhos</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="cta-section">
+                <div class="bonus-banner pulse">
+                    <h2>OFERTA POR TEMPO LIMITADO</h2>
+                    <p>Cadastre-se agora e garanta seu bônus</p>
+                </div>
+                
+                <h2 class="cta-title">Cadastre-se em 3 Passos</h2>
+                
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-text">Clique no botão para acessar a página oficial</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-text">Preencha número e senha no cadastro</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-text">Confirme os dados e comece a apostar!</div>
+                    </div>
+                </div>
+                
+                <a href="https://media1.placard.co.mz/redirect.aspx?pid=5905&bid=1690" class="btn-register" id="registerButton">
+                    <i class="fas fa-user-plus"></i> CADASTRAR AGORA
+                </a>
+                
+                <p class="affiliate-note">* Como afiliado oficial, garanto que este é o melhor bônus disponível</p>
+            </div>
+        </div>
+        
+        <div class="faq-section">
+            <h2 class="faq-title">Perguntas Frequentes</h2>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Como funciona o bônus de boas-vindas?</span>
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>O bônus é creditado automaticamente após seu primeiro depósito. Se depositar 100MZN, recebe mais 100MZN em bônus, totalizando 200MZN para apostar.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Quanto tempo leva para o Levantamento ser processado?</span>
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Levantamentos processados em até 10 minutos em dias úteis. Finais de semana podem ter pequena demora.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Preciso enviar documentos para me cadastrar?</span>
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Cadastro inicial requer apenas número de telefone. Documentos são solicitados posteriormente quando houver problemas de Levantamento ou recuperação de conta.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Posso jogar pelo celular?</span>
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Sim! A plataforma é totalmente otimizada para mobile. Acesse pelo navegador ou baixe o app oficial.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>© 2023 Afiliado Oficial. Todos os direitos reservados. Jogue com responsabilidade. Apenas para maiores de 18 anos.</p>
+        <p>Este site é operado por um afiliado </p>
+    </footer>
+
+    <script>
+        // FAQ toggle functionality
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', () => {
+                const item = question.parentNode;
+                item.classList.toggle('active');
+            });
+        });
+        
+        
+        document.getElementById('registerButton').addEventListener('click', function() {
+
+            
+
+            setTimeout(() => {
+                window.location.href = this.href;
+            }, 300);
+        });
+    </script>
+</body>
+</html>
