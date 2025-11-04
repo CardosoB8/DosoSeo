@@ -68,12 +68,12 @@ const links = [
   },
   {
     "alias": "net-injector-vm",
-    "original_url": "https://www.mediafire.com/file/2v5b309j07rz3rt/FastHttp-30dias-doso.ehi/file",
+    "original_url": "https://www.mediafire.com/file/vdu443qj8fiwouu/NetFree02-mrdoso.ehi/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
   },
   {
     "alias": "net-http-shadow",
-    "original_url": "https://www.mediafire.com/file/v7ogl0ucfg9x0pr/shadow-http-30d-doso.ehi/file",
+    "original_url": "https://www.mediafire.com/file/giqllcoo6ogfetf/NetFreeIlimitado-mds.ehi/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
   },
   {
