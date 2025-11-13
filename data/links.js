@@ -120,6 +120,11 @@ const links = [
     "alias": "hkh-vpn",
     "original_url": "https://play.google.com/store/apps/details?id=app.hackkcah.xyz",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
+  },
+  {
+    "alias": "vpn-global-dt-mod",
+    "original_url": "https://www.mediafire.com/file/xfev55bjo1jn95d/vpnglobal-dt-4-4-7-mod.apk/file",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
   }
   
 ];
