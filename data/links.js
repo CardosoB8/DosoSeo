@@ -130,6 +130,16 @@ const links = [
     "alias": "starkvpn-apk",
     "original_url": "https://www.mediafire.com/file/um1ba19hxdz9596/Stark_VPN_Reloaded_7.1-rc.apk/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
+  },
+  {
+    "alias": "netfree-ilimitado",
+    "original_url": "https://www.mediafire.com/file/ysbz79q7okckq4w/NetFree-15d-starkvpn-mrdoso.stk/file",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
+  },
+  {
+    "alias": "netfast-starkvpn",
+    "original_url": "https://www.mediafire.com/file/2hz93rc9m5imxii/NetFast-15d-starkvpn-mrdoso.stk/file",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
   }
   
 ];
