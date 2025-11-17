@@ -125,6 +125,11 @@ const links = [
     "alias": "vpn-global-dt-mod",
     "original_url": "https://www.mediafire.com/file/xfev55bjo1jn95d/vpnglobal-dt-4-4-7-mod.apk/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
+  },
+  {
+    "alias": "starkvpn-apk",
+    "original_url": "https://www.mediafire.com/file/um1ba19hxdz9596/Stark_VPN_Reloaded_7.1-rc.apk/file",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
   }
   
 ];
