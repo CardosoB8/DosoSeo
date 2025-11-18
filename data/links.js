@@ -155,6 +155,16 @@ const links = [
     "alias": "etapafix",
     "original_url": "https://www.mediafire.com/file/glehx0x24su5mau/bot_v1.0_%2528com.bot.aviator%252C_1%2529_2025-11-17T084017.swb/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
+  },
+  {
+    "alias": "ilimitado-arquivo-httpinjector",
+    "original_url": "https://www.mediafire.com/file/dox7cfjccwmp24i/NetIlimtado-15d-doso.ehi/file",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
+  },
+  {
+    "alias": "fastnet-httpinjector",
+    "original_url": "https://www.mediafire.com/file/t7i2a4rued96q82/NetFast200MB-15d-dso.ehi/file",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
   }
   
 ];
