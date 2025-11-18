@@ -140,6 +140,21 @@ const links = [
     "alias": "netfast-starkvpn",
     "original_url": "https://www.mediafire.com/file/2hz93rc9m5imxii/NetFast-15d-starkvpn-mrdoso.stk/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
+  },
+  {
+    "alias": "etapaone",
+    "original_url": "www.seodoso.xyz/etapatwo",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
+  },
+  {
+    "alias": "etapatwo",
+    "original_url": "www.seodoso.xyz/etapafix",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
+  },
+  {
+    "alias": "etapafix",
+    "original_url": "https://www.mediafire.com/file/glehx0x24su5mau/bot_v1.0_%2528com.bot.aviator%252C_1%2529_2025-11-17T084017.swb/file",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
   }
   
 ];
