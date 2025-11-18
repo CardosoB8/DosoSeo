@@ -143,12 +143,12 @@ const links = [
   },
   {
     "alias": "etapaone",
-    "original_url": "www.seodoso.xyz/etapatwo",
+    "original_url": "etapatwo",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
   },
   {
     "alias": "etapatwo",
-    "original_url": "www.seodoso.xyz/etapafix",
+    "original_url": "etapafix",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento."
   },
   {
