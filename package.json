@@ -1,7 +1,7 @@
 {
   "name": "meu-redirecionador",
-  "version": "1.0.0",
-  "description": "Um simples serviço de redirecionamento de links.",
+  "version": "2.0.0",
+  "description": "Redirecionador seguro Mr Doso.",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
@@ -9,12 +9,15 @@
   "keywords": [
     "redirecionador",
     "links",
-    "vercel",
+    "seguranca",
     "node.js"
   ],
-  "author": "Seu Nome/Apelido",
+  "author": "Mr Doso",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.2.0"
   }
 }
