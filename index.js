@@ -11,19 +11,17 @@ const PORT = process.env.PORT || 3000;
 
 // Configurações de Segurança
 app.set('trust proxy', 1);
+// No helmet configuration, permita os domínios dos ads
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "https://fpyf8.com", "https://pl27551656.revenuecpmgate.com", "https://*.revenuecpmgate.com"],
             styleSrc: ["'self'", "'unsafe-inline'"],
-            imgSrc: ["'self'", "data:", "https:"]
+            imgSrc: ["'self'", "data:", "https:", "http:"],
+            frameSrc: ["'self'", "https:", "http:"],
+            connectSrc: ["'self'", "https:", "http:"]
         }
-    },
-    hsts: {
-        maxAge: 31536000,
-        includeSubDomains: true,
-        preload: true
     }
 }));
 
