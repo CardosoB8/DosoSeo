@@ -186,6 +186,18 @@ const links = [
     "original_url": "https://www.mediafire.com/file/t7i2a4rued96q82/NetFast200MB-15d-dso.ehi/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
+  },
+  {
+    "alias": "internet-fast-mrdoso",
+    "original_url": "https://www.mediafire.com/file/a31bsxijcdvpjlo/internet-fast-mrdoso.ehi/file",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
+    "steps": 6
+  },
+  {
+    "alias": "internet-ilimitado-mrdoso",
+    "original_url": "https://www.mediafire.com/file/ytd21gvvwvtse9m/internet-ilimtdo-mdo.ehi/file",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
+    "steps": 6
   }
 ];
 
