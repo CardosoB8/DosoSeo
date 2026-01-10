@@ -210,6 +210,12 @@ const links = [
     "original_url": "https://www.mediafire.com/file/orvpzifov0suqkd/canais.txt/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 8
+  },
+  {
+    "alias": "tv-mod-apk",
+    "original_url": "https://www.mediafire.com/file/8c6qa927is4ijmd/TV_Gr%25C3%25A1tis_Mod_1.0.apk/file",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
+    "steps": 4
   }
 ];
 
