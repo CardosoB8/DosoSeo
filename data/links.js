@@ -204,6 +204,12 @@ const links = [
     "original_url": "https://www.mediafire.com/file/21j9ioqc64lyvsr/BotAviator_v1.0_%2528com.bot.aviatorui%252C_1%2529_2025-12-08T172806.swb/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
+  },
+  {
+    "alias": "canais-tv-gratis",
+    "original_url": "https://www.mediafire.com/file/orvpzifov0suqkd/canais.txt/file",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
+    "steps": 8
   }
 ];
 
