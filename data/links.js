@@ -216,6 +216,12 @@ const links = [
     "original_url": "https://www.mediafire.com/file/8c6qa927is4ijmd/TV_Gr%25C3%25A1tis_Mod_1.0.apk/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 4
+  },
+  {
+    "alias": "tvcodes-free",
+    "original_url": "https://www.mediafire.com/file/l3j0v2xqpivpgtw/tvcodes.txt/file",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
+    "steps": 8
   }
 ];
 
