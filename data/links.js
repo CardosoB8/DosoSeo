@@ -222,7 +222,13 @@ const links = [
     "original_url": "https://www.mediafire.com/file/l3j0v2xqpivpgtw/tvcodes.txt/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 8
-  }
+  },
+    {
+    "alias": "novo-fast-vodacom",
+    "original_url": "https://www.mediafire.com/file/o3fcnfs1z0bz8q0/NovoFast-voda-mrdoso.ehi/file",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
+    "steps": 8
+    }
 ];
 
 // Exporta o array de links para que index.js possa importá-lo
