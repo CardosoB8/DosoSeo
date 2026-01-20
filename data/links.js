@@ -227,7 +227,7 @@ const links = [
     "alias": "novo-fast-vodacom",
     "original_url": "https://www.mediafire.com/file/o3fcnfs1z0bz8q0/NovoFast-voda-mrdoso.ehi/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
-    "steps": 8
+    "steps": 6
     }
 ];
 
