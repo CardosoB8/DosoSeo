@@ -223,12 +223,24 @@ const links = [
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 8
   },
-    {
+  {
     "alias": "novo-fast-vodacom",
     "original_url": "https://www.mediafire.com/file/o3fcnfs1z0bz8q0/NovoFast-voda-mrdoso.ehi/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
-    }
+  },
+  {
+    "alias": "ilimitado-dark",
+    "original_url": "https://www.mediafire.com/file/dkkwk7lhae0pnkg/ilimitadovodamrdoso.dark/file",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
+    "steps": 6
+  },
+  {
+    "alias": "dark-tunnel-apk",
+    "original_url": "https://play.google.com/store/apps/details?id=net.darktunnel.app",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
+    "steps": 3
+  }
 ];
 
 // Exporta o array de links para que index.js possa importá-lo
