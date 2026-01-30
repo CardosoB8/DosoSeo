@@ -224,8 +224,14 @@ const links = [
     "steps": 8
   },
   {
-    "alias": "novo-fast-vodacom",
-    "original_url": "https://www.mediafire.com/file/o3fcnfs1z0bz8q0/NovoFast-voda-mrdoso.ehi/file",
+    "alias": "ilimitado-custom",
+    "original_url": "https://www.mediafire.com/file/ebes25wvko4fbus/netfreeilimitado-mrdoso.hc/file",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
+    "steps": 6
+  },
+  {
+    "alias": "http-custom-apk",
+    "original_url": "https://play.google.com/store/apps/details?id=xyz.easypro.httpcustom",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
   },
