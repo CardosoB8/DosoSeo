@@ -252,6 +252,30 @@ const links = [
     "original_url": "https://www.mediafire.com/file/jc7b34cw4x14uxa/netilimitado-mrdso.dark/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
+  },
+  {
+    "alias": "astroilimitado-fast",
+    "original_url": "https://www.mediafire.com/file/1ga5q19lq3hmut7/netfast-mrdoso.aro/file",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
+    "steps": 6
+  },
+  {
+    "alias": "iptunnel-ilimitadofast",
+    "original_url": "https://www.mediafire.com/file/kq5xkvcpxg3sbe1/netfastmrdosoilimitado.ipt/file",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
+    "steps": 6
+  },
+  {
+    "alias": "astrovpn-apk",
+    "original_url": "https://play.google.com/store/apps/details?id=xyz.tekidoer.austroplus.vpn",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
+    "steps": 6
+  },
+  {
+    "alias": "iptunnelvpn-apk",
+    "original_url": "https://play.google.com/store/apps/details?id=com.iptunnel.tunnel",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
+    "steps": 6
   }
 ];
 
