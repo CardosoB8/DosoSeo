@@ -255,7 +255,7 @@ const links = [
   },
   {
     "alias": "astroilimitado-fast",
-    "original_url": "https://www.mediafire.com/file/1ga5q19lq3hmut7/netfast-mrdoso.aro/file",
+    "original_url": "https://www.mediafire.com/file/btq2zdomzzidukq/netaustrovpn-mrdoso.aro/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
   },
