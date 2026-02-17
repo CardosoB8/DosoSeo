@@ -237,7 +237,7 @@ const links = [
   },
   {
     "alias": "ilimitado-dark",
-    "original_url": "https://www.mediafire.com/file/iehzihw7bgi78vp/ilimitadodark.dark/file",
+    "original_url": "https://www.mediafire.com/file/k83phc93yspkhc4/dark4dias.dark/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
   },
@@ -255,13 +255,13 @@ const links = [
   },
   {
     "alias": "astroilimitado-fast",
-    "original_url": "https://www.mediafire.com/file/btq2zdomzzidukq/netaustrovpn-mrdoso.aro/file",
+    "original_url": "https://www.mediafire.com/file/ukb8csznjw63dfe/austro-4dias.aro/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
   },
   {
     "alias": "iptunnel-ilimitadofast",
-    "original_url": "https://www.mediafire.com/file/kq5xkvcpxg3sbe1/netfastmrdosoilimitado.ipt/file",
+    "original_url": "https://www.mediafire.com/file/23lwzmhy0lvpxqs/iptunnel4dias.ipt/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
   },
