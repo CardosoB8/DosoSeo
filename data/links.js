@@ -245,7 +245,7 @@ const links = [
     "alias": "dark-tunnel-apk",
     "original_url": "https://play.google.com/store/apps/details?id=net.darktunnel.app",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
-    "steps": 3
+    "steps": 4
   },
   {
     "alias": "dark-ilimitado",
@@ -255,27 +255,27 @@ const links = [
   },
   {
     "alias": "astroilimitado-fast",
-    "original_url": "https://www.mediafire.com/file/ukb8csznjw63dfe/austro-4dias.aro/file",
+    "original_url": "https://www.mediafire.com/file/kpgynk20ysdgraf/ilimitado-austro.aro/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
-    "steps": 6
+    "steps": 5
   },
   {
     "alias": "iptunnel-ilimitadofast",
-    "original_url": "https://www.mediafire.com/file/23lwzmhy0lvpxqs/iptunnel4dias.ipt/file",
+    "original_url": "https://www.mediafire.com/file/h5x4hhaluwywdba/ilimitado-iptunnel.ipt/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
-    "steps": 6
+    "steps": 5
   },
   {
     "alias": "astrovpn-apk",
     "original_url": "https://play.google.com/store/apps/details?id=xyz.tekidoer.austroplus.vpn",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
-    "steps": 6
+    "steps": 4
   },
   {
     "alias": "iptunnelvpn-apk",
     "original_url": "https://play.google.com/store/apps/details?id=com.iptunnel.tunnel",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
-    "steps": 6
+    "steps": 4
   }
 ];
 
