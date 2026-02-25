@@ -2,10 +2,8 @@
 <head>
   <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Processando... | Mr Doso</title>
-  <script src="https://quge5.com/88/tag.min.js" data-zone="203209" async data-cfasync="false"></script>
+    <title>Links | Mr Doso</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script async src="https://js.wpadmngr.com/static/adManager.js" data-admpid="397387"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         /* ===== VARIÁVEIS CSS ===== */
@@ -713,6 +711,76 @@
             fetchTotalSteps();
             startTimer();
         });
+        // ===== SISTEMA DE ALTERNÂNCIA: ADS / DIRETO =====
+const ADS_LINK = 'https://omg10.com/4/10420694';
+
+// Função para verificar se o próximo clique deve ir para ADS
+function deveIrParaAds() {
+    // Pega o contador atual ou começa em 0
+    let contador = parseInt(sessionStorage.getItem('contador_cliques')) || 0;
+    
+    // Incrementa o contador para o próximo clique
+    sessionStorage.setItem('contador_cliques', (contador + 1).toString());
+    
+    // Retorna true para números ímpares (1º, 3º, 5º...), false para pares (2º, 4º, 6º...)
+    return (contador % 2 === 0); // 0 = primeiro clique (vai para ADS)
+}
+
+// Função principal para lidar com o clique
+function lidarComClique(event, destinoReal) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    if (deveIrParaAds()) {
+        console.log('Clique ÍMPAR: redirecionando para ADS');
+        window.location.href = ADS_LINK;
+    } else {
+        console.log('Clique PAR: indo direto para o destino');
+        window.location.href = destinoReal;
+    }
+    return false;
+}
+
+// Aplicar ao botão quando a página carregar
+document.addEventListener('DOMContentLoaded', function() {
+    const nextBtn = document.getElementById('nextStepBtn');
+    
+    if (nextBtn) {
+        // Clonar para remover eventos anteriores
+        const novoBotao = nextBtn.cloneNode(true);
+        nextBtn.parentNode.replaceChild(novoBotao, nextBtn);
+        
+        novoBotao.addEventListener('click', function(event) {
+            if (novoBotao.disabled) {
+                event.preventDefault();
+                return;
+            }
+            
+            // Pega informações da URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            const pathStepMatch = window.location.pathname.match(/page(\d+)/);
+            const currentStep = pathStepMatch ? parseInt(pathStepMatch[1]) : 1;
+            
+            // Verifica se é a última etapa
+            const currentStepEl = document.getElementById('currentStep')?.textContent;
+            const totalStepsEl = document.getElementById('totalSteps')?.textContent;
+            
+            let destinoReal;
+            if (currentStepEl === totalStepsEl) {
+                destinoReal = `final?token=${token}`;
+            } else {
+                destinoReal = `/page${currentStep + 1}?token=${token}`;
+            }
+            
+            lidarComClique(event, destinoReal);
+        });
+    }
+    
+    // Mostrar status atual (para debug)
+    let contadorAtual = parseInt(sessionStorage.getItem('contador_cliques')) || 0;
+    console.log(`Contador atual: ${contadorAtual} (Próximo clique: ${contadorAtual % 2 === 0 ? 'ADS' : 'DIRETO'})`);
+});
     </script>
 </body>
 </html>
