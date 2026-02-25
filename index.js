@@ -1,4 +1,3 @@
-// index.js
 const express = require('express');
 const path = require('path');
 const crypto = require('crypto');
@@ -11,7 +10,6 @@ const PORT = process.env.PORT || 3000;
 
 // Configurações de Segurança
 app.set('trust proxy', 1);
-// No helmet configuration, permita os domínios dos ads
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
@@ -68,7 +66,7 @@ function signToken(payload, ip) {
     const payloadSec = {
         ...payload,
         ip: ip,
-        iat: Date.now(), // Momento de criação deste token específico
+        iat: Date.now(),
         exp: Date.now() + TOKEN_EXPIRATION_MS,
         nonce: crypto.randomBytes(16).toString('hex')
     };
@@ -125,7 +123,7 @@ function markTokenUsed(token) {
     usedTokens.set(token, payload.exp);
 }
 
-// Middleware de validação
+// Middleware para arquivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
 
 // --- Rota Home ---
@@ -138,29 +136,52 @@ app.get('/page:step', (req, res) => {
     const step = parseInt(req.params.step);
     const token = req.query.token;
 
+    console.log(`Acessando etapa ${step} com token:`, token ? 'presente' : 'ausente');
+
     if (isNaN(step) || !token) {
+        console.log('Redirecionando: step inválido ou token ausente');
         return res.redirect('/');
     }
 
     const payload = verifyToken(token, req.ip);
     if (!payload) {
+        console.log('Redirecionando: token inválido');
         return res.redirect('/');
     }
 
     // Validar consistência do passo
     const link = linksData.links.find(l => l.alias === payload.alias);
     if (!link) {
+        console.log('Redirecionando: link não encontrado');
         return res.redirect('/');
     }
 
-    const totalSteps = link.steps || 3;
-    
     // Validar sequência de passos
     if (step !== payload.step) {
+        console.log(`Redirecionando: step esperado ${payload.step}, recebido ${step}`);
         return res.redirect('/');
     }
 
-    res.sendFile(path.join(__dirname, 'public', 'step.html'));
+    // ===== LÓGICA PARA ALTERNAR ENTRE OS 2 ARQUIVOS =====
+    // Define qual arquivo HTML servir baseado no número da etapa
+    let htmlFile;
+    if (step % 2 === 1) {
+        // Etapas ímpares: 1, 3, 5, 7... usam step1.html
+        htmlFile = path.join(__dirname, 'public', 'step1.html');
+        console.log(`✅ Etapa ${step} (ímpar) -> servindo step1.html`);
+    } else {
+        // Etapas pares: 2, 4, 6, 8... usam step2.html
+        htmlFile = path.join(__dirname, 'public', 'step2.html');
+        console.log(`✅ Etapa ${step} (par) -> servindo step2.html`);
+    }
+
+    // Verifica se o arquivo existe antes de enviar
+    res.sendFile(htmlFile, (err) => {
+        if (err) {
+            console.error(`Erro ao enviar ${htmlFile}:`, err);
+            res.status(500).send('Erro ao carregar página');
+        }
+    });
 });
 
 // --- API: Avançar Etapa ---
@@ -168,6 +189,8 @@ app.get('/api/next-step', (req, res) => {
     const sessionToken = req.query.token;
     const clientStep = parseInt(req.query.currentStep);
     const clientIp = req.ip;
+
+    console.log(`API next-step: step=${clientStep}, token=${sessionToken ? 'presente' : 'ausente'}`);
 
     if (!sessionToken || isNaN(clientStep)) {
         return res.status(400).json({ error: 'Dados inválidos', redirect: '/' });
@@ -185,7 +208,6 @@ app.get('/api/next-step', (req, res) => {
 
     const TOTAL_STEPS_FOR_LINK = link.steps || 3;
 
-    // CORREÇÃO: Cada etapa tem exatamente 15 segundos, sem acumulação
     const timeElapsed = Date.now() - payload.iat;
     
     if (timeElapsed < (STEP_TIME_MS - MIN_TIME_TOLERANCE)) {
@@ -206,16 +228,18 @@ app.get('/api/next-step', (req, res) => {
     // Lógica de decisão
     if (clientStep >= TOTAL_STEPS_FOR_LINK) {
         markTokenUsed(sessionToken);
+        console.log(`✅ Finalizando: redirecionando para link original: ${link.original_url}`);
         return res.json({ redirect: link.original_url });
     } else {
         const nextStep = clientStep + 1;
-        // CORREÇÃO: Criar novo token com timestamp atual (sem acumulação)
         const newToken = signToken({ 
             alias: payload.alias, 
             step: nextStep
         }, clientIp);
 
         markTokenUsed(sessionToken);
+        
+        console.log(`✅ Avançando: etapa ${clientStep} -> ${nextStep}, usará ${nextStep % 2 === 1 ? 'step1.html' : 'step2.html'}`);
         
         return res.json({ 
             redirect: `/page${nextStep}?token=${newToken}`,
@@ -260,6 +284,7 @@ app.get('/:alias', (req, res) => {
             step: 1 
         }, req.ip);
         
+        console.log(`🚀 Iniciando: alias=${alias}, totalSteps=${totalSteps}, primeira etapa usará step1.html`);
         res.redirect(`/page1?token=${token}`);
     } else {
         res.redirect('/');
@@ -273,5 +298,9 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`Servidor seguro rodando na porta ${PORT}`);
+    console.log(`\n🚀 Servidor rodando na porta ${PORT}`);
+    console.log(`📁 Alternando entre:`);
+    console.log(`   - Etapas ÍMPARES (1,3,5,7...): step1.html`);
+    console.log(`   - Etapas PARES (2,4,6,8...): step2.html`);
+    console.log(`⏱️  Tempo por etapa: ${STEP_TIME_MS/1000} segundos\n`);
 });
