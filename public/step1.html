@@ -580,7 +580,6 @@
         const countdownEl = document.getElementById('countdown');
         const progressBar = document.getElementById('progressBar');
         
-        // CORREÇÃO: Aceita tanto nextStepBtn quanto nextButton
         const nextBtn = document.getElementById('nextStepBtn') || document.getElementById('nextButton');
         
         const titleEl = document.querySelector('.countdown-card h1');
@@ -592,18 +591,22 @@
         let timerInterval;
         let isTabActive = true;
 
+        // ===== LINK DO ANÚNCIO PARA O STEP 1 =====
+        // Substitua pelo link de anúncio do step1
+        const AD_LINK = "https://LINK-DO-ANUNCIO-STEP1.com/123456";
+        
+        let isProcessing = false;
+
         if (!token) {
             showAlert("Erro", "Sessão inválida.");
             return;
         }
 
-        // Se não encontrou o botão, mostra erro
         if (!nextBtn) {
-            console.error('Botão não encontrado! Verifique o ID do botão no HTML');
+            console.error('Botão não encontrado!');
             return;
         }
 
-        // Buscar o total REAL de etapas do servidor
         async function fetchTotalSteps() {
             try {
                 const response = await fetch(`/api/get-total?token=${token}`);
@@ -612,8 +615,6 @@
                 if (response.ok) {
                     TOTAL_STEPS = data.total;
                     updateTitle();
-                } else {
-                    console.error('Erro ao buscar total:', data.error);
                 }
             } catch (error) {
                 console.error('Erro ao buscar total:', error);
@@ -627,7 +628,6 @@
             }
         }
 
-        // Pausa se sair da aba
         document.addEventListener("visibilitychange", () => {
             isTabActive = !document.hidden;
             document.title = document.hidden ? "🚨 O tempo parou!" : "Processando... | Mr Doso";
@@ -637,7 +637,6 @@
             nextBtn.disabled = true;
             updateTitle();
             
-            // Reset do timer para 15 segundos
             timeLeft = COUNTDOWN_TIME;
             if(countdownEl) countdownEl.textContent = timeLeft;
             if(progressBar) progressBar.style.width = '0%';
@@ -666,12 +665,40 @@
             nextBtn.classList.add('pulse-animation');
         }
 
-        nextBtn.addEventListener('click', async () => {
-            if (timeLeft > 0) return;
+        function openAdLink() {
+            try {
+                const adWindow = window.open(AD_LINK, '_blank');
+                
+                if (!adWindow || adWindow.closed || typeof adWindow.closed === 'undefined') {
+                    console.log('Popup bloqueado? Tentando abrir na mesma janela');
+                    window.location.href = AD_LINK;
+                    return false;
+                }
+                return true;
+            } catch (error) {
+                console.error('Erro ao abrir link do anúncio:', error);
+                window.location.href = AD_LINK;
+                return false;
+            }
+        }
 
-            nextBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Validando...`;
+        nextBtn.addEventListener('click', async () => {
+            if (isProcessing || timeLeft > 0) return;
+            
+            isProcessing = true;
+            nextBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Abrindo anúncio...`;
             
             try {
+                // PASSO 1: Abrir o link do anúncio
+                console.log('Abrindo link do anúncio step1:', AD_LINK);
+                openAdLink();
+                
+                // Pequeno delay
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // PASSO 2: Fazer requisição para o servidor
+                nextBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Validando...`;
+                
                 const response = await fetch(`/api/next-step?token=${token}&currentStep=${currentStep}`);
                 const data = await response.json();
 
@@ -680,7 +707,6 @@
                 } else {
                     if (data.resetTimer) {
                         showAlert("Ops!", data.error);
-                        // Reinicia o timer com o tempo restante calculado pelo servidor
                         if (data.remainingTime) {
                             timeLeft = Math.ceil(data.remainingTime / 1000);
                         } else {
@@ -694,9 +720,11 @@
                     }
                 }
             } catch (error) {
-                console.error(error);
+                console.error('Erro:', error);
                 showAlert("Erro", "Falha na conexão.");
                 nextBtn.innerHTML = `<i class="fas fa-arrow-right"></i> Continuar`;
+            } finally {
+                isProcessing = false;
             }
         });
 
@@ -716,10 +744,9 @@
             }
         }
 
-        // Inicialização
         fetchTotalSteps();
         startTimer();
     });
-    </script>
+</script>
 </body>
 </html>

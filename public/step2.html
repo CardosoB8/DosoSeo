@@ -592,6 +592,13 @@
         let timerInterval;
         let isTabActive = true;
 
+        // ===== LINK DO ANÚNCIO PARA O STEP 2 =====
+        // Substitua esta URL pelo seu link de anúncio real
+        const AD_LINK = "https://pl27551656.revenuecpmgate.com/57af132f9a89824d027d70445ba09a9a";
+        
+        // Controle para evitar múltiplos cliques
+        let isProcessing = false;
+
         if (!token) {
             showAlert("Erro", "Sessão inválida.");
             return;
@@ -666,21 +673,58 @@
             nextBtn.classList.add('pulse-animation');
         }
 
-        nextBtn.addEventListener('click', async () => {
-            if (timeLeft > 0) return;
+        // Função para abrir o link do anúncio em nova aba
+        function openAdLink() {
+            try {
+                // Tenta abrir em nova aba
+                const adWindow = window.open(AD_LINK, '_blank');
+                
+                // Se o navegador bloqueou o popup, tenta abrir na mesma janela
+                if (!adWindow || adWindow.closed || typeof adWindow.closed === 'undefined') {
+                    console.log('Popup bloqueado? Tentando abrir na mesma janela');
+                    window.location.href = AD_LINK;
+                    return false;
+                }
+                return true;
+            } catch (error) {
+                console.error('Erro ao abrir link do anúncio:', error);
+                // Fallback: tenta abrir na mesma janela
+                window.location.href = AD_LINK;
+                return false;
+            }
+        }
 
-            nextBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Validando...`;
+        nextBtn.addEventListener('click', async () => {
+            // Prevenir múltiplos cliques
+            if (isProcessing || timeLeft > 0) return;
+            
+            isProcessing = true;
+            nextBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Abrindo anúncio...`;
             
             try {
+                // PASSO 1: Abrir o link do anúncio primeiro
+                console.log('Abrindo link do anúncio:', AD_LINK);
+                openAdLink();
+                
+                // Pequeno delay para garantir que o popup abriu
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // PASSO 2: Fazer a requisição para o servidor
+                console.log('Fazendo requisição para o servidor...');
+                nextBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Validando...`;
+                
                 const response = await fetch(`/api/next-step?token=${token}&currentStep=${currentStep}`);
                 const data = await response.json();
 
+                console.log('Resposta do servidor:', data);
+
                 if (response.ok && data.redirect) {
+                    // PASSO 3: Redirecionar para a próxima etapa
+                    console.log('Redirecionando para:', data.redirect);
                     window.location.href = data.redirect;
                 } else {
                     if (data.resetTimer) {
                         showAlert("Ops!", data.error);
-                        // Reinicia o timer com o tempo restante calculado pelo servidor
                         if (data.remainingTime) {
                             timeLeft = Math.ceil(data.remainingTime / 1000);
                         } else {
@@ -694,9 +738,11 @@
                     }
                 }
             } catch (error) {
-                console.error(error);
+                console.error('Erro:', error);
                 showAlert("Erro", "Falha na conexão.");
                 nextBtn.innerHTML = `<i class="fas fa-arrow-right"></i> Continuar`;
+            } finally {
+                isProcessing = false;
             }
         });
 
