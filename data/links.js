@@ -276,7 +276,19 @@ const links = [
     "original_url": "https://play.google.com/store/apps/details?id=com.iptunnel.tunnel",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 4
-  }
+  },
+    {
+    "alias": "layervpn-netfree",
+    "original_url": "https://www.mediafire.com/file/oak4n4ciz9q0yyo/linklayernetfree.lnk/file",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
+    "steps": 4
+    },
+    {
+    "alias": "layer-vpn-apk",
+    "original_url": "https://play.google.com/store/apps/details?id=com.newtoolsworks.linklayer",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
+    "steps": 4
+    }
 ];
 
 // Exporta o array de links para que index.js possa importá-lo
