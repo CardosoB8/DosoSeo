@@ -591,10 +591,20 @@
         let timerInterval;
         let isTabActive = true;
 
-        // ===== LINK DO ANÚNCIO PARA O STEP 1 =====
-        // Substitua pelo link de anúncio do step1
-        const AD_LINK = "https://www.effectivegatecpm.com/ki4e3ftt5h?key=99415bf2c750643bbcc7c1380848fee9";
+        // ===== SMARTLINKS PARA CADA ETAPA =====
+        const smartlinks = {
+            1: 'https://www.effectivegatecpm.com/ki4e3ftt5h?key=99415bf2c750643bbcc7c1380848fee9',
+            2: 'https://pertlouv.com/pZ0Ob1Vxs8U=?',
+            3: 'https://www.effectivegatecpm.com/tbbcg5bx?key=3bb4fddb46aa3dc5d9b4a69eb76789a3',
+            4: 'https://record.elephantbet.com/_rhoOOvBxBOAWqcfzuvZcQGNd7ZgqdRLk/1/',
+            5: 'https://bony-teaching.com/KUN7HR',
+            6: 'https://omg10.com/4/10420694',
+            7: 'https://www.effectivegatecpm.com/ki4e3ftt5h?key=99415bf2c750643bbcc7c1380848fee9',
+            8: 'https://pertlouv.com/pZ0Ob1Vxs8U=?',
+            9: 'https://www.effectivegatecpm.com/tbbcg5bx?key=3bb4fddb46aa3dc5d9b4a69eb76789a3'
+        };
         
+        let smartlinkAberto = false;
         let isProcessing = false;
 
         if (!token) {
@@ -657,6 +667,8 @@
 
         function enableButton() {
             nextBtn.disabled = false;
+            smartlinkAberto = false; // Reset para nova etapa
+            
             if (currentStep >= TOTAL_STEPS) {
                  nextBtn.innerHTML = `<i class="fas fa-external-link-alt"></i> Acessar Link Final`;
             } else {
@@ -665,19 +677,20 @@
             nextBtn.classList.add('pulse-animation');
         }
 
-        function openAdLink() {
+        function openSmartlink() {
+            const link = smartlinks[currentStep] || smartlinks[1];
             try {
-                const adWindow = window.open(AD_LINK, '_blank');
+                const adWindow = window.open(link, '_blank');
                 
                 if (!adWindow || adWindow.closed || typeof adWindow.closed === 'undefined') {
                     console.log('Popup bloqueado? Tentando abrir na mesma janela');
-                    window.location.href = AD_LINK;
+                    window.location.href = link;
                     return false;
                 }
                 return true;
             } catch (error) {
-                console.error('Erro ao abrir link do anúncio:', error);
-                window.location.href = AD_LINK;
+                console.error('Erro ao abrir link:', error);
+                window.location.href = link;
                 return false;
             }
         }
@@ -686,45 +699,54 @@
             if (isProcessing || timeLeft > 0) return;
             
             isProcessing = true;
-            nextBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Abrindo anúncio...`;
             
-            try {
-                // PASSO 1: Abrir o link do anúncio
-                console.log('Abrindo link do anúncio step1:', AD_LINK);
-                openAdLink();
+            if (!smartlinkAberto) {
+                // PRIMEIRO CLIQUE: Abrir smartlink
+                nextBtn.innerHTML = `<i class="fas fa-external-link-alt"></i> Abrindo link...`;
                 
-                // Pequeno delay
-                await new Promise(resolve => setTimeout(resolve, 500));
+                console.log(`Abrindo smartlink da etapa ${currentStep}:`, smartlinks[currentStep]);
+                openSmartlink();
                 
-                // PASSO 2: Fazer requisição para o servidor
+                smartlinkAberto = true;
+                isProcessing = false;
+                
+                nextBtn.innerHTML = `<i class="fas fa-check"></i> Completei, avançar →`;
+                
+                // Mensagem visual
+                showAlert("✅ Link aberto!", `Complete a etapa ${currentStep} e clique novamente para continuar.`);
+                
+            } else {
+                // SEGUNDO CLIQUE: Fazer requisição para o servidor
                 nextBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Validando...`;
                 
-                const response = await fetch(`/api/next-step?token=${token}&currentStep=${currentStep}`);
-                const data = await response.json();
+                try {
+                    const response = await fetch(`/api/next-step?token=${token}&currentStep=${currentStep}`);
+                    const data = await response.json();
 
-                if (response.ok && data.redirect) {
-                    window.location.href = data.redirect;
-                } else {
-                    if (data.resetTimer) {
-                        showAlert("Ops!", data.error);
-                        if (data.remainingTime) {
-                            timeLeft = Math.ceil(data.remainingTime / 1000);
-                        } else {
-                            timeLeft = COUNTDOWN_TIME;
-                        }
-                        startTimer();
-                        nextBtn.innerHTML = `<i class="fas fa-arrow-right"></i> Continuar`;
+                    if (response.ok && data.redirect) {
+                        window.location.href = data.redirect;
                     } else {
-                        showAlert("Erro", data.error || "Erro desconhecido.");
-                        if (data.redirect) setTimeout(() => window.location.href = data.redirect, 2000);
+                        if (data.resetTimer) {
+                            showAlert("Ops!", data.error);
+                            if (data.remainingTime) {
+                                timeLeft = Math.ceil(data.remainingTime / 1000);
+                            } else {
+                                timeLeft = COUNTDOWN_TIME;
+                            }
+                            startTimer();
+                            nextBtn.innerHTML = `<i class="fas fa-arrow-right"></i> Continuar`;
+                        } else {
+                            showAlert("Erro", data.error || "Erro desconhecido.");
+                            if (data.redirect) setTimeout(() => window.location.href = data.redirect, 2000);
+                        }
                     }
+                } catch (error) {
+                    console.error('Erro:', error);
+                    showAlert("Erro", "Falha na conexão.");
+                    nextBtn.innerHTML = `<i class="fas fa-arrow-right"></i> Continuar`;
+                } finally {
+                    isProcessing = false;
                 }
-            } catch (error) {
-                console.error('Erro:', error);
-                showAlert("Erro", "Falha na conexão.");
-                nextBtn.innerHTML = `<i class="fas fa-arrow-right"></i> Continuar`;
-            } finally {
-                isProcessing = false;
             }
         });
 
