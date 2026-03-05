@@ -255,7 +255,7 @@ const links = [
   },
   {
     "alias": "astroilimitado-fast",
-    "original_url": "https://www.mediafire.com/file/kpgynk20ysdgraf/ilimitado-austro.aro/file",
+    "original_url": "https://www.mediafire.com/file/jaio836b2ttr49q/austro-ilimitado-congela-mb.aro/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 5
   },
