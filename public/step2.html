@@ -1,5 +1,6 @@
 <html lang="pt-BR">
 <head>
+<script src="https://quge5.com/88/tag.min.js" data-zone="203209" async data-cfasync="false"></script>
   <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Links | Mr Doso</title>
@@ -580,7 +581,6 @@
         const countdownEl = document.getElementById('countdown');
         const progressBar = document.getElementById('progressBar');
         
-        // CORREÇÃO: Aceita tanto nextStepBtn quanto nextButton
         const nextBtn = document.getElementById('nextStepBtn') || document.getElementById('nextButton');
         
         const titleEl = document.querySelector('.countdown-card h1');
@@ -592,25 +592,48 @@
         let timerInterval;
         let isTabActive = true;
 
-        // ===== LINK DO ANÚNCIO PARA O STEP 2 =====
-        // Substitua esta URL pelo seu link de anúncio real
-        const AD_LINK = "https://omg10.com/4/10420694";
+        // ===== TODOS OS SMARTLINKS DISPONÍVEIS =====
+        const todosSmartlinks = [
+            'https://omg10.com/4/10420694',
+            'https://www.effectivegatecpm.com/ki4e3ftt5h?key=99415bf2c750643bbcc7c1380848fee9',
+            'https://pertlouv.com/pZ0Ob1Vxs8U=?',
+            'https://www.effectivegatecpm.com/tbbcg5bx?key=3bb4fddb46aa3dc5d9b4a69eb76789a3',
+            'https://record.elephantbet.com/_rhoOOvBxBOAWqcfzuvZcQGNd7ZgqdRLk/1/',
+            'https://media1.placard.co.mz/redirect.aspx?pid=5905&bid=1690',
+            'https://affiliates.bantubet.co.mz/links/?btag=2307928',
+            'https://bony-teaching.com/KUN7HR'
+        ];
         
-        // Controle para evitar múltiplos cliques
+        // ===== LINKS EXTRAS (OPCIONAL) =====
+        const linksExtras = [
+            'https://record.elephantbet.com/_rhoOOvBxBOAWqcfzuvZcQGNd7ZgqdRLk/1/',
+            'https://media1.placard.co.mz/redirect.aspx?pid=5905&bid=1690',
+            'https://affiliates.bantubet.co.mz/links/?btag=2307928'
+        ];
+        
+        // Combinar todos os links (se quiser usar os extras também)
+        const todosOsLinks = [...todosSmartlinks, ...linksExtras];
+        
+        let smartlinkAberto = false;
         let isProcessing = false;
+        let linkDaEtapa = ''; // Guarda o link sorteado para esta etapa
 
         if (!token) {
             showAlert("Erro", "Sessão inválida.");
             return;
         }
 
-        // Se não encontrou o botão, mostra erro
         if (!nextBtn) {
-            console.error('Botão não encontrado! Verifique o ID do botão no HTML');
+            console.error('Botão não encontrado!');
             return;
         }
 
-        // Buscar o total REAL de etapas do servidor
+        // ===== FUNÇÃO PARA SORTEAR LINK ALEATÓRIO =====
+        function sortearLinkAleatorio() {
+            const indice = Math.floor(Math.random() * todosOsLinks.length);
+            return todosOsLinks[indice];
+        }
+
         async function fetchTotalSteps() {
             try {
                 const response = await fetch(`/api/get-total?token=${token}`);
@@ -619,8 +642,6 @@
                 if (response.ok) {
                     TOTAL_STEPS = data.total;
                     updateTitle();
-                } else {
-                    console.error('Erro ao buscar total:', data.error);
                 }
             } catch (error) {
                 console.error('Erro ao buscar total:', error);
@@ -634,17 +655,15 @@
             }
         }
 
-        // Pausa se sair da aba
         document.addEventListener("visibilitychange", () => {
             isTabActive = !document.hidden;
-            document.title = document.hidden ? "🚨 O tempo parou!" : "Processando... | Mr Doso";
+            document.title = document.hidden ? "O tempo parou!" : "Processando... | Mr Doso";
         });
 
         function startTimer() {
             nextBtn.disabled = true;
             updateTitle();
             
-            // Reset do timer para 15 segundos
             timeLeft = COUNTDOWN_TIME;
             if(countdownEl) countdownEl.textContent = timeLeft;
             if(progressBar) progressBar.style.width = '0%';
@@ -665,84 +684,88 @@
 
         function enableButton() {
             nextBtn.disabled = false;
+            smartlinkAberto = false; // Reset para nova etapa
+            linkDaEtapa = sortearLinkAleatorio(); // Sorteia novo link para esta etapa
+            
             if (currentStep >= TOTAL_STEPS) {
                  nextBtn.innerHTML = `<i class="fas fa-external-link-alt"></i> Acessar Link Final`;
             } else {
                  nextBtn.innerHTML = `<i class="fas fa-arrow-right"></i> Continuar`;
             }
             nextBtn.classList.add('pulse-animation');
+            
+            // Mostrar que um link foi sorteado (opcional)
+            console.log(`🎲 Etapa ${currentStep}: Link sorteado:`, linkDaEtapa);
         }
 
-        // Função para abrir o link do anúncio em nova aba
-        function openAdLink() {
+        function openSmartlink() {
             try {
-                // Tenta abrir em nova aba
-                const adWindow = window.open(AD_LINK, '_blank');
+                console.log(`🎲 Abrindo link aleatório da etapa ${currentStep}:`, linkDaEtapa);
+                const adWindow = window.open(linkDaEtapa, '_blank');
                 
-                // Se o navegador bloqueou o popup, tenta abrir na mesma janela
                 if (!adWindow || adWindow.closed || typeof adWindow.closed === 'undefined') {
                     console.log('Popup bloqueado? Tentando abrir na mesma janela');
-                    window.location.href = AD_LINK;
+                    window.location.href = linkDaEtapa;
                     return false;
                 }
                 return true;
             } catch (error) {
-                console.error('Erro ao abrir link do anúncio:', error);
-                // Fallback: tenta abrir na mesma janela
-                window.location.href = AD_LINK;
+                console.error('Erro ao abrir link:', error);
+                window.location.href = linkDaEtapa;
                 return false;
             }
         }
 
         nextBtn.addEventListener('click', async () => {
-            // Prevenir múltiplos cliques
             if (isProcessing || timeLeft > 0) return;
             
             isProcessing = true;
-            nextBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Abrindo anúncio...`;
             
-            try {
-                // PASSO 1: Abrir o link do anúncio primeiro
-                console.log('Abrindo link do anúncio:', AD_LINK);
-                openAdLink();
+            if (!smartlinkAberto) {
+
+                nextBtn.innerHTML = `<i class="fas fa-external-link-alt"></i> Processando`;
                 
-                // Pequeno delay para garantir que o popup abriu
-                await new Promise(resolve => setTimeout(resolve, 500));
+                openSmartlink();
                 
-                // PASSO 2: Fazer a requisição para o servidor
-                console.log('Fazendo requisição para o servidor...');
+                smartlinkAberto = true;
+                isProcessing = false;
+                
+                nextBtn.innerHTML = `<i class="fas fa-check"></i> Completo, avançar →`;
+                
+              
+                
+            } else {
+
                 nextBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Validando...`;
                 
-                const response = await fetch(`/api/next-step?token=${token}&currentStep=${currentStep}`);
-                const data = await response.json();
+                try {
+                    const response = await fetch(`/api/next-step?token=${token}&currentStep=${currentStep}`);
+                    const data = await response.json();
 
-                console.log('Resposta do servidor:', data);
-
-                if (response.ok && data.redirect) {
-                    // PASSO 3: Redirecionar para a próxima etapa
-                    console.log('Redirecionando para:', data.redirect);
-                    window.location.href = data.redirect;
-                } else {
-                    if (data.resetTimer) {
-                        showAlert("Ops!", data.error);
-                        if (data.remainingTime) {
-                            timeLeft = Math.ceil(data.remainingTime / 1000);
-                        } else {
-                            timeLeft = COUNTDOWN_TIME;
-                        }
-                        startTimer();
-                        nextBtn.innerHTML = `<i class="fas fa-arrow-right"></i> Continuar`;
+                    if (response.ok && data.redirect) {
+                        window.location.href = data.redirect;
                     } else {
-                        showAlert("Erro", data.error || "Erro desconhecido.");
-                        if (data.redirect) setTimeout(() => window.location.href = data.redirect, 2000);
+                        if (data.resetTimer) {
+                            showAlert("Ops!", data.error);
+                            if (data.remainingTime) {
+                                timeLeft = Math.ceil(data.remainingTime / 1000);
+                            } else {
+                                timeLeft = COUNTDOWN_TIME;
+                            }
+                            startTimer();
+                            nextBtn.innerHTML = `<i class="fas fa-arrow-right"></i> Continuar`;
+                        } else {
+                            showAlert("Erro", data.error || "Erro desconhecido.");
+                            if (data.redirect) setTimeout(() => window.location.href = data.redirect, 2000);
+                        }
                     }
+                } catch (error) {
+                    console.error('Erro:', error);
+                    showAlert("Erro", "Falha na conexão.");
+                    nextBtn.innerHTML = `<i class="fas fa-arrow-right"></i> Continuar`;
+                } finally {
+                    isProcessing = false;
                 }
-            } catch (error) {
-                console.error('Erro:', error);
-                showAlert("Erro", "Falha na conexão.");
-                nextBtn.innerHTML = `<i class="fas fa-arrow-right"></i> Continuar`;
-            } finally {
-                isProcessing = false;
             }
         });
 
@@ -762,7 +785,8 @@
             }
         }
 
-        // Inicialização
+        // Sorteia o primeiro link ao iniciar
+        linkDaEtapa = sortearLinkAleatorio();
         fetchTotalSteps();
         startTimer();
     });
