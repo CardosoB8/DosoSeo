@@ -591,21 +591,31 @@
         let timerInterval;
         let isTabActive = true;
 
-        // ===== SMARTLINKS PARA CADA ETAPA =====
-        const smartlinks = {
-            1: 'https://www.effectivegatecpm.com/ki4e3ftt5h?key=99415bf2c750643bbcc7c1380848fee9',
-            2: 'https://pertlouv.com/pZ0Ob1Vxs8U=?',
-            3: 'https://www.effectivegatecpm.com/tbbcg5bx?key=3bb4fddb46aa3dc5d9b4a69eb76789a3',
-            4: 'https://record.elephantbet.com/_rhoOOvBxBOAWqcfzuvZcQGNd7ZgqdRLk/1/',
-            5: 'https://bony-teaching.com/KUN7HR',
-            6: 'https://omg10.com/4/10420694',
-            7: 'https://www.effectivegatecpm.com/ki4e3ftt5h?key=99415bf2c750643bbcc7c1380848fee9',
-            8: 'https://pertlouv.com/pZ0Ob1Vxs8U=?',
-            9: 'https://www.effectivegatecpm.com/tbbcg5bx?key=3bb4fddb46aa3dc5d9b4a69eb76789a3'
-        };
+        // ===== TODOS OS SMARTLINKS DISPONÍVEIS =====
+        const todosSmartlinks = [
+            'https://omg10.com/4/10420694',
+            'https://www.effectivegatecpm.com/ki4e3ftt5h?key=99415bf2c750643bbcc7c1380848fee9',
+            'https://pertlouv.com/pZ0Ob1Vxs8U=?',
+            'https://www.effectivegatecpm.com/tbbcg5bx?key=3bb4fddb46aa3dc5d9b4a69eb76789a3',
+            'https://record.elephantbet.com/_rhoOOvBxBOAWqcfzuvZcQGNd7ZgqdRLk/1/',
+            'https://media1.placard.co.mz/redirect.aspx?pid=5905&bid=1690',
+            'https://affiliates.bantubet.co.mz/links/?btag=2307928',
+            'https://bony-teaching.com/KUN7HR'
+        ];
+        
+        // ===== LINKS EXTRAS (OPCIONAL) =====
+        const linksExtras = [
+            'https://www.effectivegatecpm.com/outros-link-1',
+            'https://pertlouv.com/outro-link-2',
+            'https://omg10.com/outro-link-3'
+        ];
+        
+        // Combinar todos os links (se quiser usar os extras também)
+        const todosOsLinks = [...todosSmartlinks, ...linksExtras];
         
         let smartlinkAberto = false;
         let isProcessing = false;
+        let linkDaEtapa = ''; // Guarda o link sorteado para esta etapa
 
         if (!token) {
             showAlert("Erro", "Sessão inválida.");
@@ -615,6 +625,12 @@
         if (!nextBtn) {
             console.error('Botão não encontrado!');
             return;
+        }
+
+        // ===== FUNÇÃO PARA SORTEAR LINK ALEATÓRIO =====
+        function sortearLinkAleatorio() {
+            const indice = Math.floor(Math.random() * todosOsLinks.length);
+            return todosOsLinks[indice];
         }
 
         async function fetchTotalSteps() {
@@ -640,7 +656,7 @@
 
         document.addEventListener("visibilitychange", () => {
             isTabActive = !document.hidden;
-            document.title = document.hidden ? "🚨 O tempo parou!" : "Processando... | Mr Doso";
+            document.title = document.hidden ? "O tempo parou!" : "Processando... | Mr Doso";
         });
 
         function startTimer() {
@@ -668,6 +684,7 @@
         function enableButton() {
             nextBtn.disabled = false;
             smartlinkAberto = false; // Reset para nova etapa
+            linkDaEtapa = sortearLinkAleatorio(); // Sorteia novo link para esta etapa
             
             if (currentStep >= TOTAL_STEPS) {
                  nextBtn.innerHTML = `<i class="fas fa-external-link-alt"></i> Acessar Link Final`;
@@ -675,22 +692,25 @@
                  nextBtn.innerHTML = `<i class="fas fa-arrow-right"></i> Continuar`;
             }
             nextBtn.classList.add('pulse-animation');
+            
+            // Mostrar que um link foi sorteado (opcional)
+            console.log(`🎲 Etapa ${currentStep}: Link sorteado:`, linkDaEtapa);
         }
 
         function openSmartlink() {
-            const link = smartlinks[currentStep] || smartlinks[1];
             try {
-                const adWindow = window.open(link, '_blank');
+                console.log(`🎲 Abrindo link aleatório da etapa ${currentStep}:`, linkDaEtapa);
+                const adWindow = window.open(linkDaEtapa, '_blank');
                 
                 if (!adWindow || adWindow.closed || typeof adWindow.closed === 'undefined') {
                     console.log('Popup bloqueado? Tentando abrir na mesma janela');
-                    window.location.href = link;
+                    window.location.href = linkDaEtapa;
                     return false;
                 }
                 return true;
             } catch (error) {
                 console.error('Erro ao abrir link:', error);
-                window.location.href = link;
+                window.location.href = linkDaEtapa;
                 return false;
             }
         }
@@ -701,22 +721,20 @@
             isProcessing = true;
             
             if (!smartlinkAberto) {
-                // PRIMEIRO CLIQUE: Abrir smartlink
-                nextBtn.innerHTML = `<i class="fas fa-external-link-alt"></i> Abrindo link...`;
+
+                nextBtn.innerHTML = `<i class="fas fa-external-link-alt"></i> Processando`;
                 
-                console.log(`Abrindo smartlink da etapa ${currentStep}:`, smartlinks[currentStep]);
                 openSmartlink();
                 
                 smartlinkAberto = true;
                 isProcessing = false;
                 
-                nextBtn.innerHTML = `<i class="fas fa-check"></i> Completei, avançar →`;
+                nextBtn.innerHTML = `<i class="fas fa-check"></i> Completo, avançar →`;
                 
-                // Mensagem visual
-                showAlert("✅ Link aberto!", `Complete a etapa ${currentStep} e clique novamente para continuar.`);
+              
                 
             } else {
-                // SEGUNDO CLIQUE: Fazer requisição para o servidor
+
                 nextBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Validando...`;
                 
                 try {
@@ -766,6 +784,8 @@
             }
         }
 
+        // Sorteia o primeiro link ao iniciar
+        linkDaEtapa = sortearLinkAleatorio();
         fetchTotalSteps();
         startTimer();
     });
