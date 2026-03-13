@@ -249,13 +249,13 @@ const links = [
   },
   {
     "alias": "dark-ilimitado",
-    "original_url": "https://www.mediafire.com/file/jc7b34cw4x14uxa/netilimitado-mrdso.dark/file",
+    "original_url": "https://www.mediafire.com/file/t8ddqhjbrh6kf7d/ilimitadodarkfastfree.dark/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
   },
   {
     "alias": "astroilimitado-fast",
-    "original_url": "https://www.mediafire.com/file/jaio836b2ttr49q/austro-ilimitado-congela-mb.aro/file",
+    "original_url": "https://www.mediafire.com/file/4y5f620qjkjxhd6/austrovpnfreeilimitado.aro/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 5
   },
