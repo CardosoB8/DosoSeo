@@ -177,13 +177,13 @@ const links = [
   },
   {
     "alias": "ilimitado-arquivo-httpinjector",
-    "original_url": "https://www.mediafire.com/file/dox7cfjccwmp24i/NetIlimtado-15d-doso.ehi/file",
+    "original_url": "https://www.mediafire.com/file/0jkswfetznijtkn/injector-hibrido.ehi/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
   },
   {
     "alias": "fastnet-httpinjector",
-    "original_url": "https://www.mediafire.com/file/t7i2a4rued96q82/NetFast200MB-15d-dso.ehi/file",
+    "original_url": "https://www.mediafire.com/file/0jkswfetznijtkn/injector-hibrido.ehi/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
   },
@@ -237,7 +237,7 @@ const links = [
   },
   {
     "alias": "ilimitado-dark",
-    "original_url": "https://www.mediafire.com/file/t8ddqhjbrh6kf7d/ilimitadodarkfastfree.dark/file",
+    "original_url": "https://www.mediafire.com/file/rwqyw569a4cs3vc/dark-hibrido-fast.dark/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
   },
@@ -249,13 +249,13 @@ const links = [
   },
   {
     "alias": "dark-ilimitado",
-    "original_url": "https://www.mediafire.com/file/t8ddqhjbrh6kf7d/ilimitadodarkfastfree.dark/file",
+    "original_url": "https://www.mediafire.com/file/rwqyw569a4cs3vc/dark-hibrido-fast.dark/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
   },
   {
     "alias": "astroilimitado-fast",
-    "original_url": "https://www.mediafire.com/file/4y5f620qjkjxhd6/austrovpnfreeilimitado.aro/file",
+    "original_url": "https://www.mediafire.com/file/3b5y5y9fpfs3w1x/austro-hibrido-fast.aro/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 5
   },
