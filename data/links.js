@@ -237,7 +237,7 @@ const links = [
   },
   {
     "alias": "ilimitado-dark",
-    "original_url": "https://www.mediafire.com/file/rwqyw569a4cs3vc/dark-hibrido-fast.dark/file",
+    "original_url": "https://www.mediafire.com/file/qklflm4c1qxtbl2/netdarknetdarkfast.dark/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
   },
@@ -249,13 +249,13 @@ const links = [
   },
   {
     "alias": "dark-ilimitado",
-    "original_url": "https://www.mediafire.com/file/rwqyw569a4cs3vc/dark-hibrido-fast.dark/file",
+    "original_url": "https://www.mediafire.com/file/qklflm4c1qxtbl2/netdarknetdarkfast.dark/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
   },
   {
     "alias": "astroilimitado-fast",
-    "original_url": "https://www.mediafire.com/file/3b5y5y9fpfs3w1x/austro-hibrido-fast.aro/file",
+    "original_url": "https://www.mediafire.com/file/rdd72ffokv906kg/austrovpn_netfreemast.aro/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 5
   },
@@ -288,7 +288,13 @@ const links = [
     "original_url": "https://play.google.com/store/apps/details?id=com.newtoolsworks.linklayer",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 4
-    }
+    },
+  {
+    "alias": "minapronet-ilimitado",
+    "original_url": "https://www.mediafire.com/file/mficq21x3vsvwft/minafastnetfreefast_20260321065535.mina/file",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
+    "steps": 4
+  }
 ];
 
 // Exporta o array de links para que index.js possa importá-lo
