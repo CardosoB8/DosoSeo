@@ -293,6 +293,12 @@ const links = [
     "alias": "minapronet-ilimitado",
     "original_url": "https://www.mediafire.com/file/mficq21x3vsvwft/minafastnetfreefast_20260321065535.mina/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
+    "steps": 6
+  },
+  {
+    "alias": "minapronet-apk",
+    "original_url": "https://play.google.com/store/apps/details?id=vpn.minapronet.com.eg",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 4
   }
 ];
