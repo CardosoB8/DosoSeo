@@ -177,7 +177,7 @@ const links = [
   },
   {
     "alias": "ilimitado-arquivo-httpinjector",
-    "original_url": "https://www.mediafire.com/file/0jkswfetznijtkn/injector-hibrido.ehi/file",
+    "original_url": "https://www.mediafire.com/file/bkfk5pgoucq6q7v/httpinjetorfastnetnv.ehi/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
   },
