@@ -249,7 +249,7 @@ const links = [
   },
   {
     "alias": "dark-ilimitado",
-    "original_url": "https://www.mediafire.com/file/qklflm4c1qxtbl2/netdarknetdarkfast.dark/file",
+    "original_url": "https://www.mediafire.com/file/erozdg5yaa1c6fb/novonetdarkhibridofast.dark/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
   },
