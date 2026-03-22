@@ -255,7 +255,7 @@ const links = [
   },
   {
     "alias": "astroilimitado-fast",
-    "original_url": "https://www.mediafire.com/file/rdd72ffokv906kg/austrovpn_netfreemast.aro/file",
+    "original_url": "https://www.mediafire.com/file/7vjeba3p77xxmmk/AustroVpnhibridonv.aro/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 5
   },
