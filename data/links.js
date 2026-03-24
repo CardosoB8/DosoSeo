@@ -177,13 +177,13 @@ const links = [
   },
   {
     "alias": "ilimitado-arquivo-httpinjector",
-    "original_url": "https://www.mediafire.com/file/bkfk5pgoucq6q7v/httpinjetorfastnetnv.ehi/file",
+    "original_url": "https://www.mediafire.com/file/ku1pbptfkk657c6/httpinjectorHibrido.ehi/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
   },
   {
     "alias": "fastnet-httpinjector",
-    "original_url": "https://www.mediafire.com/file/0jkswfetznijtkn/injector-hibrido.ehi/file",
+    "original_url": "https://www.mediafire.com/file/ku1pbptfkk657c6/httpinjectorHibrido.ehi/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
   },
@@ -237,7 +237,7 @@ const links = [
   },
   {
     "alias": "ilimitado-dark",
-    "original_url": "https://www.mediafire.com/file/qklflm4c1qxtbl2/netdarknetdarkfast.dark/file",
+    "original_url": "https://www.mediafire.com/file/jyq2xuyhtp4hb1u/NovoArquivoHibrido.dark/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
   },
@@ -249,13 +249,13 @@ const links = [
   },
   {
     "alias": "dark-ilimitado",
-    "original_url": "https://www.mediafire.com/file/erozdg5yaa1c6fb/novonetdarkhibridofast.dark/file",
+    "original_url": "https://www.mediafire.com/file/jyq2xuyhtp4hb1u/NovoArquivoHibrido.dark/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
   },
   {
     "alias": "astroilimitado-fast",
-    "original_url": "https://www.mediafire.com/file/7vjeba3p77xxmmk/AustroVpnhibridonv.aro/file",
+    "original_url": "https://www.mediafire.com/file/dk0i6v7kfaogx05/AustroVpn_nvhibrido.aro/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 5
   },
@@ -291,7 +291,7 @@ const links = [
     },
   {
     "alias": "minapronet-ilimitado",
-    "original_url": "https://www.mediafire.com/file/mficq21x3vsvwft/minafastnetfreefast_20260321065535.mina/file",
+    "original_url": "https://www.mediafire.com/file/ama8tjmoelniii7/minahibridonovofast_20260324120045.mina/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
   },
