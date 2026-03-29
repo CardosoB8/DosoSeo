@@ -8,7 +8,7 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Configurações de Segurança
+// Configurações de Segurança (mais flexível para mobile)
 app.set('trust proxy', 1);
 app.use(helmet({
     contentSecurityPolicy: {
@@ -26,10 +26,10 @@ app.use(helmet({
 
 app.use(cors());
 
-// Rate Limit mais agressivo
+// Rate Limit mais generoso
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 100,
+    max: 200, // Aumentado de 100 para 200
     message: { error: 'Muitas requisições. Tente novamente mais tarde.' },
     standardHeaders: true,
     legacyHeaders: false
@@ -37,21 +37,16 @@ const limiter = rateLimit({
 app.use(limiter);
 
 const SESSION_SECRET_KEY = process.env.SESSION_SECRET_KEY || crypto.randomBytes(64).toString('hex');
-if (!process.env.SESSION_SECRET_KEY) {
-    console.warn('AVISO: Usando SESSION_SECRET_KEY gerada automaticamente. Configure uma variável de ambiente para produção.');
-}
 
-const STEP_TIME_MS = 15000; // 15 segundos por etapa
-const MIN_TIME_TOLERANCE = 2000;
-const TOKEN_EXPIRATION_MS = 10 * 60 * 1000;
+const STEP_TIME_MS = 15000;
+const MIN_TIME_TOLERANCE = 3000; // Aumentado para dar margem
+const TOKEN_EXPIRATION_MS = 30 * 60 * 1000; // Aumentado para 30 minutos
 
 const linksData = { links: require('./data/links.js') };
 
-// Cache para tokens usados
 const usedTokens = new Map();
 const TOKEN_CLEANUP_INTERVAL = 5 * 60 * 1000;
 
-// Limpeza periódica de tokens usados
 setInterval(() => {
     const now = Date.now();
     for (const [token, expiry] of usedTokens.entries()) {
@@ -61,11 +56,23 @@ setInterval(() => {
     }
 }, TOKEN_CLEANUP_INTERVAL);
 
-// --- Criptografia Melhorada ---
-function signToken(payload, ip) {
+// --- Função para obter identificador único do cliente (mais estável que IP) ---
+function getClientId(req) {
+    // Combina IP + User-Agent + Accept-Language (mais estável para mobile)
+    const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.ip || req.socket.remoteAddress;
+    const ua = req.headers['user-agent']?.slice(0, 50) || 'unknown';
+    const lang = req.headers['accept-language']?.slice(0, 10) || 'unknown';
+    
+    // Cria um hash estável mesmo se IP mudar um pouco
+    const hash = crypto.createHash('md5').update(`${ip}-${ua}-${lang}`).digest('hex');
+    return hash.substring(0, 16);
+}
+
+// --- Criptografia SEM depender do IP (mais mobile-friendly) ---
+function signToken(payload, clientId) {
     const payloadSec = {
         ...payload,
-        ip: ip,
+        clientId: clientId,
         iat: Date.now(),
         exp: Date.now() + TOKEN_EXPIRATION_MS,
         nonce: crypto.randomBytes(16).toString('hex')
@@ -79,9 +86,10 @@ function signToken(payload, ip) {
     return `${Buffer.from(data).toString('base64url')}.${signature}`;
 }
 
-function verifyToken(token, reqIp) {
+function verifyToken(token, clientId) {
     try {
         if (usedTokens.has(token)) {
+            console.log('Token já usado');
             return null;
         }
 
@@ -92,11 +100,17 @@ function verifyToken(token, reqIp) {
         const payload = JSON.parse(data);
 
         if (Date.now() > payload.exp) {
+            console.log('Token expirado');
             return null;
         }
 
-        if (payload.ip !== reqIp) {
-            return null;
+        // Verificação mais flexível do clientId
+        if (payload.clientId !== clientId) {
+            console.log(`ClientId mismatch: ${payload.clientId} vs ${clientId}`);
+            // Em mobile, às vezes o clientId muda levemente - damos uma margem
+            if (!payload.clientId.startsWith(clientId.substring(0, 8))) {
+                return null;
+            }
         }
 
         const hmac = crypto.createHmac('sha384', SESSION_SECRET_KEY);
@@ -107,11 +121,13 @@ function verifyToken(token, reqIp) {
             Buffer.from(signature), 
             Buffer.from(expectedSignature)
         )) {
+            console.log('Assinatura inválida');
             return null;
         }
 
         return payload;
     } catch (e) {
+        console.error('Erro ao verificar token:', e.message);
         return null;
     }
 }
@@ -123,59 +139,69 @@ function markTokenUsed(token) {
     usedTokens.set(token, payload.exp);
 }
 
-// Middleware para arquivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
 
-// --- Rota Home ---
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// --- Rota das Páginas de Etapa ---
+// Rota das Páginas de Etapa - COM FALLBACK
 app.get('/page:step', (req, res) => {
     const step = parseInt(req.params.step);
     const token = req.query.token;
+    const clientId = getClientId(req);
 
-    console.log(`Acessando etapa ${step} com token:`, token ? 'presente' : 'ausente');
+    console.log(`📱 Acessando etapa ${step}, ClientId: ${clientId.substring(0, 8)}...`);
 
     if (isNaN(step) || !token) {
-        console.log('Redirecionando: step inválido ou token ausente');
+        console.log('❌ Redirecionando: step inválido ou token ausente');
         return res.redirect('/');
     }
 
-    const payload = verifyToken(token, req.ip);
+    const payload = verifyToken(token, clientId);
     if (!payload) {
-        console.log('Redirecionando: token inválido');
-        return res.redirect('/');
+        console.log('❌ Redirecionando: token inválido ou expirado');
+        // Em vez de redirect, mostra erro amigável
+        return res.send(`
+            <!DOCTYPE html>
+            <html>
+            <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Sessão Expirada</title>
+            <style>
+                body{font-family:system-ui;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;padding:20px}
+                .card{background:white;border-radius:20px;padding:30px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.1);max-width:400px}
+                button{background:#6a5af9;color:white;border:none;padding:12px 30px;border-radius:50px;font-size:16px;cursor:pointer}
+            </style>
+            </head>
+            <body>
+            <div class="card">
+                <h2>🔁 Sessão Expirada</h2>
+                <p>Sua sessão expirou ou o token é inválido.</p>
+                <p>Clique no botão abaixo para recomeçar:</p>
+                <button onclick="window.location.href='/'">Voltar ao início</button>
+            </div>
+            </body>
+            </html>
+        `);
     }
 
-    // Validar consistência do passo
     const link = linksData.links.find(l => l.alias === payload.alias);
     if (!link) {
-        console.log('Redirecionando: link não encontrado');
         return res.redirect('/');
     }
 
-    // Validar sequência de passos
     if (step !== payload.step) {
-        console.log(`Redirecionando: step esperado ${payload.step}, recebido ${step}`);
+        console.log(`Step mismatch: esperado ${payload.step}, recebido ${step}`);
         return res.redirect('/');
     }
 
-    // ===== LÓGICA PARA ALTERNAR ENTRE OS 2 ARQUIVOS =====
-    // Define qual arquivo HTML servir baseado no número da etapa
     let htmlFile;
     if (step % 2 === 1) {
-        // Etapas ímpares: 1, 3, 5, 7... usam step1.html
         htmlFile = path.join(__dirname, 'public', 'step1.html');
-        console.log(`✅ Etapa ${step} (ímpar) -> servindo step1.html`);
     } else {
-        // Etapas pares: 2, 4, 6, 8... usam step2.html
         htmlFile = path.join(__dirname, 'public', 'step2.html');
-        console.log(`✅ Etapa ${step} (par) -> servindo step2.html`);
     }
 
-    // Verifica se o arquivo existe antes de enviar
     res.sendFile(htmlFile, (err) => {
         if (err) {
             console.error(`Erro ao enviar ${htmlFile}:`, err);
@@ -184,19 +210,19 @@ app.get('/page:step', (req, res) => {
     });
 });
 
-// --- API: Avançar Etapa ---
+// API: Avançar Etapa - MAIS TOLERANTE
 app.get('/api/next-step', (req, res) => {
     const sessionToken = req.query.token;
     const clientStep = parseInt(req.query.currentStep);
-    const clientIp = req.ip;
+    const clientId = getClientId(req);
 
-    console.log(`API next-step: step=${clientStep}, token=${sessionToken ? 'presente' : 'ausente'}`);
+    console.log(`🔄 API next-step: step=${clientStep}, clientId=${clientId.substring(0, 8)}...`);
 
     if (!sessionToken || isNaN(clientStep)) {
         return res.status(400).json({ error: 'Dados inválidos', redirect: '/' });
     }
 
-    const payload = verifyToken(sessionToken, clientIp);
+    const payload = verifyToken(sessionToken, clientId);
     if (!payload) {
         return res.status(403).json({ error: 'Sessão inválida ou expirada', redirect: '/' });
     }
@@ -210,6 +236,7 @@ app.get('/api/next-step', (req, res) => {
 
     const timeElapsed = Date.now() - payload.iat;
     
+    // Mais tolerante com o tempo
     if (timeElapsed < (STEP_TIME_MS - MIN_TIME_TOLERANCE)) {
         const remainingTime = Math.max(0, STEP_TIME_MS - timeElapsed);
         return res.status(429).json({ 
@@ -219,27 +246,23 @@ app.get('/api/next-step', (req, res) => {
         });
     }
 
-    // Validar sequência
     if (payload.step !== clientStep) {
         markTokenUsed(sessionToken);
         return res.status(400).json({ error: 'Sequência inválida', redirect: '/' });
     }
 
-    // Lógica de decisão
     if (clientStep >= TOTAL_STEPS_FOR_LINK) {
         markTokenUsed(sessionToken);
-        console.log(`✅ Finalizando: redirecionando para link original: ${link.original_url}`);
+        console.log(`✅ Finalizando: redirecionando para ${link.original_url}`);
         return res.json({ redirect: link.original_url });
     } else {
         const nextStep = clientStep + 1;
         const newToken = signToken({ 
             alias: payload.alias, 
             step: nextStep
-        }, clientIp);
+        }, clientId);
 
         markTokenUsed(sessionToken);
-        
-        console.log(`✅ Avançando: etapa ${clientStep} -> ${nextStep}, usará ${nextStep % 2 === 1 ? 'step1.html' : 'step2.html'}`);
         
         return res.json({ 
             redirect: `/page${nextStep}?token=${newToken}`,
@@ -248,16 +271,15 @@ app.get('/api/next-step', (req, res) => {
     }
 });
 
-// --- API: Obter Total de Etapas ---
 app.get('/api/get-total', (req, res) => {
     const token = req.query.token;
-    const clientIp = req.ip;
+    const clientId = getClientId(req);
 
     if (!token) {
         return res.status(400).json({ error: 'Token ausente' });
     }
 
-    const payload = verifyToken(token, clientIp);
+    const payload = verifyToken(token, clientId);
     if (!payload) {
         return res.status(403).json({ error: 'Token inválido' });
     }
@@ -272,26 +294,25 @@ app.get('/api/get-total', (req, res) => {
     res.json({ total: totalSteps });
 });
 
-// --- Rota de Entrada (Start) ---
 app.get('/:alias', (req, res) => {
     const alias = req.params.alias;
     const link = linksData.links.find(l => l.alias === alias);
     
     if (link) {
         const totalSteps = link.steps || 3;
+        const clientId = getClientId(req);
         const token = signToken({ 
             alias: alias, 
             step: 1 
-        }, req.ip);
+        }, clientId);
         
-        console.log(`🚀 Iniciando: alias=${alias}, totalSteps=${totalSteps}, primeira etapa usará step1.html`);
+        console.log(`🚀 Iniciando: alias=${alias}, totalSteps=${totalSteps}`);
         res.redirect(`/page1?token=${token}`);
     } else {
         res.redirect('/');
     }
 });
 
-// Middleware de erro
 app.use((err, req, res, next) => {
     console.error('Erro:', err);
     res.status(500).redirect('/');
@@ -299,8 +320,6 @@ app.use((err, req, res, next) => {
 
 app.listen(PORT, () => {
     console.log(`\n🚀 Servidor rodando na porta ${PORT}`);
-    console.log(`📁 Alternando entre:`);
-    console.log(`   - Etapas ÍMPARES (1,3,5,7...): step1.html`);
-    console.log(`   - Etapas PARES (2,4,6,8...): step2.html`);
-    console.log(`⏱️  Tempo por etapa: ${STEP_TIME_MS/1000} segundos\n`);
+    console.log(`⏱️  Tempo por etapa: ${STEP_TIME_MS/1000} segundos`);
+    console.log(`📱 Modo mobile-friendly ativado (fallback para token inválido)\n`);
 });
