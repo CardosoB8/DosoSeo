@@ -177,13 +177,13 @@ const links = [
   },
   {
     "alias": "ilimitado-arquivo-httpinjector",
-    "original_url": "https://www.mediafire.com/file/o6yqkrqo19z5jyr/HttpInjector4Dnv.ehi/file",
+    "original_url": "https://www.mediafire.com/file/p4udyscie3ukje3/HttpInjectorTravaMB.ehi/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 3
   },
   {
     "alias": "fastnet-httpinjector",
-    "original_url": "https://www.mediafire.com/file/o6yqkrqo19z5jyr/HttpInjector4Dnv.ehi/file",
+    "original_url": "https://www.mediafire.com/file/p4udyscie3ukje3/HttpInjectorTravaMB.ehi/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 3
   },
@@ -237,7 +237,7 @@ const links = [
   },
   {
     "alias": "ilimitado-dark",
-    "original_url": "https://www.mediafire.com/file/9u1aumjgpkdj1pb/Dark4diasNv.dark/file",
+    "original_url": "https://www.mediafire.com/file/wvd7yivzbsvkx60/DarkTravaMBFast.dark/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 3
   },
@@ -249,13 +249,13 @@ const links = [
   },
   {
     "alias": "dark-ilimitado",
-    "original_url": "https://www.mediafire.com/file/9u1aumjgpkdj1pb/Dark4diasNv.dark/file",
+    "original_url": "https://www.mediafire.com/file/wvd7yivzbsvkx60/DarkTravaMBFast.dark/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 3
   },
   {
     "alias": "astroilimitado-fast",
-    "original_url": "https://www.mediafire.com/file/k2dqqd1jrz73sww/AustroVpn4dNv.aro/file",
+    "original_url": "https://www.mediafire.com/file/fax4u3ws5wczq3i/AustroVpnTravaMB.aro/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 3
   },
@@ -291,7 +291,7 @@ const links = [
     },
   {
     "alias": "minapronet-ilimitado",
-    "original_url": "https://www.mediafire.com/file/al1xmgnzmwgraqs/minanet4dNv_20260328084041.mina/file",
+    "original_url": "https://www.mediafire.com/file/2dg37ms2qahm0ve/MinaNetTravaMB_20260331103243.mina/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 3
   },
