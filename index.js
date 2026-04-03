@@ -1,325 +1,304 @@
 const express = require('express');
 const path = require('path');
 const crypto = require('crypto');
-const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const cors = require('cors');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Configurações de Segurança (mais flexível para mobile)
 app.set('trust proxy', 1);
-app.use(helmet({
-    contentSecurityPolicy: {
-        directives: {
-            defaultSrc: ["'self'", "https:", "http:"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "https:", "http:"],
-            styleSrc: ["'self'", "'unsafe-inline'", "https:"],
-            imgSrc: ["'self'", "data:", "https:", "http:"],
-            fontSrc: ["'self'", "https:"],
-            frameSrc: ["'self'", "https:", "http:"],
-            connectSrc: ["'self'", "https:", "http:"]
-        }
-    }
-}));
-
 app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Rate Limit mais generoso
+// Rate Limit mais leve
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 200, // Aumentado de 100 para 200
-    message: { error: 'Muitas requisições. Tente novamente mais tarde.' },
-    standardHeaders: true,
-    legacyHeaders: false
+    windowMs: 60 * 1000, // 1 minuto
+    max: 100, // 30 requisições por minuto
+    message: { error: 'Muitas requisições. Aguarde um momento.' }
 });
 app.use(limiter);
 
-const SESSION_SECRET_KEY = process.env.SESSION_SECRET_KEY || crypto.randomBytes(64).toString('hex');
-
-const STEP_TIME_MS = 15000;
-const MIN_TIME_TOLERANCE = 3000; // Aumentado para dar margem
-const TOKEN_EXPIRATION_MS = 30 * 60 * 1000; // Aumentado para 30 minutos
+// Configurações simples
+const STEP_TIME_MS = 15000; // 15 segundos
+const TOKEN_EXPIRATION_MS = 60 * 60 * 1000; // 1 hora (bem generoso)
 
 const linksData = { links: require('./data/links.js') };
 
-const usedTokens = new Map();
-const TOKEN_CLEANUP_INTERVAL = 5 * 60 * 1000;
+// Armazenamento simples de sessões (em produção, use Redis)
+const sessions = new Map();
 
+// Limpeza de sessões antigas a cada 10 minutos
 setInterval(() => {
     const now = Date.now();
-    for (const [token, expiry] of usedTokens.entries()) {
-        if (now > expiry) {
-            usedTokens.delete(token);
+    for (const [token, session] of sessions.entries()) {
+        if (now > session.expires) {
+            sessions.delete(token);
         }
     }
-}, TOKEN_CLEANUP_INTERVAL);
+}, 10 * 60 * 1000);
 
-// --- Função para obter identificador único do cliente (mais estável que IP) ---
-function getClientId(req) {
-    // Combina IP + User-Agent + Accept-Language (mais estável para mobile)
-    const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.ip || req.socket.remoteAddress;
-    const ua = req.headers['user-agent']?.slice(0, 50) || 'unknown';
-    const lang = req.headers['accept-language']?.slice(0, 10) || 'unknown';
-    
-    // Cria um hash estável mesmo se IP mudar um pouco
-    const hash = crypto.createHash('md5').update(`${ip}-${ua}-${lang}`).digest('hex');
-    return hash.substring(0, 16);
-}
-
-// --- Criptografia SEM depender do IP (mais mobile-friendly) ---
-function signToken(payload, clientId) {
-    const payloadSec = {
-        ...payload,
-        clientId: clientId,
-        iat: Date.now(),
-        exp: Date.now() + TOKEN_EXPIRATION_MS,
-        nonce: crypto.randomBytes(16).toString('hex')
+// --- FUNÇÃO SIMPLES DE TOKEN (SEM IP) ---
+function createToken(alias, step) {
+    const token = crypto.randomBytes(32).toString('hex');
+    const session = {
+        alias: alias,
+        step: step,
+        createdAt: Date.now(),
+        expires: Date.now() + TOKEN_EXPIRATION_MS
     };
-    
-    const data = JSON.stringify(payloadSec);
-    const hmac = crypto.createHmac('sha384', SESSION_SECRET_KEY);
-    hmac.update(data);
-    const signature = hmac.digest('hex');
-    
-    return `${Buffer.from(data).toString('base64url')}.${signature}`;
+    sessions.set(token, session);
+    return token;
 }
 
-function verifyToken(token, clientId) {
-    try {
-        if (usedTokens.has(token)) {
-            console.log('Token já usado');
-            return null;
-        }
-
-        const [encodedData, signature] = token.split('.');
-        if (!encodedData || !signature) return null;
-
-        const data = Buffer.from(encodedData, 'base64url').toString('utf8');
-        const payload = JSON.parse(data);
-
-        if (Date.now() > payload.exp) {
-            console.log('Token expirado');
-            return null;
-        }
-
-        // Verificação mais flexível do clientId
-        if (payload.clientId !== clientId) {
-            console.log(`ClientId mismatch: ${payload.clientId} vs ${clientId}`);
-            // Em mobile, às vezes o clientId muda levemente - damos uma margem
-            if (!payload.clientId.startsWith(clientId.substring(0, 8))) {
-                return null;
-            }
-        }
-
-        const hmac = crypto.createHmac('sha384', SESSION_SECRET_KEY);
-        hmac.update(data);
-        const expectedSignature = hmac.digest('hex');
-
-        if (!crypto.timingSafeEqual(
-            Buffer.from(signature), 
-            Buffer.from(expectedSignature)
-        )) {
-            console.log('Assinatura inválida');
-            return null;
-        }
-
-        return payload;
-    } catch (e) {
-        console.error('Erro ao verificar token:', e.message);
+function verifyToken(token) {
+    if (!token) return null;
+    const session = sessions.get(token);
+    if (!session) return null;
+    if (Date.now() > session.expires) {
+        sessions.delete(token);
         return null;
     }
+    return session;
 }
 
-function markTokenUsed(token) {
-    const [encodedData] = token.split('.');
-    const data = Buffer.from(encodedData, 'base64url').toString('utf8');
-    const payload = JSON.parse(data);
-    usedTokens.set(token, payload.exp);
+function deleteToken(token) {
+    sessions.delete(token);
 }
 
+// Middleware para arquivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
 
+// --- Rota Home ---
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Rota das Páginas de Etapa - COM FALLBACK
+// --- Rota das Páginas de Etapa (SEM VALIDAÇÃO COMPLEXA) ---
 app.get('/page:step', (req, res) => {
     const step = parseInt(req.params.step);
     const token = req.query.token;
-    const clientId = getClientId(req);
 
-    console.log(`📱 Acessando etapa ${step}, ClientId: ${clientId.substring(0, 8)}...`);
+    console.log(`📄 Acessando page${step}, token: ${token ? token.substring(0, 10)+'...' : 'ausente'}`);
 
-    if (isNaN(step) || !token) {
-        console.log('❌ Redirecionando: step inválido ou token ausente');
+    // Se não tem token, manda para home
+    if (!token) {
+        console.log('❌ Sem token, redirecionando para home');
         return res.redirect('/');
     }
 
-    const payload = verifyToken(token, clientId);
-    if (!payload) {
-        console.log('❌ Redirecionando: token inválido ou expirado');
-        // Em vez de redirect, mostra erro amigável
+    // Verifica sessão
+    const session = verifyToken(token);
+    if (!session) {
+        console.log('❌ Token inválido/expirado, redirecionando para home');
+        // Mostra mensagem amigável antes de redirecionar
         return res.send(`
             <!DOCTYPE html>
             <html>
-            <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Sessão Expirada</title>
-            <style>
-                body{font-family:system-ui;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;padding:20px}
-                .card{background:white;border-radius:20px;padding:30px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.1);max-width:400px}
-                button{background:#6a5af9;color:white;border:none;padding:12px 30px;border-radius:50px;font-size:16px;cursor:pointer}
-            </style>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Sessão Expirada</title>
+                <style>
+                    body {
+                        font-family: system-ui, -apple-system, sans-serif;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        min-height: 100vh;
+                        margin: 0;
+                        padding: 20px;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    }
+                    .card {
+                        background: white;
+                        border-radius: 20px;
+                        padding: 40px;
+                        text-align: center;
+                        max-width: 400px;
+                        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                    }
+                    h2 { color: #e74c3c; margin-bottom: 20px; }
+                    p { color: #666; margin-bottom: 20px; line-height: 1.6; }
+                    button {
+                        background: #6a5af9;
+                        color: white;
+                        border: none;
+                        padding: 15px 40px;
+                        border-radius: 50px;
+                        font-size: 16px;
+                        cursor: pointer;
+                        font-weight: bold;
+                    }
+                    button:hover { background: #5a4ae9; }
+                </style>
             </head>
             <body>
-            <div class="card">
-                <h2>🔁 Sessão Expirada</h2>
-                <p>Sua sessão expirou ou o token é inválido.</p>
-                <p>Clique no botão abaixo para recomeçar:</p>
-                <button onclick="window.location.href='/'">Voltar ao início</button>
-            </div>
+                <div class="card">
+                    <h2>Sessão Expirada</h2>
+                    <p>Sua sessão expirou ou o link é inválido.</p>
+                    <p>Isso pode acontecer se você:<br>
+                    • Ficou muito tempo sem avançar<br>
+                    • Abriu em outro navegador<br>
+                    • Usou modo anônimo</p>
+                    <button onclick="window.location.href='/'">Recomeçar</button>
+                </div>
             </body>
             </html>
         `);
     }
 
-    const link = linksData.links.find(l => l.alias === payload.alias);
+    // Verifica se o step está correto
+    if (step !== session.step) {
+        console.log(`⚠️ Step incorreto: esperado ${session.step}, recebido ${step}`);
+        // Se o step for menor, avança automaticamente
+        if (step < session.step) {
+            return res.redirect(`/page${session.step}?token=${token}`);
+        }
+    }
+
+    // Busca o link
+    const link = linksData.links.find(l => l.alias === session.alias);
     if (!link) {
+        console.log('❌ Link não encontrado');
         return res.redirect('/');
     }
 
-    if (step !== payload.step) {
-        console.log(`Step mismatch: esperado ${payload.step}, recebido ${step}`);
-        return res.redirect('/');
-    }
-
-    let htmlFile;
-    if (step % 2 === 1) {
-        htmlFile = path.join(__dirname, 'public', 'step1.html');
-    } else {
-        htmlFile = path.join(__dirname, 'public', 'step2.html');
-    }
-
+    // Define qual HTML servir
+    const htmlFile = path.join(__dirname, 'public', 'step1.html'); // Use sempre o mesmo HTML
+    
     res.sendFile(htmlFile, (err) => {
         if (err) {
-            console.error(`Erro ao enviar ${htmlFile}:`, err);
-            res.status(500).send('Erro ao carregar página');
+            console.error('Erro ao enviar HTML:', err);
+            res.status(500).send('Erro ao carregar página. <a href="/">Voltar</a>');
         }
     });
 });
 
-// API: Avançar Etapa - MAIS TOLERANTE
+// --- API: Avançar Etapa (SIMPLIFICADA) ---
 app.get('/api/next-step', (req, res) => {
-    const sessionToken = req.query.token;
+    const token = req.query.token;
     const clientStep = parseInt(req.query.currentStep);
-    const clientId = getClientId(req);
 
-    console.log(`🔄 API next-step: step=${clientStep}, clientId=${clientId.substring(0, 8)}...`);
+    console.log(`🔄 Next-step: step=${clientStep}, token=${token ? token.substring(0,10)+'...' : 'ausente'}`);
 
-    if (!sessionToken || isNaN(clientStep)) {
+    if (!token || isNaN(clientStep)) {
         return res.status(400).json({ error: 'Dados inválidos', redirect: '/' });
     }
 
-    const payload = verifyToken(sessionToken, clientId);
-    if (!payload) {
-        return res.status(403).json({ error: 'Sessão inválida ou expirada', redirect: '/' });
+    const session = verifyToken(token);
+    if (!session) {
+        return res.status(403).json({ error: 'Sessão inválida', redirect: '/' });
     }
 
-    const link = linksData.links.find(l => l.alias === payload.alias);
+    const link = linksData.links.find(l => l.alias === session.alias);
     if (!link) {
         return res.status(404).json({ error: 'Link não encontrado', redirect: '/' });
     }
 
-    const TOTAL_STEPS_FOR_LINK = link.steps || 3;
+    const TOTAL_STEPS = link.steps || 3;
 
-    const timeElapsed = Date.now() - payload.iat;
+    // Verifica tempo (mais flexível)
+    const timeElapsed = Date.now() - session.createdAt;
+    const stepTimeElapsed = timeElapsed - ((clientStep - 1) * STEP_TIME_MS);
     
-    // Mais tolerante com o tempo
-    if (timeElapsed < (STEP_TIME_MS - MIN_TIME_TOLERANCE)) {
-        const remainingTime = Math.max(0, STEP_TIME_MS - timeElapsed);
+    if (stepTimeElapsed < STEP_TIME_MS - 3000) { // 3 segundos de tolerância
+        const remainingTime = Math.max(0, STEP_TIME_MS - stepTimeElapsed);
         return res.status(429).json({ 
-            error: `Aguarde mais ${Math.ceil(remainingTime/1000)} segundos`, 
+            error: `Aguarde ${Math.ceil(remainingTime/1000)} segundos`,
             resetTimer: true,
             remainingTime: remainingTime
         });
     }
 
-    if (payload.step !== clientStep) {
-        markTokenUsed(sessionToken);
-        return res.status(400).json({ error: 'Sequência inválida', redirect: '/' });
+    // Verifica sequência
+    if (session.step !== clientStep) {
+        return res.status(400).json({ error: 'Sequência inválida. Recomece.', redirect: '/' });
     }
 
-    if (clientStep >= TOTAL_STEPS_FOR_LINK) {
-        markTokenUsed(sessionToken);
-        console.log(`✅ Finalizando: redirecionando para ${link.original_url}`);
+    // Finaliza ou avança
+    if (clientStep >= TOTAL_STEPS) {
+        deleteToken(token);
+        console.log(`✅ Finalizado! Redirecionando para: ${link.original_url}`);
         return res.json({ redirect: link.original_url });
     } else {
         const nextStep = clientStep + 1;
-        const newToken = signToken({ 
-            alias: payload.alias, 
-            step: nextStep
-        }, clientId);
-
-        markTokenUsed(sessionToken);
         
+        // Atualiza a sessão
+        session.step = nextStep;
+        session.createdAt = Date.now(); // Reset do timer
+        sessions.set(token, session);
+        
+        console.log(`✅ Avançando para etapa ${nextStep}`);
         return res.json({ 
-            redirect: `/page${nextStep}?token=${newToken}`,
-            total: TOTAL_STEPS_FOR_LINK
+            redirect: `/page${nextStep}?token=${token}`,
+            total: TOTAL_STEPS
         });
     }
 });
 
+// --- API: Obter Total de Etapas ---
 app.get('/api/get-total', (req, res) => {
     const token = req.query.token;
-    const clientId = getClientId(req);
 
     if (!token) {
         return res.status(400).json({ error: 'Token ausente' });
     }
 
-    const payload = verifyToken(token, clientId);
-    if (!payload) {
+    const session = verifyToken(token);
+    if (!session) {
         return res.status(403).json({ error: 'Token inválido' });
     }
 
-    const link = linksData.links.find(l => l.alias === payload.alias);
+    const link = linksData.links.find(l => l.alias === session.alias);
     if (!link) {
         return res.status(404).json({ error: 'Link não encontrado' });
     }
 
-    const totalSteps = link.steps || 3;
-    
-    res.json({ total: totalSteps });
+    res.json({ total: link.steps || 3 });
 });
 
+// --- Rota de Entrada ---
 app.get('/:alias', (req, res) => {
     const alias = req.params.alias;
     const link = linksData.links.find(l => l.alias === alias);
     
     if (link) {
-        const totalSteps = link.steps || 3;
-        const clientId = getClientId(req);
-        const token = signToken({ 
-            alias: alias, 
-            step: 1 
-        }, clientId);
-        
-        console.log(`🚀 Iniciando: alias=${alias}, totalSteps=${totalSteps}`);
+        const token = createToken(alias, 1);
+        console.log(`🚀 Iniciando: ${alias} -> token: ${token.substring(0,10)}...`);
         res.redirect(`/page1?token=${token}`);
     } else {
+        console.log(`❌ Alias não encontrado: ${alias}`);
         res.redirect('/');
     }
 });
 
+// Middleware de erro global
 app.use((err, req, res, next) => {
-    console.error('Erro:', err);
-    res.status(500).redirect('/');
+    console.error('Erro global:', err);
+    res.status(500).send(`
+        <!DOCTYPE html>
+        <html>
+        <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Erro</title>
+        <style>body{font-family:system-ui;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;padding:20px}</style>
+        </head>
+        <body>
+            <div style="text-align:center;background:white;border-radius:20px;padding:40px">
+                <h2>⚠️ Erro no servidor</h2>
+                <p>Tente novamente em alguns segundos.</p>
+                <a href="/" style="background:#6a5af9;color:white;padding:12px 30px;border-radius:50px;text-decoration:none">Voltar</a>
+            </div>
+        </body>
+        </html>
+    `);
 });
 
 app.listen(PORT, () => {
     console.log(`\n🚀 Servidor rodando na porta ${PORT}`);
-    console.log(`⏱️  Tempo por etapa: ${STEP_TIME_MS/1000} segundos`);
-    console.log(`📱 Modo mobile-friendly ativado (fallback para token inválido)\n`);
+    console.log(`✅ SEM validação de IP`);
+    console.log(`✅ Tokens simples (apenas random)`);
+    console.log(`✅ 1 hora de expiração`);
+    console.log(`✅ Tolerância de 3 segundos\n`);
 });
