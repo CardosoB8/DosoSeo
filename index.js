@@ -19,11 +19,17 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-const STEP_TIME_MS = 15000;
-const TOKEN_EXPIRATION_MS = 24 * 60 * 60 * 1000;
+const TOKEN_EXPIRATION_MS = 24 * 60 * 60 * 1000; // 24 horas
 const SECRET_KEY = process.env.TOKEN_SECRET || crypto.randomBytes(64).toString('hex');
 
-const tokenCache = new Map();
+// SEM CACHE - apenas verificação direta
+// Usamos um Set para tokens já usados (queimados)
+const usedTokens = new Set();
+
+// Limpeza de tokens usados a cada hora
+setInterval(() => {
+    usedTokens.clear();
+}, 60 * 60 * 1000);
 
 function createToken(alias, totalSteps) {
     const payload = {
@@ -40,16 +46,13 @@ function createToken(alias, totalSteps) {
     return Buffer.from(data).toString('base64url') + '.' + signature;
 }
 
-function verifyToken(token, allowReuse = true) {
+function verifyToken(token, checkUsed = true) {
     if (!token) return null;
     
-    if (allowReuse && tokenCache.has(token)) {
-        const cached = tokenCache.get(token);
-        if (Date.now() - cached.timestamp < 10000) {
-            return cached.payload;
-        } else {
-            tokenCache.delete(token);
-        }
+    // Verifica se token já foi usado (queimado)
+    if (checkUsed && usedTokens.has(token)) {
+        console.log('🔥 Token já foi usado/queimado');
+        return null;
     }
     
     try {
@@ -60,23 +63,33 @@ function verifyToken(token, allowReuse = true) {
         const payload = JSON.parse(data);
         
         const TOLERANCIA_MS = 5 * 60 * 1000;
-        if (Date.now() > payload.exp + TOLERANCIA_MS) return null;
+        if (Date.now() > payload.exp + TOLERANCIA_MS) {
+            console.log('⏰ Token expirado');
+            return null;
+        }
         
         const expectedSignature = crypto.createHmac('sha256', SECRET_KEY).update(data).digest('hex');
-        if (signature !== expectedSignature) return null;
+        if (signature !== expectedSignature) {
+            console.log('🔒 Assinatura inválida');
+            return null;
+        }
         
         return payload;
     } catch (e) {
+        console.error('Erro ao verificar token:', e.message);
         return null;
     }
 }
 
 function avancarEtapa(tokenAntigo) {
-    const payload = verifyToken(tokenAntigo, false);
+    const payload = verifyToken(tokenAntigo, true);
     if (!payload) return null;
     
     const novaEtapa = payload.etapa_atual + 1;
     if (!payload.rota.includes(novaEtapa)) return null;
+    
+    // Marca o token antigo como usado (queima)
+    usedTokens.add(tokenAntigo);
     
     const novoPayload = {
         alias: payload.alias,
@@ -91,17 +104,15 @@ function avancarEtapa(tokenAntigo) {
     const signature = crypto.createHmac('sha256', SECRET_KEY).update(data).digest('hex');
     const novoToken = Buffer.from(data).toString('base64url') + '.' + signature;
     
-    tokenCache.set(tokenAntigo, { timestamp: Date.now(), payload: payload });
-    setTimeout(() => tokenCache.delete(tokenAntigo), 10000);
-    
     return novoToken;
 }
 
 let linksData = [];
 try {
     linksData = require('./data/links.js');
+    console.log('✅ Links carregados:', linksData.map(l => l.alias).join(', '));
 } catch (error) {
-    console.error('Erro ao carregar links.js:', error.message);
+    console.error('❌ Erro ao carregar links.js:', error.message);
     linksData = [];
 }
 
@@ -115,10 +126,16 @@ app.get('/page:step', (req, res) => {
     const step = parseInt(req.params.step);
     const token = req.query.token;
     
-    if (!token) return res.redirect('/');
+    console.log(`📄 Acessando page${step}`);
     
-    const payload = verifyToken(token);
+    if (!token) {
+        console.log('❌ Sem token');
+        return res.redirect('/');
+    }
+    
+    const payload = verifyToken(token, true);
     if (!payload) {
+        console.log('❌ Token inválido ou queimado');
         return res.send(`
             <!DOCTYPE html>
             <html>
@@ -127,13 +144,17 @@ app.get('/page:step', (req, res) => {
             <style>
                 body{font-family:system-ui;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;padding:20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);}
                 .card{background:white;border-radius:20px;padding:40px;text-align:center;max-width:400px;}
-                button{background:#6a5af9;color:white;border:none;padding:15px 40px;border-radius:50px;font-size:16px;cursor:pointer;margin:5px;}
+                button{background:#6a5af9;color:white;border:none;padding:15px 40px;border-radius:50px;font-size:16px;cursor:pointer;}
             </style>
             </head>
             <body>
                 <div class="card">
-                    <h2>Token Inválido</h2>
-                    <p>Seu link expirou ou é inválido.</p>
+                    <h2>🔒 Token Inválido</h2>
+                    <p>Seu link expirou ou já foi usado.</p>
+                    <p>Isso pode acontecer se você:</p>
+                    <p>• Clicou em "Continuar" duas vezes<br>
+                    • Um anúncio recarregou a página<br>
+                    • Tentou voltar para uma etapa anterior</p>
                     <button onclick="window.location.href='/'">Recomeçar</button>
                 </div>
             </body>
@@ -142,6 +163,7 @@ app.get('/page:step', (req, res) => {
     }
     
     if (step !== payload.etapa_atual) {
+        console.log(`⚠️ Redirecionando: etapa ${payload.etapa_atual}`);
         return res.redirect(`/page${payload.etapa_atual}?token=${token}`);
     }
     
@@ -155,11 +177,13 @@ app.get('/api/next-step', (req, res) => {
     const token = req.query.token;
     const clientStep = parseInt(req.query.currentStep);
     
+    console.log(`🔄 Next-step: etapa ${clientStep}`);
+    
     if (!token || isNaN(clientStep)) {
         return res.status(400).json({ error: 'Dados inválidos', redirect: '/' });
     }
     
-    const payload = verifyToken(token);
+    const payload = verifyToken(token, true);
     if (!payload) {
         return res.status(403).json({ error: 'Token inválido', redirect: '/' });
     }
@@ -175,17 +199,21 @@ app.get('/api/next-step', (req, res) => {
         return res.status(400).json({ error: 'Sequência inválida', redirect: '/' });
     }
     
-    // SEM VALIDAÇÃO DE TEMPO - apenas avança
+    // Finaliza
     if (clientStep >= TOTAL_STEPS) {
+        usedTokens.add(token); // Queima o token
+        console.log(`✅ Finalizado! ${link.original_url}`);
         return res.json({ redirect: link.original_url });
     }
     
+    // Avança
     const novoToken = avancarEtapa(token);
     if (!novoToken) {
         return res.status(500).json({ error: 'Erro ao avançar', redirect: '/' });
     }
     
     const novaEtapa = clientStep + 1;
+    console.log(`✅ Avançando: etapa ${clientStep} → ${novaEtapa}`);
     return res.json({ redirect: `/page${novaEtapa}?token=${novoToken}`, total: TOTAL_STEPS });
 });
 
@@ -193,7 +221,7 @@ app.get('/api/get-total', (req, res) => {
     const token = req.query.token;
     if (!token) return res.status(400).json({ error: 'Token ausente' });
     
-    const payload = verifyToken(token);
+    const payload = verifyToken(token, false); // Não verifica se foi usado
     if (!payload) return res.status(403).json({ error: 'Token inválido' });
     
     const link = linksData.find(l => l.alias === payload.alias);
@@ -208,6 +236,7 @@ app.get('/:alias', (req, res) => {
     
     if (link) {
         const token = createToken(alias, link.steps || 3);
+        console.log(`🚀 Iniciando: ${alias}`);
         res.redirect(`/page1?token=${token}`);
     } else {
         res.redirect('/');
@@ -216,7 +245,8 @@ app.get('/:alias', (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`\n🚀 Servidor rodando na porta ${PORT}`);
-    console.log(`✅ SEM validação de tempo (apenas assinatura)`);
-    console.log(`✅ Token único evolutivo`);
-    console.log(`✅ Cache para Web Push: 10 segundos\n`);
+    console.log(`✅ SEM cache (problema resolvido)`);
+    console.log(`✅ Tokens queimados são rastreados em Set`);
+    console.log(`✅ Tokens expiram em 24 horas`);
+    console.log(`✅ Limpeza do Set a cada hora\n`);
 });
