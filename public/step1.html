@@ -600,256 +600,227 @@
     </div>
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('token');
-        
-        const pathStepMatch = window.location.pathname.match(/page(\d+)/);
-        const currentStep = pathStepMatch ? parseInt(pathStepMatch[1]) : 1;
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    
+    const pathStepMatch = window.location.pathname.match(/page(\d+)/);
+    const currentStep = pathStepMatch ? parseInt(pathStepMatch[1]) : 1;
 
-        const COUNTDOWN_TIME = 15;
-        
-        const countdownEl = document.getElementById('countdown');
-        const progressBar = document.getElementById('progressBar');
-        
-        const nextBtn = document.getElementById('nextStepBtn') || document.getElementById('nextButton');
-        
-        const titleEl = document.querySelector('.countdown-card h1');
-        const currentStepEl = document.getElementById('currentStep');
-        const totalStepsEl = document.getElementById('totalSteps');
+    const COUNTDOWN_TIME = 15;
+    
+    const countdownEl = document.getElementById('countdown');
+    const progressBar = document.getElementById('progressBar');
+    const nextBtn = document.getElementById('nextStepBtn');
+    const currentStepEl = document.getElementById('currentStep');
+    const totalStepsEl = document.getElementById('totalSteps');
 
-        let TOTAL_STEPS = 3;
-        let timeLeft = COUNTDOWN_TIME;
-        let timerInterval;
-        let isTabActive = true;
+    let TOTAL_STEPS = 3;
+    let timeLeft = COUNTDOWN_TIME;
+    let timerInterval;
+    let isTabActive = true;
+    let isProcessing = false;
+    let smartlinkAberto = false;  // Controla se o smartlink já foi aberto
+    let linkDaEtapa = '';          // Armazena o link sorteado
 
-        // ===== TODOS OS SMARTLINKS DISPONÍVEIS =====
-        const todosSmartlinks = [
-            'https://omg10.com/4/10420694',
-            'https://www.effectivegatecpm.com/ki4e3ftt5h?key=99415bf2c750643bbcc7c1380848fee9',
-            'https://pertlouv.com/pZ0Ob1Vxs8U=?',
-            'https://www.effectivegatecpm.com/tbbcg5bx?key=3bb4fddb46aa3dc5d9b4a69eb76789a3',
-            'https://record.elephantbet.com/_rhoOOvBxBOAWqcfzuvZcQGNd7ZgqdRLk/1/',
-            'https://media1.placard.co.mz/redirect.aspx?pid=5905&bid=1690',
-            'https://affiliates.bantubet.co.mz/links/?btag=2307928',
-            'https://bony-teaching.com/KUN7HR'
-        ];
-        
-        // ===== LINKS EXTRAS (OPCIONAL) =====
-        const linksExtras = [
-            'https://omg10.com/4/10420694'',
-            'https://record.elephantbet.com/_rhoOOvBxBOAWqcfzuvZcQGNd7ZgqdRLk/1/'
-        ];
-        
-        // Combinar todos os links (se quiser usar os extras também)
-        const todosOsLinks = [...todosSmartlinks, ...linksExtras];
-        
-        let smartlinkAberto = false;
-        let isProcessing = false;
-        let linkDaEtapa = ''; // Guarda o link sorteado para esta etapa
+    // ===== SMARTLINKS DISPONÍVEIS =====
+    const todosSmartlinks = [
+        'https://omg10.com/4/10420694',
+        'https://www.effectivegatecpm.com/ki4e3ftt5h?key=99415bf2c750643bbcc7c1380848fee9',
+        'https://pertlouv.com/pZ0Ob1Vxs8U=?',
+        'https://www.effectivegatecpm.com/tbbcg5bx?key=3bb4fddb46aa3dc5d9b4a69eb76789a3',
+        'https://record.elephantbet.com/_rhoOOvBxBOAWqcfzuvZcQGNd7ZgqdRLk/1/',
+        'https://media1.placard.co.mz/redirect.aspx?pid=5905&bid=1690',
+        'https://affiliates.bantubet.co.mz/links/?btag=2307928',
+        'https://bony-teaching.com/KUN7HR'
+    ];
 
-        if (!token) {
-            showAlert("Erro", "Sessão inválida.");
-            return;
-        }
+    // Sorteia um link aleatório
+    function sortearLinkAleatorio() {
+        const indice = Math.floor(Math.random() * todosSmartlinks.length);
+        return todosSmartlinks[indice];
+    }
 
-        if (!nextBtn) {
-            console.error('Botão não encontrado!');
-            return;
-        }
-
-        // ===== FUNÇÃO PARA SORTEAR LINK ALEATÓRIO =====
-        function sortearLinkAleatorio() {
-            const indice = Math.floor(Math.random() * todosOsLinks.length);
-            return todosOsLinks[indice];
-        }
-
-        async function fetchTotalSteps() {
-            try {
-                const response = await fetch(`/api/get-total?token=${token}`);
-                const data = await response.json();
-                
-                if (response.ok) {
-                    TOTAL_STEPS = data.total;
-                    updateTitle();
-                }
-            } catch (error) {
-                console.error('Erro ao buscar total:', error);
-            }
-        }
-
-        function updateTitle() {
-            if (currentStepEl && totalStepsEl) {
-                currentStepEl.textContent = currentStep;
-                totalStepsEl.textContent = TOTAL_STEPS;
-            }
-        }
-
-        document.addEventListener("visibilitychange", () => {
-            isTabActive = !document.hidden;
-            document.title = document.hidden ? "O tempo parou!" : "Processando... | Mr Doso";
-        });
-
-        function startTimer() {
-            nextBtn.disabled = true;
-            updateTitle();
+    // Abre o smartlink em nova aba
+    function abrirSmartlink() {
+        try {
+            console.log(`🎲 Abrindo smartlink: ${linkDaEtapa}`);
+            const adWindow = window.open(linkDaEtapa, '_blank');
             
-            timeLeft = COUNTDOWN_TIME;
-            if(countdownEl) countdownEl.textContent = timeLeft;
-            if(progressBar) progressBar.style.width = '0%';
-            
-            timerInterval = setInterval(() => {
-                if (isTabActive && timeLeft > 0) {
-                    timeLeft--;
-                    if(countdownEl) countdownEl.textContent = timeLeft;
-                    
-                    const progressPercentage = ((COUNTDOWN_TIME - timeLeft) / COUNTDOWN_TIME) * 100;
-                    if(progressBar) progressBar.style.width = `${progressPercentage}%`;
-                } else if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    enableButton();
-                }
-            }, 1000);
-        }
-
-        function enableButton() {
-            nextBtn.disabled = false;
-            smartlinkAberto = false; // Reset para nova etapa
-            linkDaEtapa = sortearLinkAleatorio(); // Sorteia novo link para esta etapa
-            
-            if (currentStep >= TOTAL_STEPS) {
-                 nextBtn.innerHTML = `<i class="fas fa-external-link-alt"></i> Acessar Link Final`;
-            } else {
-                 nextBtn.innerHTML = `<i class="fas fa-arrow-right"></i> Continuar`;
-            }
-            nextBtn.classList.add('pulse-animation');
-            
-            // Mostrar que um link foi sorteado (opcional)
-            console.log(`🎲 Etapa ${currentStep}: Link sorteado:`, linkDaEtapa);
-        }
-
-        function openSmartlink() {
-            try {
-                console.log(`🎲 Abrindo link aleatório da etapa ${currentStep}:`, linkDaEtapa);
-                const adWindow = window.open(linkDaEtapa, '_blank');
-                
-                if (!adWindow || adWindow.closed || typeof adWindow.closed === 'undefined') {
-                    console.log('Popup bloqueado? Tentando abrir na mesma janela');
-                    window.location.href = linkDaEtapa;
-                    return false;
-                }
-                return true;
-            } catch (error) {
-                console.error('Erro ao abrir link:', error);
+            if (!adWindow || adWindow.closed || typeof adWindow.closed === 'undefined') {
+                console.log('Popup bloqueado, abrindo na mesma aba');
                 window.location.href = linkDaEtapa;
                 return false;
             }
+            return true;
+        } catch (error) {
+            console.error('Erro ao abrir smartlink:', error);
+            window.location.href = linkDaEtapa;
+            return false;
         }
+    }
 
-        nextBtn.addEventListener('click', async () => {
-            if (isProcessing || timeLeft > 0) return;
+    if (!token) {
+        showAlert("Erro", "Sessão inválida. Recomece.");
+        return;
+    }
+
+    if (!nextBtn) {
+        console.error('Botão não encontrado!');
+        return;
+    }
+
+    // Sorteia o link uma vez ao carregar a página
+    linkDaEtapa = sortearLinkAleatorio();
+    console.log(`🎲 Smartlink sorteado para etapa ${currentStep}: ${linkDaEtapa}`);
+
+    async function fetchTotalSteps() {
+        try {
+            const response = await fetch(`/api/get-total?token=${token}`);
+            const data = await response.json();
             
-            isProcessing = true;
-            
-            if (!smartlinkAberto) {
-
-                nextBtn.innerHTML = `<i class="fas fa-external-link-alt"></i> Processando`;
-                
-                openSmartlink();
-                
-                smartlinkAberto = true;
-                isProcessing = false;
-                
-                nextBtn.innerHTML = `<i class="fas fa-check"></i> Completo, avançar →`;
-                
-              
-                
-            } else {
-
-                nextBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Validando...`;
-                
-                try {
-                    const response = await fetch(`/api/next-step?token=${token}&currentStep=${currentStep}`);
-                    const data = await response.json();
-
-                    if (response.ok && data.redirect) {
-                        window.location.href = data.redirect;
-                    } else {
-                        if (data.resetTimer) {
-                            showAlert("Ops!", data.error);
-                            if (data.remainingTime) {
-                                timeLeft = Math.ceil(data.remainingTime / 1000);
-                            } else {
-                                timeLeft = COUNTDOWN_TIME;
-                            }
-                            startTimer();
-                            nextBtn.innerHTML = `<i class="fas fa-arrow-right"></i> Continuar`;
-                        } else {
-                            showAlert("Erro", data.error || "Erro desconhecido.");
-                            if (data.redirect) setTimeout(() => window.location.href = data.redirect, 2000);
-                        }
-                    }
-                } catch (error) {
-                    console.error('Erro:', error);
-                    showAlert("Erro", "Falha na conexão.");
-                    nextBtn.innerHTML = `<i class="fas fa-arrow-right"></i> Continuar`;
-                } finally {
-                    isProcessing = false;
-                }
+            if (response.ok) {
+                TOTAL_STEPS = data.total;
+                updateTitle();
             }
-        });
-
-        function showAlert(title, msg) {
-            const overlay = document.getElementById('customAlertOverlay');
-            const t = document.getElementById('customAlertTitle');
-            const m = document.getElementById('customAlertMessage');
-            const c = document.getElementById('customAlertCloseBtn');
-
-            if(overlay && t && m && c) {
-                t.textContent = title;
-                m.textContent = msg;
-                overlay.classList.add('active');
-                c.onclick = () => overlay.classList.remove('active');
-            } else {
-                alert(`${title}: ${msg}`);
-            }
+        } catch (error) {
+            console.error('Erro ao buscar total:', error);
         }
+    }
 
-        // Sorteia o primeiro link ao iniciar
-        linkDaEtapa = sortearLinkAleatorio();
-        fetchTotalSteps();
-        startTimer();
+    function updateTitle() {
+        if (currentStepEl && totalStepsEl) {
+            currentStepEl.textContent = currentStep;
+            totalStepsEl.textContent = TOTAL_STEPS;
+        }
+    }
+
+    function startTimer() {
+        nextBtn.disabled = true;
+        smartlinkAberto = false;  // Reset para nova etapa
+        
+        timeLeft = COUNTDOWN_TIME;
+        if(countdownEl) countdownEl.textContent = timeLeft;
+        if(progressBar) progressBar.style.width = '0%';
+        
+        if (timerInterval) clearInterval(timerInterval);
+        
+        timerInterval = setInterval(() => {
+            if (isTabActive && timeLeft > 0) {
+                timeLeft--;
+                if(countdownEl) countdownEl.textContent = timeLeft;
+                
+                const progressPercentage = ((COUNTDOWN_TIME - timeLeft) / COUNTDOWN_TIME) * 100;
+                if(progressBar) progressBar.style.width = `${progressPercentage}%`;
+            }
+            
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                enableButton();
+            }
+        }, 1000);
+    }
+
+    function enableButton() {
+        nextBtn.disabled = false;
+        
+        if (currentStep >= TOTAL_STEPS) {
+            nextBtn.innerHTML = `<i class="fas fa-external-link-alt"></i> Acessar Link Final`;
+        } else {
+            nextBtn.innerHTML = `<i class="fas fa-arrow-right"></i> Continuar`;
+        }
+        nextBtn.classList.add('pulse-animation');
+    }
+
+    // Clique no botão
+    nextBtn.addEventListener('click', async () => {
+        if (isProcessing) return;
+        if (timeLeft > 0) {
+            showAlert("Aguarde", `Aguarde mais ${timeLeft} segundos.`);
+            return;
+        }
+        
+        isProcessing = true;
+        
+        // PRIMEIRO CLIQUE: Abre o smartlink (apenas 1 vez por etapa)
+        if (!smartlinkAberto) {
+            nextBtn.innerHTML = `<i class="fas fa-external-link-alt"></i> Abrindo anúncio...`;
+            abrirSmartlink();
+            smartlinkAberto = true;
+            isProcessing = false;
+            nextBtn.innerHTML = `<i class="fas fa-check"></i> Anúncio aberto! Avançar →`;
+            return;
+        }
+        
+        // SEGUNDO CLIQUE: Avança para próxima etapa
+        nextBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Validando...`;
+        nextBtn.disabled = true;
+        
+        try {
+            const response = await fetch(`/api/next-step?token=${token}&currentStep=${currentStep}`);
+            const data = await response.json();
+
+            if (response.ok && data.redirect) {
+                window.location.href = data.redirect;
+            } else {
+                showAlert("Erro", data.error || "Falha ao avançar.");
+                nextBtn.disabled = false;
+                nextBtn.innerHTML = `<i class="fas fa-arrow-right"></i> Continuar`;
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+            showAlert("Erro", "Falha na conexão.");
+            nextBtn.disabled = false;
+            nextBtn.innerHTML = `<i class="fas fa-arrow-right"></i> Continuar`;
+        } finally {
+            isProcessing = false;
+        }
     });
-    
-    // ===== POPUP DE ANÚNCIO PARA ETAPAS 3 E 6 =====
+
+    function showAlert(title, msg) {
+        const overlay = document.getElementById('customAlertOverlay');
+        const t = document.getElementById('customAlertTitle');
+        const m = document.getElementById('customAlertMessage');
+        const c = document.getElementById('customAlertCloseBtn');
+
+        if(overlay && t && m && c) {
+            t.textContent = title;
+            m.textContent = msg;
+            overlay.classList.add('active');
+            c.onclick = () => overlay.classList.remove('active');
+        } else {
+            alert(`${title}: ${msg}`);
+        }
+    }
+
+    document.addEventListener("visibilitychange", () => {
+        isTabActive = !document.hidden;
+    });
+
+    // Inicialização
+    updateTitle();
+    fetchTotalSteps();
+    startTimer();
+});
+
+// Popup de anúncio (opcional)
 (function() {
-    // Verificar se estamos na etapa 3 ou 6
     const pathStepMatch = window.location.pathname.match(/page(\d+)/);
     const currentStep = pathStepMatch ? parseInt(pathStepMatch[1]) : 1;
-    
-    // Etapas onde o popup deve aparecer
     const etapasComPopup = [3, 6];
     
-    // Se estiver na etapa 3 ou 6, mostrar popup
     if (etapasComPopup.includes(currentStep)) {
-        console.log(`📢 Etapa ${currentStep}: Exibindo popup de anúncio`);
-        
-        // Criar e mostrar popup após pequeno delay
-        setTimeout(mostrarPopupAnuncio, 1500);
+        setTimeout(mostrarPopupAnuncio, 3000);
     }
     
-    // Função para criar e mostrar o popup
     function mostrarPopupAnuncio() {
-        // Verificar se já existe popup na página
         if (document.getElementById('popup-anuncio')) return;
         
-        // Criar elementos do popup
         const popupOverlay = document.createElement('div');
         popupOverlay.id = 'popup-anuncio';
         popupOverlay.className = 'popup-overlay active';
         
-        // CONFIGURE AQUI SEU LINK E IMAGEM
-        const linkDoAnuncio = 'https://media1.placard.co.mz/redirect.aspx?pid=5905&bid=1690'; // Substitua pelo seu link
-        const imagemDoAnuncio = 'bannerads.webp'; // Substitua pela sua imagem
+        const linkDoAnuncio = 'https://media1.placard.co.mz/redirect.aspx?pid=5905&bid=1690';
+        const imagemDoAnuncio = 'bannerads.webp';
         
         popupOverlay.innerHTML = `
             <div class="popup-content">
@@ -862,52 +833,26 @@
             </div>
         `;
         
-        // Adicionar ao body
         document.body.appendChild(popupOverlay);
-        
-        // Adicionar CSS do popup
         adicionarCSSPopup();
         
-        // Configurar eventos de fechar
         const closeBtn = popupOverlay.querySelector('.popup-close-btn');
         closeBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            e.stopPropagation();
             fecharPopup(popupOverlay);
         });
         
-        // Fechar ao clicar fora (opcional)
         popupOverlay.addEventListener('click', function(e) {
-            if (e.target === popupOverlay) {
-                fecharPopup(popupOverlay);
-            }
-        });
-        
-        // Fechar com tecla ESC
-        document.addEventListener('keydown', function escHandler(e) {
-            if (e.key === 'Escape' && popupOverlay.parentNode) {
-                fecharPopup(popupOverlay);
-                document.removeEventListener('keydown', escHandler);
-            }
+            if (e.target === popupOverlay) fecharPopup(popupOverlay);
         });
     }
     
-    // Função para fechar o popup
     function fecharPopup(popup) {
-        if (popup && popup.parentNode) {
-            popup.classList.remove('active');
-            // Remover após animação
-            setTimeout(() => {
-                if (popup.parentNode) {
-                    popup.remove();
-                }
-            }, 300);
-        }
+        popup.classList.remove('active');
+        setTimeout(() => { if (popup.parentNode) popup.remove(); }, 300);
     }
     
-    // Função para adicionar CSS do popup
     function adicionarCSSPopup() {
-        // Verificar se o CSS já existe
         if (document.getElementById('popup-css-estilo')) return;
         
         const estilo = document.createElement('style');
@@ -929,12 +874,10 @@
                 visibility: hidden;
                 transition: opacity 0.3s ease, visibility 0.3s ease;
             }
-            
             .popup-overlay.active {
                 opacity: 1;
                 visibility: visible;
             }
-            
             .popup-content {
                 background: white;
                 padding: 20px;
@@ -947,18 +890,10 @@
                 transition: transform 0.3s ease;
                 animation: popupEntrada 0.3s forwards;
             }
-            
             @keyframes popupEntrada {
-                from {
-                    transform: scale(0.8);
-                    opacity: 0;
-                }
-                to {
-                    transform: scale(1);
-                    opacity: 1;
-                }
+                from { transform: scale(0.8); opacity: 0; }
+                to { transform: scale(1); opacity: 1; }
             }
-            
             .popup-close-btn {
                 position: absolute;
                 top: 10px;
@@ -976,55 +911,27 @@
                 justify-content: center;
                 z-index: 10;
                 transition: all 0.2s;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             }
-            
             .popup-close-btn:hover {
                 background: #f0f0f0;
-                border-color: #999;
                 transform: rotate(90deg);
             }
-            
-            .popup-close-btn i {
-                pointer-events: none;
-            }
-            
             .popup-link {
                 display: block;
                 width: 100%;
                 cursor: pointer;
-                outline: none;
             }
-            
             .popup-imagem {
                 width: 100%;
                 height: auto;
                 border-radius: 10px;
                 display: block;
-                transition: transform 0.2s;
             }
-            
-            .popup-imagem:hover {
-                transform: scale(1.02);
-            }
-            
-            /* Responsivo */
             @media (max-width: 768px) {
-                .popup-content {
-                    width: 90%;
-                    padding: 15px;
-                }
-                
-                .popup-close-btn {
-                    width: 30px;
-                    height: 30px;
-                    font-size: 16px;
-                    top: 8px;
-                    right: 8px;
-                }
+                .popup-content { width: 90%; padding: 15px; }
+                .popup-close-btn { width: 30px; height: 30px; font-size: 16px; }
             }
         `;
-        
         document.head.appendChild(estilo);
     }
 })();
