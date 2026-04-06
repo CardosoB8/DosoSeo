@@ -177,13 +177,13 @@ const links = [
   },
   {
     "alias": "ilimitado-arquivo-httpinjector",
-    "original_url": "https://www.mediafire.com/file/vkupfruqpjtaes4/NovoHibridoHTTPFast.ehi/file",
+    "original_url": "https://www.mediafire.com/file/uw75ulhrii0pqb9/NovoFastTravaMb.ehi/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 4
   },
   {
     "alias": "fastnet-httpinjector",
-    "original_url": "https://www.mediafire.com/file/vkupfruqpjtaes4/NovoHibridoHTTPFast.ehi/file",
+    "original_url": "https://www.mediafire.com/file/uw75ulhrii0pqb9/NovoFastTravaMb.ehi/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 4
   },
@@ -237,7 +237,7 @@ const links = [
   },
   {
     "alias": "ilimitado-dark",
-    "original_url": "https://www.mediafire.com/file/aac9q6u13dgijgd/NovoHibridoDARKFast.dark/file",
+    "original_url": "https://www.mediafire.com/file/9jxvek5e4r5iu3x/NovoFastTDarktunnel.dark/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 4
   },
@@ -249,13 +249,13 @@ const links = [
   },
   {
     "alias": "dark-ilimitado",
-    "original_url": "https://www.mediafire.com/file/aac9q6u13dgijgd/NovoHibridoDARKFast.dark/file",
+    "original_url": "https://www.mediafire.com/file/9jxvek5e4r5iu3x/NovoFastTDarktunnel.dark/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 4
   },
   {
     "alias": "astroilimitado-fast",
-    "original_url": "https://www.mediafire.com/file/0m0q4pkbqmj41zf/NovoHibridoAUSTROFAST.aro/file",
+    "original_url": "https://www.mediafire.com/file/gyqcn12jk1pu4yq/NovoFastTAustroPlus.aro/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 4
   },
@@ -291,7 +291,7 @@ const links = [
     },
   {
     "alias": "minapronet-ilimitado",
-    "original_url": "https://www.mediafire.com/file/lalyoq1j3ram4az/NovoHibridoMINAFAST_20260404124908.mina/file",
+    "original_url": "https://www.mediafire.com/file/4w5a2fjucqgf88k/NovoFastTMinaPro_20260406084255.mina/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 4
   },
