@@ -24,43 +24,82 @@ app.use(limiter);
 // ============================================================
 const TOKEN_EXPIRATION_MS = 60 * 60 * 1000;
 const SECRET_KEY = process.env.TOKEN_SECRET || crypto.randomBytes(64).toString('hex');
-const TOTAL_STEPS = 6;
 
+// Carregar links
 let linksData = [];
 try {
     linksData = require('./data/links.js');
-    console.log('✅ Links carregados:', linksData.map(l => l.alias).join(', '));
+    console.log('✅ Links carregados:', linksData.map(l => `${l.alias} (${l.steps || 6} etapas)`).join(', '));
 } catch (error) {
     console.error('❌ Erro ao carregar links.js:', error.message);
     linksData = [];
 }
 
 // ============================================================
-// CONFIGURAÇÃO DAS ETAPAS (ALTERNADA: CPA → Banner → CPA → Banner → CPA → Banner)
+// CONFIGURAÇÃO BASE DAS ETAPAS (Template para qualquer número)
 // ============================================================
-const STEP_CONFIGS = {
-    1: { temAnuncio: false, timer: 10, titulo: 'Verificação Inicial', subtitulo: 'Confirmando que você não é um robô...', tipoBotao: 'cpa' },
-    2: { temAnuncio: true,  timer: 15, titulo: 'Conexão Segura', subtitulo: 'Estabelecendo túnel criptografado...', tipoBotao: 'normal' },
-    3: { temAnuncio: false, timer: 10, titulo: 'Confirmação Adicional', subtitulo: 'Última verificação de segurança...', tipoBotao: 'cpa' },
-    4: { temAnuncio: true,  timer: 15, titulo: 'Otimização de Rede', subtitulo: 'Acelerando conexão com o servidor...', tipoBotao: 'normal' },
-    5: { temAnuncio: false, timer: 12, titulo: 'Verificação Final', subtitulo: 'Quase pronto! Última confirmação...', tipoBotao: 'cpa' },
-    6: { temAnuncio: true,  timer: 15, titulo: 'Preparando Conteúdo', subtitulo: 'Descriptografando link de destino...', tipoBotao: 'final' }
+const BASE_STEP_CONFIGS = {
+    // Etapas ímpares: CPA (sem banner)
+    impar: { temAnuncio: false, timer: 10, titulo: 'Verificação de Acesso', subtitulo: 'Confirmando que você não é um robô...', tipoBotao: 'cpa' },
+    // Etapas pares: Banner (com anúncios)
+    par: { temAnuncio: true, timer: 15, titulo: 'Processando Link', subtitulo: 'Estabelecendo conexão segura...', tipoBotao: 'normal' },
+    // Última etapa (independente de par/ímpar)
+    final: { temAnuncio: true, timer: 15, titulo: 'Link Pronto!', subtitulo: 'Seu conteúdo está disponível', tipoBotao: 'final' }
 };
 
+// Função para obter configuração de uma etapa específica
+function getStepConfig(etapa, totalSteps) {
+    if (etapa === totalSteps) {
+        return { ...BASE_STEP_CONFIGS.final };
+    }
+    
+    const isImpar = etapa % 2 === 1;
+    const baseConfig = isImpar ? BASE_STEP_CONFIGS.impar : BASE_STEP_CONFIGS.par;
+    
+    // Personaliza títulos conforme a etapa
+    const titulos = {
+        1: 'Verificação Inicial',
+        2: 'Conexão Segura',
+        3: 'Confirmação Adicional', 
+        4: 'Otimização de Rede',
+        5: 'Verificação Final',
+        6: 'Preparando Conteúdo'
+    };
+    
+    const subtitulos = {
+        1: 'Confirmando que você não é um robô...',
+        2: 'Estabelecendo túnel criptografado...',
+        3: 'Última verificação de segurança...',
+        4: 'Acelerando conexão com o servidor...',
+        5: 'Quase pronto! Última confirmação...',
+        6: 'Descriptografando link de destino...'
+    };
+    
+    return {
+        ...baseConfig,
+        titulo: titulos[etapa] || baseConfig.titulo,
+        subtitulo: subtitulos[etapa] || baseConfig.subtitulo
+    };
+}
+
+// Links CPA
 const CPA_LINKS = [
     'https://omg10.com/4/10420694',
     'https://www.effectivegatecpm.com/ki4e3ftt5h?key=99415bf2c750643bbcc7c1380848fee9',
     'https://pertlouv.com/pZ0Ob1Vxs8U=?',
     'https://record.elephantbet.com/_rhoOOvBxBOAWqcfzuvZcQGNd7ZgqdRLk/1/',
-    'https://media1.placard.co.mz/redirect.aspx?pid=5905&bid=1690'
+    'https://media1.placard.co.mz/redirect.aspx?pid=5905&bid=1690',
+    'https://affiliates.bantubet.co.mz/links/?btag=2307928',
+    'https://bony-teaching.com/KUN7HR'
 ];
 
 // ============================================================
-// FUNÇÕES DO TOKEN
+// FUNÇÕES DO TOKEN (CORRIGIDAS - Agora com totalSteps do link)
 // ============================================================
-function createToken(alias) {
+function createToken(alias, totalSteps) {
     const payload = {
         alias: alias,
+        totalSteps: totalSteps,  // ← AGORA VEM DO LINK
         etapa_atual: 1,
         criado_em: Date.now(),
         expira_em: Date.now() + TOKEN_EXPIRATION_MS,
@@ -68,22 +107,65 @@ function createToken(alias) {
     };
     
     const data = JSON.stringify(payload);
-    const signature = crypto.createHmac('sha256', SECRET_KEY).update(data).digest('hex');
-    return Buffer.from(data).toString('base64url') + '.' + signature;
+    const signature = crypto
+        .createHmac('sha256', SECRET_KEY)
+        .update(data)
+        .digest('hex');
+    
+    // Codificação segura para URL (substitui caracteres problemáticos)
+    const base64Data = Buffer.from(data).toString('base64')
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=/g, '');
+    
+    return base64Data + '.' + signature;
 }
 
 function verifyToken(token) {
     if (!token) return null;
+    
     try {
-        const [encodedData, signature] = token.split('.');
-        if (!encodedData || !signature) return null;
-        const data = Buffer.from(encodedData, 'base64url').toString('utf8');
+        const parts = token.split('.');
+        if (parts.length !== 2) {
+            console.log('❌ Token malformado (não tem 2 partes)');
+            return null;
+        }
+        
+        const [encodedData, signature] = parts;
+        
+        // Decodificação segura (reverte substituições)
+        let base64Data = encodedData
+            .replace(/-/g, '+')
+            .replace(/_/g, '/');
+        
+        // Adiciona padding se necessário
+        while (base64Data.length % 4) {
+            base64Data += '=';
+        }
+        
+        const data = Buffer.from(base64Data, 'base64').toString('utf8');
         const payload = JSON.parse(data);
-        if (Date.now() > payload.expira_em) return null;
-        const expectedSignature = crypto.createHmac('sha256', SECRET_KEY).update(data).digest('hex');
-        if (signature !== expectedSignature) return null;
+        
+        // Verifica expiração
+        if (Date.now() > payload.expira_em) {
+            console.log('⏰ Token expirado');
+            return null;
+        }
+        
+        // Verifica assinatura
+        const expectedSignature = crypto
+            .createHmac('sha256', SECRET_KEY)
+            .update(data)
+            .digest('hex');
+        
+        if (signature !== expectedSignature) {
+            console.log('🔒 Assinatura inválida');
+            return null;
+        }
+        
         return payload;
     } catch (e) {
+        console.error('❌ Erro ao verificar token:', e.message);
         return null;
     }
 }
@@ -91,11 +173,18 @@ function verifyToken(token) {
 function avancarEtapa(tokenAntigo) {
     const payload = verifyToken(tokenAntigo);
     if (!payload) return null;
+    
     const novaEtapa = payload.etapa_atual + 1;
-    if (novaEtapa > TOTAL_STEPS) return null;
+    
+    // AGORA USA O TOTAL STEPS DO TOKEN (que veio do link)
+    if (novaEtapa > payload.totalSteps) {
+        console.log(`⚠️ Tentativa de avançar além da última etapa (${payload.totalSteps})`);
+        return null;
+    }
     
     const novoPayload = {
         alias: payload.alias,
+        totalSteps: payload.totalSteps,  // ← MANTÉM O MESMO TOTAL
         etapa_atual: novaEtapa,
         criado_em: payload.criado_em,
         expira_em: payload.expira_em,
@@ -103,8 +192,17 @@ function avancarEtapa(tokenAntigo) {
     };
     
     const data = JSON.stringify(novoPayload);
-    const signature = crypto.createHmac('sha256', SECRET_KEY).update(data).digest('hex');
-    return Buffer.from(data).toString('base64url') + '.' + signature;
+    const signature = crypto
+        .createHmac('sha256', SECRET_KEY)
+        .update(data)
+        .digest('hex');
+    
+    const base64Data = Buffer.from(data).toString('base64')
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=/g, '');
+    
+    return base64Data + '.' + signature;
 }
 
 function getRandomCpaLink() {
@@ -120,31 +218,57 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Rota das etapas - AGORA USA O TOTAL STEPS DO TOKEN
 app.get('/page:step', (req, res) => {
     const step = parseInt(req.params.step);
     const token = req.query.token;
     
-    if (!token) return res.redirect('/');
+    console.log(`📄 Acessando page${step}`);
+    
+    if (!token) {
+        console.log('❌ Sem token');
+        return res.redirect('/');
+    }
     
     const payload = verifyToken(token);
-    if (!payload) return res.send(tokenExpiradoHTML());
+    if (!payload) {
+        console.log('❌ Token inválido ou expirado');
+        return res.send(tokenExpiradoHTML());
+    }
     
+    // Verifica se a etapa solicitada é a correta
     if (step !== payload.etapa_atual) {
+        console.log(`⚠️ Redirecionando: etapa correta é ${payload.etapa_atual}`);
         return res.redirect(`/page${payload.etapa_atual}?token=${token}`);
     }
     
+    // Verifica se a etapa está dentro do total
+    if (step > payload.totalSteps) {
+        console.log(`❌ Etapa ${step} maior que total ${payload.totalSteps}`);
+        return res.redirect('/');
+    }
+    
     const link = linksData.find(l => l.alias === payload.alias);
-    if (!link) return res.redirect('/');
+    if (!link) {
+        console.log(`❌ Alias não encontrado: ${payload.alias}`);
+        return res.redirect('/');
+    }
     
-    const config = STEP_CONFIGS[step] || STEP_CONFIGS[1];
-    const cpaLink = (!config.temAnuncio && step < TOTAL_STEPS) ? getRandomCpaLink() : null;
+    // Obtém configuração DINÂMICA baseada na etapa e total
+    const config = getStepConfig(step, payload.totalSteps);
     
-    res.send(gerarHTMLPagina(step, config, token, cpaLink, link.original_url));
+    // Gera link CPA apenas para etapas ímpares (exceto a última)
+    const cpaLink = (!config.temAnuncio && step < payload.totalSteps) ? getRandomCpaLink() : null;
+    
+    res.send(gerarHTMLPagina(step, payload.totalSteps, config, token, cpaLink, link.original_url));
 });
 
+// API para avançar etapa - CORRIGIDA
 app.get('/api/next-step', (req, res) => {
     const token = req.query.token;
     const clientStep = parseInt(req.query.currentStep);
+    
+    console.log(`🔄 Next-step: etapa ${clientStep}`);
     
     if (!token || isNaN(clientStep)) {
         return res.status(400).json({ error: 'Dados inválidos', redirect: '/' });
@@ -152,7 +276,7 @@ app.get('/api/next-step', (req, res) => {
     
     const payload = verifyToken(token);
     if (!payload) {
-        return res.status(403).json({ error: 'Token expirado', redirect: '/' });
+        return res.status(403).json({ error: 'Token expirado ou inválido', redirect: '/' });
     }
     
     const link = linksData.find(l => l.alias === payload.alias);
@@ -164,7 +288,9 @@ app.get('/api/next-step', (req, res) => {
         return res.status(400).json({ error: 'Sequência inválida', redirect: '/' });
     }
     
-    if (clientStep >= TOTAL_STEPS) {
+    // VERIFICAÇÃO CORRETA: Usa o totalSteps do token
+    if (clientStep >= payload.totalSteps) {
+        console.log(`✅ Finalizado! Redirecionando para: ${link.original_url}`);
         return res.json({ 
             redirect: link.original_url,
             final: true
@@ -173,31 +299,64 @@ app.get('/api/next-step', (req, res) => {
     
     const novoToken = avancarEtapa(token);
     if (!novoToken) {
-        return res.status(500).json({ error: 'Erro ao avançar', redirect: '/' });
+        return res.status(500).json({ error: 'Erro ao avançar etapa', redirect: '/' });
     }
     
+    const novaEtapa = clientStep + 1;
+    console.log(`✅ Avançando: etapa ${clientStep} → ${novaEtapa} (total: ${payload.totalSteps})`);
+    
     return res.json({ 
-        redirect: `/page${clientStep + 1}?token=${novoToken}`,
+        redirect: `/page${novaEtapa}?token=${novoToken}`,
         final: false
     });
 });
 
+// API para obter configuração da etapa
+app.get('/api/step-config', (req, res) => {
+    const token = req.query.token;
+    
+    if (!token) {
+        return res.status(400).json({ error: 'Token ausente' });
+    }
+    
+    const payload = verifyToken(token);
+    if (!payload) {
+        return res.status(403).json({ error: 'Token inválido' });
+    }
+    
+    const config = getStepConfig(payload.etapa_atual, payload.totalSteps);
+    const cpaLink = (!config.temAnuncio && payload.etapa_atual < payload.totalSteps) ? getRandomCpaLink() : null;
+    
+    res.json({
+        etapa: payload.etapa_atual,
+        totalSteps: payload.totalSteps,
+        ...config,
+        cpaLink: cpaLink
+    });
+});
+
+// Rota de entrada (encurtador) - AGORA PASSA O STEPS DO LINK
 app.get('/:alias', (req, res) => {
     const alias = req.params.alias;
     const link = linksData.find(l => l.alias === alias);
     
+    console.log(`🔗 Acessando alias: ${alias}`);
+    
     if (link) {
-        const token = createToken(alias);
+        const totalSteps = link.steps || 4;  // ← USA O VALOR DO LINK (default 4)
+        const token = createToken(alias, totalSteps);
+        console.log(`✅ Token criado para ${alias} (${totalSteps} etapas)`);
         res.redirect(`/page1?token=${token}`);
     } else {
+        console.log(`❌ Alias não encontrado: ${alias}`);
         res.redirect('/');
     }
 });
 
 // ============================================================
-// FUNÇÃO: Gerar HTML da página (CORRIGIDA COM 3 BANNERS E BOTÃO INTELIGENTE)
+// FUNÇÃO: Gerar HTML da página (com múltiplos banners)
 // ============================================================
-function gerarHTMLPagina(etapa, config, token, cpaLink, linkFinal) {
+function gerarHTMLPagina(etapa, totalSteps, config, token, cpaLink, linkFinal) {
     const scriptMonetag = config.temAnuncio 
         ? '<script src="https://quge5.com/88/tag.min.js" data-zone="203209" async data-cfasync="false"></script>'
         : '';
@@ -219,8 +378,8 @@ function gerarHTMLPagina(etapa, config, token, cpaLink, linkFinal) {
         `
         : '';
     
-    const isCpaStep = !config.temAnuncio && etapa < TOTAL_STEPS;
-    const isFinalStep = etapa === TOTAL_STEPS;
+    const isCpaStep = !config.temAnuncio && etapa < totalSteps;
+    const isFinalStep = etapa === totalSteps;
     
     return `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -469,7 +628,7 @@ function gerarHTMLPagina(etapa, config, token, cpaLink, linkFinal) {
 <body>
     <div class="container">
         <div class="step-badge">
-            <i class="fas fa-shield-alt"></i> ETAPA ${etapa}/${TOTAL_STEPS}
+            <i class="fas fa-shield-alt"></i> ETAPA ${etapa}/${totalSteps}
         </div>
         <h1>${config.titulo}</h1>
         <p class="subtitle">${config.subtitulo}</p>
@@ -524,7 +683,7 @@ function gerarHTMLPagina(etapa, config, token, cpaLink, linkFinal) {
     <script>
         const CONFIG = {
             etapa: ${etapa},
-            totalSteps: ${TOTAL_STEPS},
+            totalSteps: ${totalSteps},
             timer: ${config.timer},
             cpaLink: ${cpaLink ? JSON.stringify(cpaLink) : 'null'},
             token: '${token}',
@@ -544,7 +703,6 @@ function gerarHTMLPagina(etapa, config, token, cpaLink, linkFinal) {
         const backHint = document.getElementById('backHint');
         const forceAdvance = document.getElementById('forceAdvance');
         
-        // ===== DETECTAR QUANDO USUÁRIO VOLTA DA ABA DO CPA =====
         window.addEventListener('blur', () => { tabBlurred = true; });
         window.addEventListener('focus', () => {
             if (tabBlurred && CONFIG.isCpaStep && cpaOpened && !isProcessing) {
@@ -597,7 +755,6 @@ function gerarHTMLPagina(etapa, config, token, cpaLink, linkFinal) {
             }
         }
         
-        // ===== FORCE ADVANCE (Fallback de segurança) =====
         forceAdvance.addEventListener('click', () => {
             if (CONFIG.isCpaStep && !cpaOpened) {
                 cpaOpened = true;
@@ -607,7 +764,6 @@ function gerarHTMLPagina(etapa, config, token, cpaLink, linkFinal) {
             }
         });
         
-        // ===== BOTÃO PRINCIPAL =====
         mainBtn.addEventListener('click', async () => {
             if (isProcessing) return;
             if (timeLeft > 0 && CONFIG.timer > 0) {
@@ -617,7 +773,6 @@ function gerarHTMLPagina(etapa, config, token, cpaLink, linkFinal) {
             
             isProcessing = true;
             
-            // ETAPA FINAL: Redirecionar direto
             if (CONFIG.isFinalStep) {
                 try {
                     window.open('https://media1.placard.co.mz/redirect.aspx?pid=5905&bid=1690', '_blank');
@@ -626,7 +781,6 @@ function gerarHTMLPagina(etapa, config, token, cpaLink, linkFinal) {
                 return;
             }
             
-            // ETAPA CPA: Primeiro clique abre link
             if (CONFIG.isCpaStep && !cpaOpened && CONFIG.cpaLink) {
                 mainBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ABRINDO...';
                 window.open(CONFIG.cpaLink, '_blank');
@@ -641,7 +795,6 @@ function gerarHTMLPagina(etapa, config, token, cpaLink, linkFinal) {
                 return;
             }
             
-            // AVANÇAR ETAPA
             mainBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESSANDO...';
             mainBtn.disabled = true;
             
@@ -716,9 +869,8 @@ function tokenExpiradoHTML() {
 // ============================================================
 app.listen(PORT, () => {
     console.log(`\n🚀 Servidor rodando na porta ${PORT}`);
-    console.log(`📋 ESTRATÉGIA: 6 Etapas Alternadas com 3 Banners por etapa`);
-    console.log(`📊 Padrão: CPA(1) → Banner(2) → CPA(3) → Banner(4) → CPA(5) → Banner(6)`);
-    console.log(`💰 3 oportunidades CPA + 9 banners CPM + popunder final`);
-    console.log(`🔧 Botão inteligente com detecção de retorno da aba ativado`);
-    console.log(`✅ Links: ${linksData.map(l => l.alias).join(', ') || 'nenhum'}\n`);
+    console.log(`📋 ESTRATÉGIA: Etapas dinâmicas baseadas no links.js`);
+    console.log(`📊 Padrão: Etapas ímpares = CPA | Etapas pares = Banner | Última = Final`);
+    console.log(`💰 Configuração carregada para cada link individualmente`);
+    console.log(`✅ Links: ${linksData.map(l => `${l.alias} (${l.steps || 4} etapas)`).join(', ')}\n`);
 });
