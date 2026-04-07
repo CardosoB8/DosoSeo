@@ -22,11 +22,10 @@ app.use(limiter);
 // ============================================================
 // CONFIGURAÇÕES
 // ============================================================
-const TOKEN_EXPIRATION_MS = 60 * 60 * 1000; // 1 hora
+const TOKEN_EXPIRATION_MS = 60 * 60 * 1000;
 const SECRET_KEY = process.env.TOKEN_SECRET || crypto.randomBytes(64).toString('hex');
-const TOTAL_STEPS = 6; // AGORA SÃO 6 ETAPAS FIXAS
+const TOTAL_STEPS = 6;
 
-// Carregar links
 let linksData = [];
 try {
     linksData = require('./data/links.js');
@@ -37,54 +36,17 @@ try {
 }
 
 // ============================================================
-// CONFIGURAÇÃO DAS ETAPAS (ESTRATÉGIA ALTERNADA)
+// CONFIGURAÇÃO DAS ETAPAS (ALTERNADA: CPA → Banner → CPA → Banner → CPA → Banner)
 // ============================================================
 const STEP_CONFIGS = {
-    1: { 
-        temAnuncio: false,  // SEM BANNER - Apenas CPA
-        timer: 10, 
-        titulo: 'Verificação Inicial', 
-        subtitulo: 'Confirmando que você não é um robô...',
-        tipoBotao: 'cpa'
-    },
-    2: { 
-        temAnuncio: true,   // COM BANNER Adsterra
-        timer: 15, 
-        titulo: 'Conexão Segura', 
-        subtitulo: 'Estabelecendo túnel criptografado...',
-        tipoBotao: 'normal'
-    },
-    3: { 
-        temAnuncio: false,  // SEM BANNER - Apenas CPA
-        timer: 10, 
-        titulo: 'Confirmação Adicional', 
-        subtitulo: 'Última verificação de segurança...',
-        tipoBotao: 'cpa'
-    },
-    4: { 
-        temAnuncio: true,   // COM BANNER Adsterra
-        timer: 15, 
-        titulo: 'Otimização de Rede', 
-        subtitulo: 'Acelerando conexão com o servidor...',
-        tipoBotao: 'normal'
-    },
-    5: { 
-        temAnuncio: false,  // SEM BANNER - Apenas CPA
-        timer: 12, 
-        titulo: 'Verificação Final', 
-        subtitulo: 'Quase pronto! Última confirmação...',
-        tipoBotao: 'cpa'
-    },
-    6: { 
-        temAnuncio: true,   // COM BANNER Adsterra
-        timer: 15, 
-        titulo: 'Preparando Conteúdo', 
-        subtitulo: 'Descriptografando link de destino...',
-        tipoBotao: 'normal'
-    }
+    1: { temAnuncio: false, timer: 10, titulo: 'Verificação Inicial', subtitulo: 'Confirmando que você não é um robô...', tipoBotao: 'cpa' },
+    2: { temAnuncio: true,  timer: 15, titulo: 'Conexão Segura', subtitulo: 'Estabelecendo túnel criptografado...', tipoBotao: 'normal' },
+    3: { temAnuncio: false, timer: 10, titulo: 'Confirmação Adicional', subtitulo: 'Última verificação de segurança...', tipoBotao: 'cpa' },
+    4: { temAnuncio: true,  timer: 15, titulo: 'Otimização de Rede', subtitulo: 'Acelerando conexão com o servidor...', tipoBotao: 'normal' },
+    5: { temAnuncio: false, timer: 12, titulo: 'Verificação Final', subtitulo: 'Quase pronto! Última confirmação...', tipoBotao: 'cpa' },
+    6: { temAnuncio: true,  timer: 15, titulo: 'Preparando Conteúdo', subtitulo: 'Descriptografando link de destino...', tipoBotao: 'final' }
 };
 
-// Links CPA (usados nas etapas 1, 3, 5)
 const CPA_LINKS = [
     'https://omg10.com/4/10420694',
     'https://www.effectivegatecpm.com/ki4e3ftt5h?key=99415bf2c750643bbcc7c1380848fee9',
@@ -94,7 +56,7 @@ const CPA_LINKS = [
 ];
 
 // ============================================================
-// FUNÇÕES DO TOKEN (STATELESS)
+// FUNÇÕES DO TOKEN
 // ============================================================
 function createToken(alias) {
     const payload = {
@@ -106,42 +68,22 @@ function createToken(alias) {
     };
     
     const data = JSON.stringify(payload);
-    const signature = crypto
-        .createHmac('sha256', SECRET_KEY)
-        .update(data)
-        .digest('hex');
-    
+    const signature = crypto.createHmac('sha256', SECRET_KEY).update(data).digest('hex');
     return Buffer.from(data).toString('base64url') + '.' + signature;
 }
 
 function verifyToken(token) {
     if (!token) return null;
-    
     try {
         const [encodedData, signature] = token.split('.');
         if (!encodedData || !signature) return null;
-        
         const data = Buffer.from(encodedData, 'base64url').toString('utf8');
         const payload = JSON.parse(data);
-        
-        if (Date.now() > payload.expira_em) {
-            console.log('⏰ Token expirado');
-            return null;
-        }
-        
-        const expectedSignature = crypto
-            .createHmac('sha256', SECRET_KEY)
-            .update(data)
-            .digest('hex');
-        
-        if (signature !== expectedSignature) {
-            console.log('🔒 Assinatura inválida');
-            return null;
-        }
-        
+        if (Date.now() > payload.expira_em) return null;
+        const expectedSignature = crypto.createHmac('sha256', SECRET_KEY).update(data).digest('hex');
+        if (signature !== expectedSignature) return null;
         return payload;
     } catch (e) {
-        console.error('Erro ao verificar token:', e.message);
         return null;
     }
 }
@@ -149,9 +91,7 @@ function verifyToken(token) {
 function avancarEtapa(tokenAntigo) {
     const payload = verifyToken(tokenAntigo);
     if (!payload) return null;
-    
     const novaEtapa = payload.etapa_atual + 1;
-    
     if (novaEtapa > TOTAL_STEPS) return null;
     
     const novoPayload = {
@@ -163,17 +103,10 @@ function avancarEtapa(tokenAntigo) {
     };
     
     const data = JSON.stringify(novoPayload);
-    const signature = crypto
-        .createHmac('sha256', SECRET_KEY)
-        .update(data)
-        .digest('hex');
-    
+    const signature = crypto.createHmac('sha256', SECRET_KEY).update(data).digest('hex');
     return Buffer.from(data).toString('base64url') + '.' + signature;
 }
 
-// ============================================================
-// FUNÇÃO: Obter link CPA aleatório
-// ============================================================
 function getRandomCpaLink() {
     return CPA_LINKS[Math.floor(Math.random() * CPA_LINKS.length)];
 }
@@ -187,49 +120,31 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Rota principal das etapas
 app.get('/page:step', (req, res) => {
     const step = parseInt(req.params.step);
     const token = req.query.token;
     
-    console.log(`📄 Acessando page${step}`);
-    
-    if (!token) {
-        console.log('❌ Sem token');
-        return res.redirect('/');
-    }
+    if (!token) return res.redirect('/');
     
     const payload = verifyToken(token);
-    if (!payload) {
-        console.log('❌ Token inválido ou expirado');
-        return res.send(tokenExpiradoHTML());
-    }
+    if (!payload) return res.send(tokenExpiradoHTML());
     
     if (step !== payload.etapa_atual) {
-        console.log(`⚠️ Redirecionando: etapa correta é ${payload.etapa_atual}`);
         return res.redirect(`/page${payload.etapa_atual}?token=${token}`);
     }
     
     const link = linksData.find(l => l.alias === payload.alias);
-    if (!link) {
-        console.log(`❌ Alias não encontrado: ${payload.alias}`);
-        return res.redirect('/');
-    }
+    if (!link) return res.redirect('/');
     
     const config = STEP_CONFIGS[step] || STEP_CONFIGS[1];
-    
-    // Gerar link CPA se for etapa ímpar (1, 3, 5)
     const cpaLink = (!config.temAnuncio && step < TOTAL_STEPS) ? getRandomCpaLink() : null;
     
-    res.send(gerarHTMLPagina(step, config, token, cpaLink));
+    res.send(gerarHTMLPagina(step, config, token, cpaLink, link.original_url));
 });
 
-// API para avançar etapa
 app.get('/api/next-step', (req, res) => {
     const token = req.query.token;
     const clientStep = parseInt(req.query.currentStep);
-    
-    console.log(`🔄 Next-step: etapa ${clientStep}`);
     
     if (!token || isNaN(clientStep)) {
         return res.status(400).json({ error: 'Dados inválidos', redirect: '/' });
@@ -237,7 +152,7 @@ app.get('/api/next-step', (req, res) => {
     
     const payload = verifyToken(token);
     if (!payload) {
-        return res.status(403).json({ error: 'Token expirado ou inválido', redirect: '/' });
+        return res.status(403).json({ error: 'Token expirado', redirect: '/' });
     }
     
     const link = linksData.find(l => l.alias === payload.alias);
@@ -249,92 +164,63 @@ app.get('/api/next-step', (req, res) => {
         return res.status(400).json({ error: 'Sequência inválida', redirect: '/' });
     }
     
-    // Se já está na última etapa, libera o link final
     if (clientStep >= TOTAL_STEPS) {
-        console.log(`✅ Finalizado! Redirecionando para: ${link.original_url}`);
-        
-        // Na última etapa, retornamos o link final + popunder
         return res.json({ 
             redirect: link.original_url,
-            final: true,
-            popunder: true
+            final: true
         });
     }
     
     const novoToken = avancarEtapa(token);
     if (!novoToken) {
-        return res.status(500).json({ error: 'Erro ao avançar etapa', redirect: '/' });
+        return res.status(500).json({ error: 'Erro ao avançar', redirect: '/' });
     }
     
-    const novaEtapa = clientStep + 1;
-    console.log(`✅ Avançando: etapa ${clientStep} → ${novaEtapa}`);
-    
     return res.json({ 
-        redirect: `/page${novaEtapa}?token=${novoToken}`,
+        redirect: `/page${clientStep + 1}?token=${novoToken}`,
         final: false
     });
 });
 
-// API para obter configuração da etapa
-app.get('/api/step-config', (req, res) => {
-    const token = req.query.token;
-    
-    if (!token) {
-        return res.status(400).json({ error: 'Token ausente' });
-    }
-    
-    const payload = verifyToken(token);
-    if (!payload) {
-        return res.status(403).json({ error: 'Token inválido' });
-    }
-    
-    const etapa = payload.etapa_atual;
-    const config = STEP_CONFIGS[etapa] || STEP_CONFIGS[1];
-    const cpaLink = (!config.temAnuncio && etapa < TOTAL_STEPS) ? getRandomCpaLink() : null;
-    
-    res.json({
-        etapa: etapa,
-        totalSteps: TOTAL_STEPS,
-        ...config,
-        cpaLink: cpaLink
-    });
-});
-
-// Rota de entrada (encurtador)
 app.get('/:alias', (req, res) => {
     const alias = req.params.alias;
     const link = linksData.find(l => l.alias === alias);
     
-    console.log(`🔗 Acessando alias: ${alias}`);
-    
     if (link) {
         const token = createToken(alias);
-        console.log(`✅ Token criado para ${alias} (${TOTAL_STEPS} etapas)`);
         res.redirect(`/page1?token=${token}`);
     } else {
-        console.log(`❌ Alias não encontrado: ${alias}`);
         res.redirect('/');
     }
 });
 
 // ============================================================
-// FUNÇÃO: Gerar HTML da página
+// FUNÇÃO: Gerar HTML da página (CORRIGIDA COM 3 BANNERS E BOTÃO INTELIGENTE)
 // ============================================================
-function gerarHTMLPagina(etapa, config, token, cpaLink) {
+function gerarHTMLPagina(etapa, config, token, cpaLink, linkFinal) {
     const scriptMonetag = config.temAnuncio 
         ? '<script src="https://quge5.com/88/tag.min.js" data-zone="203209" async data-cfasync="false"></script>'
-        : '<!-- Monetag desativada para esta etapa -->';
+        : '';
     
-    const bannerAdsterra = config.temAnuncio
+    const bannersAdsterra = config.temAnuncio
         ? `
-        <div class="ad-container">
+        <div class="ad-container ad-sticky">
             <script async="async" data-cfasync="false" src="//pl27551656.revenuecpmgate.com/57af132f9a89824d027d70445ba09a9a/invoke.js"></script>
             <div id="container-57af132f9a89824d027d70445ba09a9a"></div>
         </div>
+        <div class="ad-container ad-middle">
+            <script async="async" data-cfasync="false" src="//pl27551656.revenuecpmgate.com/57af132f9a89824d027d70445ba09a9a/invoke.js"></script>
+            <div id="container-57af132f9a89824d027d70445ba09a9a-2"></div>
+        </div>
+        <div class="ad-container ad-footer">
+            <script async="async" data-cfasync="false" src="//pl27551656.revenuecpmgate.com/57af132f9a89824d027d70445ba09a9a/invoke.js"></script>
+            <div id="container-57af132f9a89824d027d70445ba09a9a-3"></div>
+        </div>
         `
-        : '<!-- Banner Adsterra desativado para esta etapa -->';
+        : '';
     
     const isCpaStep = !config.temAnuncio && etapa < TOTAL_STEPS;
+    const isFinalStep = etapa === TOTAL_STEPS;
     
     return `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -397,12 +283,7 @@ function gerarHTMLPagina(etapa, config, token, cpaLink) {
             font-weight: 600;
             margin-bottom: 20px;
         }
-        h1 {
-            font-size: 1.8rem;
-            color: var(--dark);
-            margin-bottom: 10px;
-            font-weight: 700;
-        }
+        h1 { font-size: 1.8rem; color: var(--dark); margin-bottom: 10px; font-weight: 700; }
         .subtitle { color: var(--text-light); font-size: 1rem; margin-bottom: 20px; }
         .timer-section {
             background: linear-gradient(135deg, rgba(248, 249, 255, 0.9), rgba(255, 255, 255, 0.9));
@@ -441,19 +322,34 @@ function gerarHTMLPagina(etapa, config, token, cpaLink) {
             transition: width 1s linear;
         }
         .ad-container {
+            width: 100%;
+            margin: 15px 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100px;
+            background: rgba(248, 249, 255, 0.5);
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid rgba(106, 90, 249, 0.1);
+            padding: 5px;
+            position: relative;
+        }
+        .ad-container.ad-sticky {
             position: sticky;
             top: 10px;
             z-index: 100;
-            width: 100%;
-            margin: 20px 0;
-            display: flex;
-            justify-content: center;
             min-height: 250px;
-            background: rgba(248, 249, 255, 0.5);
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-            border: 1px solid rgba(106, 90, 249, 0.2);
-            padding: 5px;
+        }
+        .ad-container.ad-middle { min-height: 120px; }
+        .ad-container.ad-footer { min-height: 250px; }
+        .ad-container.ad-middle::before {
+            content: "Publicidade";
+            position: absolute;
+            top: -18px;
+            left: 0;
+            font-size: 10px;
+            color: #999;
+            text-transform: uppercase;
         }
         .content-area {
             background: rgba(248, 249, 255, 0.7);
@@ -469,10 +365,7 @@ function gerarHTMLPagina(etapa, config, token, cpaLink) {
             border-radius: 8px;
             margin-bottom: 20px;
         }
-        .button-container {
-            display: flex;
-            justify-content: center;
-        }
+        .button-container { display: flex; justify-content: center; }
         .action-button {
             display: inline-flex;
             align-items: center;
@@ -491,9 +384,8 @@ function gerarHTMLPagina(etapa, config, token, cpaLink) {
             box-shadow: 0 8px 25px rgba(106, 90, 249, 0.4);
             transition: all 0.3s ease;
         }
-        .action-button.cpa-button {
-            background: linear-gradient(135deg, var(--success), #27ae60);
-        }
+        .action-button.cpa-button { background: linear-gradient(135deg, var(--success), #27ae60); }
+        .action-button.final-button { background: linear-gradient(135deg, var(--warning), #e67e22); }
         .action-button:disabled {
             background: #bdc3c7;
             cursor: not-allowed;
@@ -503,6 +395,17 @@ function gerarHTMLPagina(etapa, config, token, cpaLink) {
             transform: translateY(-3px);
             box-shadow: 0 12px 30px rgba(106, 90, 249, 0.6);
         }
+        .back-hint {
+            text-align: center;
+            margin-top: 15px;
+            padding: 12px;
+            background: #e3f2fd;
+            border-radius: 10px;
+            display: none;
+            animation: pulse 1.5s infinite;
+        }
+        .back-hint.show { display: block; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
         footer {
             margin-top: 30px;
             color: var(--text-light);
@@ -522,10 +425,7 @@ function gerarHTMLPagina(etapa, config, token, cpaLink) {
             visibility: hidden;
             transition: all 0.3s;
         }
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
         .modal-box {
             background: white;
             padding: 30px;
@@ -545,10 +445,21 @@ function gerarHTMLPagina(etapa, config, token, cpaLink) {
             cursor: pointer;
             font-weight: bold;
         }
+        .force-advance {
+            margin-top: 15px;
+            font-size: 0.85rem;
+            color: var(--text-light);
+            cursor: pointer;
+            text-decoration: underline;
+            opacity: 0.7;
+        }
+        .force-advance:hover { opacity: 1; }
         @media (max-width: 768px) {
             .container { padding: 20px; }
             h1 { font-size: 1.5rem; }
             #countdown { font-size: 2.8rem; }
+            .ad-container.ad-sticky { min-height: 100px; }
+            .ad-container.ad-footer { min-height: 100px; }
         }
         @media (max-width: 480px) {
             #countdown { font-size: 2.3rem; }
@@ -570,23 +481,32 @@ function gerarHTMLPagina(etapa, config, token, cpaLink) {
                 <div id="progressBar" class="progress"></div>
             </div>
             <p style="text-align: center; color: var(--text-light); margin-top: 10px;">
-                <i class="fas fa-arrow-down"></i> Continue abaixo
+                <i class="fas fa-arrow-down"></i> Role para continuar
             </p>
         </div>
         
-        ${bannerAdsterra}
+        ${bannersAdsterra}
         
         <div class="content-area">
             <div class="info-box">
-                <i class="fas ${isCpaStep ? 'fa-external-link-alt' : 'fa-clock'}"></i> 
-                <strong>${isCpaStep ? 'Verificação necessária:' : 'Aguarde:'}</strong> 
-                ${isCpaStep ? 'Clique no botão para confirmar acesso' : 'O botão será liberado em breve'}
+                <i class="fas ${isCpaStep ? 'fa-external-link-alt' : isFinalStep ? 'fa-trophy' : 'fa-clock'}"></i> 
+                <strong>${isCpaStep ? 'Verificação necessária:' : isFinalStep ? 'Pronto!' : 'Aguarde:'}</strong> 
+                ${isCpaStep ? 'Clique no botão para confirmar acesso' : isFinalStep ? 'Clique para acessar seu conteúdo' : 'O botão será liberado em breve'}
             </div>
             
             <div class="button-container">
-                <button id="mainActionBtn" class="action-button ${isCpaStep ? 'cpa-button' : ''}" disabled>
+                <button id="mainActionBtn" class="action-button ${isCpaStep ? 'cpa-button' : isFinalStep ? 'final-button' : ''}" disabled>
                     <i class="fas fa-hourglass-half"></i> Aguarde...
                 </button>
+            </div>
+            
+            <div id="backHint" class="back-hint">
+                <i class="fas fa-undo-alt"></i> 
+                <strong>Já voltou?</strong> Clique no botão acima para avançar!
+            </div>
+            
+            <div class="force-advance" id="forceAdvance" style="display: none;">
+                <i class="fas fa-exclamation-triangle"></i> Problemas? Clique aqui para avançar manualmente
             </div>
         </div>
         
@@ -608,16 +528,30 @@ function gerarHTMLPagina(etapa, config, token, cpaLink) {
             timer: ${config.timer},
             cpaLink: ${cpaLink ? JSON.stringify(cpaLink) : 'null'},
             token: '${token}',
-            isCpaStep: ${isCpaStep}
+            isCpaStep: ${isCpaStep},
+            isFinalStep: ${isFinalStep},
+            linkFinal: ${isFinalStep ? JSON.stringify(linkFinal) : 'null'}
         };
         
         let timeLeft = CONFIG.timer;
         let cpaOpened = false;
         let isProcessing = false;
+        let tabBlurred = false;
         
         const countdownEl = document.getElementById('countdown');
         const progressBar = document.getElementById('progressBar');
         const mainBtn = document.getElementById('mainActionBtn');
+        const backHint = document.getElementById('backHint');
+        const forceAdvance = document.getElementById('forceAdvance');
+        
+        // ===== DETECTAR QUANDO USUÁRIO VOLTA DA ABA DO CPA =====
+        window.addEventListener('blur', () => { tabBlurred = true; });
+        window.addEventListener('focus', () => {
+            if (tabBlurred && CONFIG.isCpaStep && cpaOpened && !isProcessing) {
+                backHint.classList.add('show');
+                forceAdvance.style.display = 'block';
+            }
+        });
         
         function startTimer() {
             if (CONFIG.timer === 0) {
@@ -646,16 +580,34 @@ function gerarHTMLPagina(etapa, config, token, cpaLink) {
         function enableButton() {
             mainBtn.disabled = false;
             
-            if (CONFIG.etapa === CONFIG.totalSteps) {
-                mainBtn.innerHTML = '<i class="fas fa-download"></i> ACESSAR CONTEÚDO';
+            if (CONFIG.isFinalStep) {
+                mainBtn.innerHTML = '<i class="fas fa-download"></i> ACESSAR CONTEÚDO FINAL';
+                mainBtn.className = 'action-button final-button';
             } else if (CONFIG.isCpaStep) {
-                mainBtn.innerHTML = '<i class="fas fa-external-link-alt"></i> VERIFICAR ACESSO';
-                mainBtn.className = 'action-button cpa-button';
+                if (!cpaOpened) {
+                    mainBtn.innerHTML = '<i class="fas fa-external-link-alt"></i> VERIFICAR ACESSO';
+                    mainBtn.className = 'action-button cpa-button';
+                } else {
+                    mainBtn.innerHTML = '<i class="fas fa-check"></i> JÁ VERIFIQUEI, AVANÇAR';
+                    mainBtn.className = 'action-button';
+                }
             } else {
                 mainBtn.innerHTML = '<i class="fas fa-arrow-right"></i> CONTINUAR';
+                mainBtn.className = 'action-button';
             }
         }
         
+        // ===== FORCE ADVANCE (Fallback de segurança) =====
+        forceAdvance.addEventListener('click', () => {
+            if (CONFIG.isCpaStep && !cpaOpened) {
+                cpaOpened = true;
+                enableButton();
+                backHint.classList.add('show');
+                showModal('Dica', 'Agora clique no botão "JÁ VERIFIQUEI, AVANÇAR" para continuar.');
+            }
+        });
+        
+        // ===== BOTÃO PRINCIPAL =====
         mainBtn.addEventListener('click', async () => {
             if (isProcessing) return;
             if (timeLeft > 0 && CONFIG.timer > 0) {
@@ -665,17 +617,31 @@ function gerarHTMLPagina(etapa, config, token, cpaLink) {
             
             isProcessing = true;
             
-            // ETAPA CPA: Abrir link
+            // ETAPA FINAL: Redirecionar direto
+            if (CONFIG.isFinalStep) {
+                try {
+                    window.open('https://media1.placard.co.mz/redirect.aspx?pid=5905&bid=1690', '_blank');
+                } catch(e) {}
+                setTimeout(() => { window.location.href = CONFIG.linkFinal; }, 300);
+                return;
+            }
+            
+            // ETAPA CPA: Primeiro clique abre link
             if (CONFIG.isCpaStep && !cpaOpened && CONFIG.cpaLink) {
+                mainBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ABRINDO...';
                 window.open(CONFIG.cpaLink, '_blank');
                 cpaOpened = true;
-                mainBtn.innerHTML = '<i class="fas fa-check"></i> JÁ VERIFIQUEI, AVANÇAR';
-                mainBtn.className = 'action-button';
+                tabBlurred = true;
+                
+                enableButton();
+                backHint.classList.add('show');
+                forceAdvance.style.display = 'block';
+                
                 isProcessing = false;
                 return;
             }
             
-            // Avançar etapa
+            // AVANÇAR ETAPA
             mainBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESSANDO...';
             mainBtn.disabled = true;
             
@@ -684,7 +650,6 @@ function gerarHTMLPagina(etapa, config, token, cpaLink) {
                 const data = await response.json();
                 
                 if (data.redirect) {
-                    // Se for a última etapa, abrir popunder
                     if (data.final) {
                         try {
                             window.open('https://media1.placard.co.mz/redirect.aspx?pid=5905&bid=1690', '_blank');
@@ -696,10 +661,12 @@ function gerarHTMLPagina(etapa, config, token, cpaLink) {
                 } else {
                     showModal('Erro', data.error || 'Falha ao avançar');
                     mainBtn.disabled = false;
+                    enableButton();
                 }
             } catch (e) {
                 showModal('Erro', 'Falha na conexão');
                 mainBtn.disabled = false;
+                enableButton();
             } finally {
                 isProcessing = false;
             }
@@ -749,8 +716,9 @@ function tokenExpiradoHTML() {
 // ============================================================
 app.listen(PORT, () => {
     console.log(`\n🚀 Servidor rodando na porta ${PORT}`);
-    console.log(`📋 ESTRATÉGIA: 6 Etapas Alternadas`);
-    console.log(`📊 Padrão: CPA → Banner → CPA → Banner → CPA → Banner`);
-    console.log(`💰 3 oportunidades CPA + 3 banners CPM + 1 popunder final`);
+    console.log(`📋 ESTRATÉGIA: 6 Etapas Alternadas com 3 Banners por etapa`);
+    console.log(`📊 Padrão: CPA(1) → Banner(2) → CPA(3) → Banner(4) → CPA(5) → Banner(6)`);
+    console.log(`💰 3 oportunidades CPA + 9 banners CPM + popunder final`);
+    console.log(`🔧 Botão inteligente com detecção de retorno da aba ativado`);
     console.log(`✅ Links: ${linksData.map(l => l.alias).join(', ') || 'nenhum'}\n`);
 });
