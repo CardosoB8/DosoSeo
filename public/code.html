@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>copiar</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      background: #0a1a2f;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: system-ui, 'Segoe UI', monospace;
+      padding: 16px;
+    }
+
+    .container {
+      background: #0b2640;
+      padding: 32px 24px;
+      border-radius: 24px;
+      box-shadow: 0 20px 40px #00000055, 0 0 0 1px #2a6ebb inset;
+      border: 1px solid #1e5390;
+      max-width: 700px;
+      width: 100%;
+    }
+
+    .codigo {
+      background: #03182b;
+      padding: 24px 16px;
+      border-radius: 18px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #b1dcfd;
+      text-align: center;
+      word-break: break-all;
+      border: 1px solid #1e5b9e;
+      box-shadow: inset 0 4px 10px #00000080, 0 4px 8px #00000030;
+      margin-bottom: 28px;
+      text-shadow: 0 0 8px #007bff;
+    }
+
+    .copiar-btn {
+      background: #0f3c64;
+      border: 2px solid #57abff;
+      color: #ecf5ff;
+      font-size: 1.7rem;
+      font-weight: 600;
+      padding: 16px 20px;
+      width: 100%;
+      border-radius: 60px;
+      cursor: pointer;
+      box-shadow: 0 8px 0 #02182b, 0 6px 16px #00000070, 0 0 12px #2f95ff;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      transition: all 0.1s;
+      background: linear-gradient(#13568a, #0a2e50);
+      backdrop-filter: blur(4px);
+      border: 1.5px solid #7bb5ff;
+    }
+
+    .copiar-btn:hover {
+      background: #1d5290;
+      border-color: #a5ceff;
+      box-shadow: 0 5px 0 #011a30, 0 10px 22px #000, 0 0 22px #4aa3ff;
+      transform: translateY(2px);
+      color: white;
+    }
+
+    .copiar-btn:active {
+      transform: translateY(6px);
+      box-shadow: 0 2px 0 #011a30, 0 8px 18px #000, 0 0 18px #2f95ff;
+    }
+
+    /* só o essencial */
+    @media (max-width: 480px) {
+      .codigo {
+        font-size: 1.2rem;
+        padding: 20px 8px;
+      }
+      .copiar-btn {
+        font-size: 1.3rem;
+        padding: 14px 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="codigo" id="textoParaCopiar">TXJEb3NvfDE3NzU3MjE2MDAwMDB8ODY1NDQ2NTc0fG1Db3RCKypmPlNZeU9AOEVt</div>
+    <button class="copiar-btn" id="btnCopiar">COPIAR</button>
+  </div>
+
+  <script>
+    const codigo = "TXJEb3NvfDE3NzU3MjE2MDAwMDB8ODY1NDQ2NTc0fG1Db3RCKypmPlNZeU9AOEVt";
+    const btn = document.getElementById('btnCopiar');
+
+    btn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(codigo);
+        // feedback sutil apenas no texto do botão (sem mensagens extras)
+        const originalText = btn.textContent;
+        btn.textContent = '✓ COPIADO';
+        btn.style.background = '#1f6e4a';
+        btn.style.borderColor = '#a0ffb0';
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.style.background = '';
+          btn.style.borderColor = '';
+        }, 1300);
+      } catch (e) {
+        // fallback simples
+        const ta = document.createElement('textarea');
+        ta.value = codigo;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        btn.textContent = '✓ COPIADO';
+        setTimeout(() => btn.textContent = 'COPIAR', 1000);
+      }
+    });
+  </script>
+</body>
+</html>
