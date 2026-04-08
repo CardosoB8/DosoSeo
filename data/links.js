@@ -300,7 +300,13 @@ const links = [
     "original_url": "https://play.google.com/store/apps/details?id=vpn.minapronet.com.eg",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
-  }
+  },
+    {
+    "alias": "dsotv-password",
+    "original_url": "TXJEb3NvfDE3NzU3MjE2MDAwMDB8ODY1NDQ2NTc0fG1Db3RCKypmPlNZeU9AOEVt",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
+    "steps": 6
+    }
 ];
 
 // Exporta o array de links para que index.js possa importá-lo
