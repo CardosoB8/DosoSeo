@@ -303,7 +303,7 @@ const links = [
   },
     {
     "alias": "dsotv-password",
-    "original_url": "TXJEb3NvfDE3NzU3MjE2MDAwMDB8ODY1NDQ2NTc0fG1Db3RCKypmPlNZeU9AOEVt",
+    "original_url": "https://www.seodoso.xyz/code.html",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
     }
