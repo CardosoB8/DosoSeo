@@ -303,7 +303,7 @@ const links = [
   },
     {
     "alias": "dsotv-password",
-    "original_url": "https://www.seodoso.xyz/code.html",
+    "original_url": "https://www.mediafire.com/file/zyhgmb3ad2xvzmq/tvcode.txt/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
     }
