@@ -303,8 +303,19 @@ app.use(async (req, res, next) => {
 });
 
 // Para ler cookies
-app.use(require('cookie-parser')());
-
+// Função manual para ler cookies
+app.use((req, res, next) => {
+    req.cookies = {};
+    const cookieHeader = req.headers.cookie;
+    
+    if (cookieHeader) {
+        cookieHeader.split(';').forEach(cookie => {
+            const parts = cookie.split('=');
+            req.cookies[parts[0].trim()] = decodeURIComponent(parts[1] || '');
+        });
+    }
+    next();
+});
 // =================================================================
 // ROTAS
 // =================================================================
