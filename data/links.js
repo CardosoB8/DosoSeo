@@ -177,7 +177,7 @@ const links = [
   },
   {
     "alias": "ilimitado-arquivo-httpinjector",
-    "original_url": "https://www.mediafire.com/file/uw75ulhrii0pqb9/NovoFastTravaMb.ehi/file",
+    "original_url": "https://www.mediafire.com/file/uedd45ves5zn10a/NovoIlimitadoHttp.ehi/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
   },
