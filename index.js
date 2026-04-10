@@ -5,6 +5,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const redis = require('redis');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -12,31 +13,18 @@ const PORT = process.env.PORT || 3000;
 // =================================================================
 // CONFIGURAÇÕES DE SEGURANÇA
 // =================================================================
-// server.js
-const ALLOWED_AD_NETWORKS = [
-    'https://quge5.com',                          // Monetag
-    'https://pl27551656.revenuecpmgate.com',     // Adsterra
-    'https://omg10.com',                          // CPA Links
-    'https://www.effectivegatecpm.com',          // CPA Links
-    // Adicione mais quando precisar:
-    // 'https://pagead2.googlesyndication.com',   // Google Adsense
-    // 'https://adservice.google.com',            // Google Ads
-];
+app.set('trust proxy', 1);
 
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: [
-                "'self'", 
-                "'unsafe-inline'",  // Permite scripts inline que VOCÊ gera
-                ...ALLOWED_AD_NETWORKS
-            ],
             styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "https://quge5.com", "https://pl27551656.revenuecpmgate.com"],
             fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
             imgSrc: ["'self'", "data:", "https:"],
             connectSrc: ["'self'"],
-            frameSrc: ["'self'", "https:"],  // Para iframes de anúncios
+            frameSrc: ["'self'", "https:"]
         }
     }
 }));
@@ -44,18 +32,20 @@ app.use(helmet({
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Rate limit
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
-    message: { error: 'Muitas requisições' }
+    message: { error: 'Muitas requisições' },
+    standardHeaders: true,
+    legacyHeaders: false
 });
 app.use(limiter);
 
 // =================================================================
-// CONFIGURAÇÃO DO REDIS (O SEU, QUE JÁ FUNCIONA!)
+// CONFIGURAÇÃO DO REDIS
 // =================================================================
 const redisClient = redis.createClient({
     url: 'redis://default:JyefUsxHJljfdvs8HACumEyLE7XNgLvG@redis-19242.c266.us-east-1-3.ec2.cloud.redislabs.com:19242'
@@ -70,49 +60,25 @@ redisClient.on('connect', () => console.log('✅ Conectado ao Redis Cloud!'));
 })();
 
 // =================================================================
-// CONFIGURAÇÕES DO SISTEMA DE LINKS
+// CONFIGURAÇÕES DO SISTEMA
 // =================================================================
-const SESSION_EXPIRATION = 24 * 60 * 60; // 24 horas em segundos
+const SESSION_EXPIRATION = 24 * 60 * 60;
 
-// Carregar links dinamicamente
 let linksData = [];
 try {
     linksData = require('./data/links.js');
-    console.log('✅ Links carregados:', linksData.map(l => `${l.alias} (${l.steps || 4} etapas)`).join(', '));
+    console.log(`✅ Links carregados: ${linksData.length} links`);
 } catch (error) {
     console.error('❌ Erro ao carregar links.js:', error.message);
     linksData = [];
 }
 
-// Configuração das etapas
 const BASE_STEP_CONFIGS = {
-    impar: { 
-        temAnuncio: false, 
-        timer: 10, 
-        titulo: 'Verificação de Acesso', 
-        subtitulo: 'Confirmando que você não é um robô...', 
-        tipoBotao: 'cpa',
-        icone: 'shield-alt'
-    },
-    par: { 
-        temAnuncio: true, 
-        timer: 15, 
-        titulo: 'Processando Link', 
-        subtitulo: 'Estabelecendo conexão segura...', 
-        tipoBotao: 'normal',
-        icone: 'lock'
-    },
-    final: { 
-        temAnuncio: true, 
-        timer: 15, 
-        titulo: 'Link Pronto!', 
-        subtitulo: 'Seu conteúdo está disponível', 
-        tipoBotao: 'final',
-        icone: 'check-circle'
-    }
+    impar: { temAnuncio: false, timer: 10, titulo: 'Verificação de Acesso', subtitulo: 'Confirmando que você não é um robô...', tipoBotao: 'cpa', icone: 'shield-alt' },
+    par: { temAnuncio: true, timer: 15, titulo: 'Processando Link', subtitulo: 'Estabelecendo conexão segura...', tipoBotao: 'normal', icone: 'lock' },
+    final: { temAnuncio: true, timer: 15, titulo: 'Link Pronto!', subtitulo: 'Seu conteúdo está disponível', tipoBotao: 'final', icone: 'check-circle' }
 };
 
-// Links CPA
 const CPA_LINKS = [
     'https://omg10.com/4/10420694',
     'https://www.effectivegatecpm.com/ki4e3ftt5h?key=99415bf2c750643bbcc7c1380848fee9',
@@ -124,7 +90,7 @@ const CPA_LINKS = [
 ];
 
 // =================================================================
-// FUNÇÕES DE SESSÃO COM REDIS (MESMO PADRÃO QUE FUNCIONA)
+// FUNÇÕES DE SESSÃO
 // =================================================================
 function generateSessionId() {
     return crypto.randomBytes(32).toString('hex');
@@ -152,44 +118,23 @@ async function createSession(alias, totalSteps, req) {
         ip: req.ip
     };
     
-    // Salva no Redis (igual seu sistema de licenças)
-    await redisClient.setEx(
-        `session:${sessionId}`,
-        SESSION_EXPIRATION,
-        JSON.stringify(sessionData)
-    );
+    await redisClient.setEx(`session:${sessionId}`, SESSION_EXPIRATION, JSON.stringify(sessionData));
+    await redisClient.setEx(`fingerprint:${fingerprint}`, SESSION_EXPIRATION, sessionId);
     
-    // Backup por fingerprint
-    await redisClient.setEx(
-        `fingerprint:${fingerprint}`,
-        SESSION_EXPIRATION,
-        sessionId
-    );
-    
-    console.log(`✅ Sessão criada: ${sessionId.substring(0, 8)}... para ${alias}`);
+    console.log(`✅ Sessão criada: ${sessionId.substring(0, 8)}... para ${alias} (${totalSteps} etapas)`);
     return sessionData;
 }
 
 async function getSession(sessionId) {
     if (!sessionId) return null;
-    
     try {
         const data = await redisClient.get(`session:${sessionId}`);
         if (!data) return null;
-        
         const session = JSON.parse(data);
         session.ultima_acao = Date.now();
-        
-        // Renova expiração
-        await redisClient.setEx(
-            `session:${sessionId}`,
-            SESSION_EXPIRATION,
-            JSON.stringify(session)
-        );
-        
+        await redisClient.setEx(`session:${sessionId}`, SESSION_EXPIRATION, JSON.stringify(session));
         return session;
     } catch (e) {
-        console.error('❌ Erro ao buscar sessão:', e);
         return null;
     }
 }
@@ -197,42 +142,24 @@ async function getSession(sessionId) {
 async function updateSession(sessionId, etapa) {
     const session = await getSession(sessionId);
     if (!session) return null;
-    
     session.etapa_atual = etapa;
     session.ultima_acao = Date.now();
-    
-    await redisClient.setEx(
-        `session:${sessionId}`,
-        SESSION_EXPIRATION,
-        JSON.stringify(session)
-    );
-    
+    await redisClient.setEx(`session:${sessionId}`, SESSION_EXPIRATION, JSON.stringify(session));
     return session;
 }
 
 async function recoverSession(req) {
-    // Tenta pelo cookie
-    const sessionId = req.cookies?.sessionId;
+    const sessionId = req.cookies?.sessionId || req.headers['x-session-id'];
     if (sessionId) {
         const session = await getSession(sessionId);
         if (session) return session;
     }
-    
-    // Tenta pelo header (para apps)
-    const headerSession = req.headers['x-session-id'];
-    if (headerSession) {
-        const session = await getSession(headerSession);
-        if (session) return session;
-    }
-    
-    // Tenta pelo fingerprint
     const fingerprint = getClientFingerprint(req);
     const recoveredId = await redisClient.get(`fingerprint:${fingerprint}`);
     if (recoveredId) {
         const session = await getSession(recoveredId);
         if (session) return session;
     }
-    
     return null;
 }
 
@@ -240,29 +167,20 @@ async function recoverSession(req) {
 // FUNÇÕES AUXILIARES
 // =================================================================
 function getStepConfig(etapa, totalSteps) {
-    if (etapa === totalSteps) {
-        return { ...BASE_STEP_CONFIGS.final };
-    }
+    if (etapa === totalSteps) return { ...BASE_STEP_CONFIGS.final };
     
     const isImpar = etapa % 2 === 1;
     const baseConfig = isImpar ? BASE_STEP_CONFIGS.impar : BASE_STEP_CONFIGS.par;
     
     const titulos = {
-        1: 'Verificação Inicial',
-        2: 'Conexão Segura',
-        3: 'Confirmação Adicional', 
-        4: 'Otimização de Rede',
-        5: 'Verificação Final',
-        6: 'Preparando Conteúdo'
+        1: 'Verificação Inicial', 2: 'Conexão Segura', 3: 'Confirmação Adicional',
+        4: 'Otimização de Rede', 5: 'Verificação Final', 6: 'Preparando Conteúdo'
     };
     
     const subtitulos = {
-        1: 'Confirmando que você não é um robô...',
-        2: 'Estabelecendo túnel criptografado...',
-        3: 'Última verificação de segurança...',
-        4: 'Acelerando conexão com o servidor...',
-        5: 'Quase pronto! Última confirmação...',
-        6: 'Descriptografando link de destino...'
+        1: 'Confirmando que você não é um robô...', 2: 'Estabelecendo túnel criptografado...',
+        3: 'Última verificação de segurança...', 4: 'Acelerando conexão com o servidor...',
+        5: 'Quase pronto! Última confirmação...', 6: 'Descriptografando link de destino...'
     };
     
     return {
@@ -280,21 +198,18 @@ function getRandomCpaLink() {
 // MIDDLEWARE DE SESSÃO
 // =================================================================
 app.use(async (req, res, next) => {
-    // Pula para rotas públicas
     if (req.path === '/' || req.path.startsWith('/public') || req.path === '/favicon.ico') {
         return next();
     }
     
-    // Recupera sessão
     const session = await recoverSession(req);
     req.session = session;
     
-    // Seta cookie se não existir
     if (session && !req.cookies?.sessionId) {
         res.cookie('sessionId', session.id, {
             maxAge: SESSION_EXPIRATION * 1000,
             httpOnly: true,
-            secure: false, // Mude para true se usar HTTPS
+            secure: false,
             sameSite: 'lax'
         });
     }
@@ -302,22 +217,8 @@ app.use(async (req, res, next) => {
     next();
 });
 
-// Para ler cookies
-// Função manual para ler cookies
-app.use((req, res, next) => {
-    req.cookies = {};
-    const cookieHeader = req.headers.cookie;
-    
-    if (cookieHeader) {
-        cookieHeader.split(';').forEach(cookie => {
-            const parts = cookie.split('=');
-            req.cookies[parts[0].trim()] = decodeURIComponent(parts[1] || '');
-        });
-    }
-    next();
-});
 // =================================================================
-// ROTAS
+// ROTAS FIXAS (ANTES DA ROTA CORINGA!)
 // =================================================================
 
 // Página inicial
@@ -325,36 +226,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Rota de entrada (encurtador) - URL LIMPA!
-app.get('/:alias', async (req, res) => {
-    const alias = req.params.alias;
-    const link = linksData.find(l => l.alias === alias);
-    
-    console.log(`🔗 Acessando alias: ${alias}`);
-    
-    if (!link) {
-        console.log(`❌ Alias não encontrado: ${alias}`);
-        return res.redirect('/');
-    }
-    
-    const totalSteps = link.steps || 4;
-    
-    // Cria sessão no Redis
-    const session = await createSession(alias, totalSteps, req);
-    
-    // Seta cookie
-    res.cookie('sessionId', session.id, {
-        maxAge: SESSION_EXPIRATION * 1000,
-        httpOnly: true,
-        secure: false,
-        sameSite: 'lax'
-    });
-    
-    // URL LIMPA - sem token!
-    res.redirect('/page1');
-});
-
-// Rotas das etapas - URLs LIMPAS!
+// Páginas das etapas
 app.get('/page:step', async (req, res) => {
     const step = parseInt(req.params.step);
     
@@ -367,7 +239,6 @@ app.get('/page:step', async (req, res) => {
     
     const session = req.session;
     
-    // Verifica se está na etapa correta
     if (step !== session.etapa_atual) {
         console.log(`⚠️ Redirecionando: etapa correta é ${session.etapa_atual}`);
         return res.redirect(`/page${session.etapa_atual}`);
@@ -387,7 +258,6 @@ app.get('/page:step', async (req, res) => {
     const config = getStepConfig(step, session.totalSteps);
     const cpaLink = (!config.temAnuncio && step < session.totalSteps) ? getRandomCpaLink() : null;
     
-    // Passa o sessionId para o frontend (via header ou script)
     res.send(gerarHTMLPagina(step, session.totalSteps, config, session.id, cpaLink, link.original_url));
 });
 
@@ -417,28 +287,20 @@ app.post('/api/next-step', async (req, res) => {
         return res.status(404).json({ error: 'Link não encontrado', redirect: '/' });
     }
     
-    // Última etapa - redireciona para o link final
     if (clientStep >= session.totalSteps) {
         console.log(`✅ Finalizado! Redirecionando para: ${link.original_url}`);
-        return res.json({ 
-            redirect: link.original_url,
-            final: true
-        });
+        return res.json({ redirect: link.original_url, final: true });
     }
     
-    // Avança etapa
     const novaEtapa = clientStep + 1;
     await updateSession(sessionId, novaEtapa);
     
     console.log(`✅ Avançando: etapa ${clientStep} → ${novaEtapa} (total: ${session.totalSteps})`);
     
-    return res.json({ 
-        redirect: `/page${novaEtapa}`,
-        final: false
-    });
+    return res.json({ redirect: `/page${novaEtapa}`, final: false });
 });
 
-// API para obter configuração
+// API para obter configuração da etapa
 app.get('/api/step-config', async (req, res) => {
     const sessionId = req.headers['x-session-id'] || req.query.sessionId;
     
@@ -463,7 +325,34 @@ app.get('/api/step-config', async (req, res) => {
 });
 
 // =================================================================
-// FUNÇÃO: Gerar HTML da página (DESIGN APRIMORADO - BOTÕES MENORES)
+// ROTA CORINGA (DEVE SER A ÚLTIMA!)
+// =================================================================
+app.get('/:alias', async (req, res) => {
+    const alias = req.params.alias;
+    const link = linksData.find(l => l.alias === alias);
+    
+    console.log(`🔗 Acessando alias: ${alias}`);
+    
+    if (!link) {
+        console.log(`❌ Alias não encontrado: ${alias}`);
+        return res.redirect('/');
+    }
+    
+    const totalSteps = link.steps || 6;
+    const session = await createSession(alias, totalSteps, req);
+    
+    res.cookie('sessionId', session.id, {
+        maxAge: SESSION_EXPIRATION * 1000,
+        httpOnly: true,
+        secure: false,
+        sameSite: 'lax'
+    });
+    
+    res.redirect('/page1');
+});
+
+// =================================================================
+// FUNÇÃO: Gerar HTML da página
 // =================================================================
 function gerarHTMLPagina(etapa, totalSteps, config, sessionId, cpaLink, linkFinal) {
     const scriptMonetag = config.temAnuncio 
@@ -1102,7 +991,7 @@ function gerarHTMLPagina(etapa, totalSteps, config, sessionId, cpaLink, linkFina
 }
 
 // =================================================================
-// INICIA O SERVIDOR
+// INICIAR SERVIDOR
 // =================================================================
 app.listen(PORT, () => {
     console.log(`
