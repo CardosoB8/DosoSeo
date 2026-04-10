@@ -1,23 +1,20 @@
 {
-  "name": "meu-redirecionador",
-  "version": "2.0.0",
-  "description": "Redirecionador seguro Mr Doso.",
+  "name": "mr-doso-redis",
+  "version": "3.0.0",
+  "description": "Sistema de encurtamento com Redis - Sem tokens na URL",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js"
   },
-  "keywords": [
-    "redirecionador",
-    "links",
-    "seguranca",
-    "node.js"
-  ],
-  "author": "Mr Doso",
-  "license": "ISC",
   "dependencies": {
-    "express": "^4.19.2",
-    "cors": "^2.8.5",
-    "helmet": "^7.1.0",
-    "express-rate-limit": "^7.2.0"
+    "express": "^4.18.2",
+    "redis": "^4.6.7",
+    "helmet": "^7.0.0",
+    "express-rate-limit": "^6.10.0",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
   }
 }
