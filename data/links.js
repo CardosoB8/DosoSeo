@@ -183,7 +183,7 @@ const links = [
   },
   {
     "alias": "fastnet-httpinjector",
-    "original_url": "https://www.mediafire.com/file/uw75ulhrii0pqb9/NovoFastTravaMb.ehi/file",
+    "original_url": "https://www.mediafire.com/file/uedd45ves5zn10a/NovoIlimitadoHttp.ehi/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
   },
@@ -237,7 +237,7 @@ const links = [
   },
   {
     "alias": "ilimitado-dark",
-    "original_url": "https://www.mediafire.com/file/9jxvek5e4r5iu3x/NovoFastTDarktunnel.dark/file",
+    "original_url": "https://www.mediafire.com/file/n64r6pd6yhl4tcq/NovoIlimitadoHibridoMD.dark/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
   },
@@ -249,13 +249,13 @@ const links = [
   },
   {
     "alias": "dark-ilimitado",
-    "original_url": "https://www.mediafire.com/file/9jxvek5e4r5iu3x/NovoFastTDarktunnel.dark/file",
+    "original_url": "https://www.mediafire.com/file/n64r6pd6yhl4tcq/NovoIlimitadoHibridoMD.dark/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
   },
   {
     "alias": "astroilimitado-fast",
-    "original_url": "https://www.mediafire.com/file/gyqcn12jk1pu4yq/NovoFastTAustroPlus.aro/file",
+    "original_url": "https://www.mediafire.com/file/5n230j8g1v78deh/NovoIlimitadoHibridoAustro.aro/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
   },
