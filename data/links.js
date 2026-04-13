@@ -177,13 +177,13 @@ const links = [
   },
   {
     "alias": "ilimitado-arquivo-httpinjector",
-    "original_url": "https://www.mediafire.com/file/uedd45ves5zn10a/NovoIlimitadoHttp.ehi/file",
+    "original_url": "https://www.mediafire.com/file/vkupfruqpjtaes4/NovoHibridoHTTPFast.ehi/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
   },
   {
     "alias": "fastnet-httpinjector",
-    "original_url": "https://www.mediafire.com/file/uedd45ves5zn10a/NovoIlimitadoHttp.ehi/file",
+    "original_url": "https://www.mediafire.com/file/vkupfruqpjtaes4/NovoHibridoHTTPFast.ehi/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
   },
@@ -237,7 +237,7 @@ const links = [
   },
   {
     "alias": "ilimitado-dark",
-    "original_url": "https://www.mediafire.com/file/n64r6pd6yhl4tcq/NovoIlimitadoHibridoMD.dark/file",
+    "original_url": "https://www.mediafire.com/file/aac9q6u13dgijgd/NovoHibridoDARKFast.dark/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
   },
@@ -249,13 +249,13 @@ const links = [
   },
   {
     "alias": "dark-ilimitado",
-    "original_url": "https://www.mediafire.com/file/n64r6pd6yhl4tcq/NovoIlimitadoHibridoMD.dark/file",
+    "original_url": "https://www.mediafire.com/file/aac9q6u13dgijgd/NovoHibridoDARKFast.dark/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
   },
   {
     "alias": "astroilimitado-fast",
-    "original_url": "https://www.mediafire.com/file/5n230j8g1v78deh/NovoIlimitadoHibridoAustro.aro/file",
+    "original_url": "https://www.mediafire.com/file/0m0q4pkbqmj41zf/NovoHibridoAUSTROFAST.aro/file",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
   },
@@ -298,6 +298,18 @@ const links = [
   {
     "alias": "minapronet-apk",
     "original_url": "https://play.google.com/store/apps/details?id=vpn.minapronet.com.eg",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
+    "steps": 6
+  },
+  {
+    "alias": "ilimitado-opencustom",
+    "original_url": "https://www.mediafire.com/file/ck3dskqbjn0ekiw/NovoHibridoOPENFast_20260413082551.oc/file",
+    "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
+    "steps": 6
+  },
+  {
+    "alias": "opencustom-apk",
+    "original_url": "https://play.google.com/store/apps/details?id=opencustom.minapronet.com.eg",
     "description": "Um documento essencial sobre as melhores práticas de desenvolvimento.",
     "steps": 6
   },
