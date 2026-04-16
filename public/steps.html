@@ -60,7 +60,6 @@
             padding: 16px;
         }
 
-        /* Container principal */
         .step-container {
             background: var(--bg-card);
             border-radius: 32px;
@@ -83,7 +82,6 @@
             background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
         }
 
-        /* Etapas */
         .progress-steps {
             display: flex;
             justify-content: space-between;
@@ -146,7 +144,6 @@
             color: var(--primary);
         }
 
-        /* Barra de progresso */
         .progress-bar-wrapper {
             margin: 24px 0;
         }
@@ -174,7 +171,6 @@
             margin-top: 6px;
         }
 
-        /* Cabeçalho */
         .step-header {
             text-align: center;
             margin-bottom: 24px;
@@ -201,7 +197,6 @@
             font-size: 0.9rem;
         }
 
-        /* Timer */
         .timer-section {
             background: linear-gradient(135deg, var(--bg-secondary), var(--bg-card));
             border-radius: 24px;
@@ -228,7 +223,6 @@
             font-weight: 600;
         }
 
-        /* Container de anúncio */
         .ad-container {
             margin: 20px 0;
             min-height: 200px;
@@ -241,7 +235,6 @@
             overflow: hidden;
         }
 
-        /* Caixa de informação */
         .info-box {
             background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05));
             border-left: 4px solid var(--warning);
@@ -284,7 +277,6 @@
             line-height: 1.4;
         }
 
-        /* Botão de ação */
         .action-button {
             width: 100%;
             padding: 18px 24px;
@@ -331,7 +323,6 @@
             font-size: 1.2rem;
         }
 
-        /* Link secundário */
         .secondary-link {
             display: inline-block;
             margin-top: 16px;
@@ -353,7 +344,6 @@
             color: var(--primary-light);
         }
 
-        /* Footer */
         .footer-note {
             text-align: center;
             margin-top: 24px;
@@ -361,7 +351,21 @@
             font-size: 0.8rem;
         }
 
-        /* Mobile */
+        .error-banner {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--danger);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 16px;
+            color: var(--danger);
+            display: none;
+            text-align: center;
+        }
+
+        .error-banner.show {
+            display: block;
+        }
+
         @media (max-width: 480px) {
             body {
                 padding: 12px;
@@ -413,6 +417,11 @@
 </head>
 <body data-theme="dark">
     <div class="step-container">
+        <div class="error-banner" id="errorBanner">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span id="errorText">Erro de conexão</span>
+        </div>
+        
         <div class="progress-steps" id="progressSteps"></div>
         
         <div class="progress-bar-wrapper">
@@ -511,6 +520,49 @@
             const parts = value.split('; ' + name + '=');
             if (parts.length === 2) return parts.pop().split(';').shift();
             return null;
+        }
+        
+        // Pegar sessionId de todas as fontes possíveis
+        function getSessionId() {
+            // 1. Query param (mais confiável no Vercel)
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlSid = urlParams.get('sid');
+            if (urlSid) {
+                // Salvar no cookie para futuras requisições
+                document.cookie = `dsessId=${urlSid}; path=/; max-age=${24*60*60}`;
+                return urlSid;
+            }
+            
+            // 2. Cookie
+            const cookieSid = getCookie('dsessId');
+            if (cookieSid) return cookieSid;
+            
+            // 3. LocalStorage (fallback)
+            const storageSid = localStorage.getItem('lastSessionId');
+            if (storageSid) return storageSid;
+            
+            return null;
+        }
+        
+        // Salvar sessionId
+        function saveSessionId(sid) {
+            if (sid) {
+                sessionId = sid;
+                document.cookie = `dsessId=${sid}; path=/; max-age=${24*60*60}`;
+                localStorage.setItem('lastSessionId', sid);
+            }
+        }
+        
+        // Mostrar erro
+        function showError(message) {
+            const banner = document.getElementById('errorBanner');
+            const text = document.getElementById('errorText');
+            text.textContent = message;
+            banner.classList.add('show');
+            
+            setTimeout(() => {
+                banner.classList.remove('show');
+            }, 5000);
         }
         
         // Inicializar tema
@@ -661,15 +713,31 @@
         // Carregar configuração da etapa
         async function loadStepConfig() {
             try {
-                sessionId = getCookie('dsessId');
+                // Pegar sessionId
+                const sid = getSessionId();
+                if (!sid) {
+                    showError('Sessão não encontrada. Tente novamente.');
+                    setTimeout(() => window.location.href = '/', 2000);
+                    return;
+                }
                 
+                saveSessionId(sid);
+                
+                // Fazer requisição com sessionId no header
                 const response = await fetch('/api/step-config', {
-                    headers: { 'x-session-id': sessionId }
+                    headers: { 
+                        'x-session-id': sessionId,
+                        'Cache-Control': 'no-cache'
+                    }
                 });
                 
                 if (!response.ok) {
-                    window.location.href = '/';
-                    return;
+                    if (response.status === 403) {
+                        showError('Sessão expirada. Redirecionando...');
+                        setTimeout(() => window.location.href = '/', 2000);
+                        return;
+                    }
+                    throw new Error('Erro ao carregar');
                 }
                 
                 const data = await response.json();
@@ -677,11 +745,19 @@
                 timeLeft = config.timer;
                 cpaOpened = config.cpaJaAberto || false;
                 
+                // Atualizar sessionId se veio na resposta
+                if (data.sessionId) {
+                    saveSessionId(data.sessionId);
+                }
+                
                 updateUI();
                 startTimer();
             } catch (error) {
                 console.error('Erro:', error);
-                window.location.href = '/';
+                showError('Erro ao carregar. Tentando novamente...');
+                
+                // Tentar novamente após 2 segundos
+                setTimeout(loadStepConfig, 2000);
             }
         }
         
@@ -689,7 +765,7 @@
         async function nextStep() {
             if (isProcessing) return;
             if (timeLeft > 0 && config.timer > 0) {
-                alert('Aguarde ' + timeLeft + ' segundos.');
+                showError('Aguarde ' + timeLeft + ' segundos.');
                 return;
             }
             
@@ -702,7 +778,10 @@
                 try {
                     const response = await fetch('/api/next-step', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'x-session-id': sessionId
+                        },
                         body: JSON.stringify({ 
                             currentStep: config.etapa, 
                             sessionId,
@@ -714,9 +793,11 @@
                     
                     if (data.redirect) {
                         window.location.href = data.redirect;
+                    } else {
+                        throw new Error('Sem redirect');
                     }
                 } catch (error) {
-                    alert('Erro de conexão');
+                    showError('Erro de conexão');
                     isProcessing = false;
                     enableButton();
                 }
@@ -738,7 +819,10 @@
             try {
                 const response = await fetch('/api/next-step', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'x-session-id': sessionId
+                    },
                     body: JSON.stringify({ 
                         currentStep: config.etapa, 
                         sessionId,
@@ -748,15 +832,25 @@
                 
                 const data = await response.json();
                 
+                if (data.sessionId) {
+                    saveSessionId(data.sessionId);
+                }
+                
                 if (data.redirect) {
-                    window.location.href = data.redirect;
+                    // Adicionar sessionId à URL de redirect se necessário
+                    let redirectUrl = data.redirect;
+                    if (redirectUrl.startsWith('/page') && sessionId) {
+                        redirectUrl += `?sid=${sessionId}`;
+                    }
+                    window.location.href = redirectUrl;
                 } else {
-                    alert(data.error || 'Erro ao avançar');
+                    showError(data.error || 'Erro ao avançar');
                     mainBtn.disabled = false;
                     enableButton();
                 }
             } catch (e) {
-                alert('Erro de conexão');
+                console.error('Erro:', e);
+                showError('Erro de conexão');
                 mainBtn.disabled = false;
                 enableButton();
             } finally {
@@ -767,6 +861,16 @@
         // Inicialização
         document.addEventListener('DOMContentLoaded', () => {
             initTheme();
+            
+            // Pegar sessionId da URL e salvar
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlSid = urlParams.get('sid');
+            if (urlSid) {
+                saveSessionId(urlSid);
+                // Limpar URL para não mostrar o token
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+            
             loadStepConfig();
             
             const mainBtn = document.getElementById('mainActionBtn');
