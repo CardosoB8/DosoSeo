@@ -1,4 +1,3 @@
-require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const crypto = require('crypto');
@@ -11,7 +10,43 @@ const session = require('express-session');
 const bcrypt = require('bcrypt');
 
 const app = express();
+
+// =================================================================
+// CONFIGURAÇÕES DIRETAS (sem .env)
+// =================================================================
+const CONFIG = {
+    REDIS_URL: 'redis://default:JyefUsxHJljfdvs8HACumEyLE7XNgLvG@redis-19242.c266.us-east-1-3.ec2.cloud.redislabs.com:19242',
+    ADMIN_PASSWORD: 'MrDoso2026@Admin',
+    SESSION_SECRET: 'mr-doso-secret-key-2026'
+};
+
 const PORT = process.env.PORT || 3000;
+
+// =================================================================
+// CONFIGURAÇÃO DO REDIS
+// =================================================================
+const redisClient = redis.createClient({
+    url: CONFIG.REDIS_URL
+});
+
+redisClient.on('error', (err) => console.log('Redis Client Error', err));
+redisClient.on('connect', () => console.log('✅ Conectado ao Redis Cloud!'));
+
+(async () => {
+    await redisClient.connect();
+    console.log('🚀 Redis pronto para uso!');
+    
+    // Inicializar admin se não existir
+    const adminExists = await redisClient.exists('admin:config');
+    if (!adminExists) {
+        const hashedPassword = await bcrypt.hash(CONFIG.ADMIN_PASSWORD, 10);
+        await redisClient.hSet('admin:config', {
+            password: hashedPassword,
+            criado_em: new Date().toISOString()
+        });
+        console.log('✅ Admin inicializado');
+    }
+})();
 
 // =================================================================
 // CONFIGURAÇÕES DE SEGURANÇA
@@ -31,9 +66,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Sessão para o painel admin
+// Sessão para o painel admin (APENAS UMA VEZ)
 app.use(session({
-    secret: process.env.SESSION_SECRET,
+    secret: CONFIG.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -58,32 +93,6 @@ const adminLimiter = rateLimit({
     max: 30,
     message: { error: 'Muitas tentativas' }
 });
-
-// =================================================================
-// CONFIGURAÇÃO DO REDIS
-// =================================================================
-const redisClient = redis.createClient({
-    url: process.env.REDIS_URL
-});
-
-redisClient.on('error', (err) => console.log('Redis Client Error', err));
-redisClient.on('connect', () => console.log('✅ Conectado ao Redis Cloud!'));
-
-(async () => {
-    await redisClient.connect();
-    console.log('🚀 Redis pronto para uso!');
-    
-    // Inicializar admin se não existir
-    const adminExists = await redisClient.exists('admin:config');
-    if (!adminExists) {
-        const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
-        await redisClient.hSet('admin:config', {
-            password: hashedPassword,
-            criado_em: new Date().toISOString()
-        });
-        console.log('✅ Admin inicializado');
-    }
-})();
 
 // =================================================================
 // CONFIGURAÇÕES DO SISTEMA
