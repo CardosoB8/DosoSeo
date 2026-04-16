@@ -2,199 +2,1137 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Painel Admin - Mr Doso</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --primary: #7c3aed;
+            --primary-light: #a78bfa;
+            --secondary: #ec4899;
+            --accent: #06b6d4;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0f0f1a;
+            --bg-secondary: #1a1a2e;
+            --bg-card: #16213e;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-color: #1e293b;
+            --input-bg: #0f172a;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+            --header-bg: #0f172a;
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --border-color: #e2e8f0;
+            --input-bg: #ffffff;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --header-bg: #7c3aed;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        /* Header */
+        .admin-header {
+            background: var(--header-bg);
+            padding: 14px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1400px;
+            margin: 0 auto;
+            gap: 12px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+        }
+
+        .logo-area i {
+            font-size: 1.5rem;
+            color: var(--accent);
+        }
+
+        .logo-area h1 {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 10px 16px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 500;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            white-space: nowrap;
+        }
+
+        .header-btn i {
+            font-size: 1rem;
+        }
+
+        .header-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .header-btn.icon-only {
+            padding: 10px;
+        }
+
+        .header-btn.icon-only span {
+            display: none;
+        }
+
+        /* Container principal */
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Cards de estatísticas */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 18px 14px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+
+        .stat-header i {
+            color: var(--primary);
+            font-size: 1rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+
+        .stat-change {
+            font-size: 0.75rem;
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .stat-change.positive {
+            color: var(--success);
+        }
+
+        .stat-change.negative {
+            color: var(--danger);
+        }
+
+        /* Gráfico */
+        .chart-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .chart-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .chart-header i {
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+
+        .chart-header h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 200px;
+        }
+
+        /* Seção de itens */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .section-header h2 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .section-header h2 i {
+            color: var(--primary);
+        }
+
+        .add-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            box-shadow: 0 5px 15px rgba(124, 58, 237, 0.3);
+        }
+
+        .add-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Tabela de itens */
+        .items-table-wrapper {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 4px 0;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            overflow-x: auto;
+            margin-bottom: 24px;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+        }
+
+        .items-table th {
+            text-align: left;
+            padding: 16px 12px;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .items-table td {
+            padding: 14px 12px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .items-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .item-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .item-status.active {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+        }
+
+        .item-status.inactive {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .action-btn {
+            background: var(--bg-secondary);
+            border: none;
+            color: var(--text-secondary);
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .action-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .action-btn.delete:hover {
+            background: var(--danger);
+        }
+
+        /* Resumo */
+        .summary-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .summary-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .summary-label i {
+            color: var(--primary);
+            width: 20px;
+        }
+
+        .summary-value {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border-radius: 24px;
+            max-width: 550px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-header {
+            padding: 24px 24px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            background: var(--bg-card);
+            z-index: 10;
+        }
+
+        .modal-header h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+
+        .modal-close:hover {
+            color: var(--danger);
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .form-group label i {
+            color: var(--primary);
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 14px;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            font-family: 'Quicksand', sans-serif;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: var(--primary);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .modal-footer {
+            padding: 16px 24px 24px;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .modal-btn {
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .modal-btn.cancel {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+        }
+
+        .modal-btn.save {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .modal-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Loading */
+        .loading-row td {
+            text-align: center;
+            padding: 40px !important;
+            color: var(--text-muted);
+        }
+
+        .empty-row td {
+            text-align: center;
+            padding: 40px !important;
+            color: var(--text-muted);
+        }
+
+        /* Mobile */
+        @media (min-width: 640px) {
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 16px;
+            }
+            
+            .header-btn.icon-only span {
+                display: inline;
+            }
+            
+            .header-btn.icon-only {
+                padding: 10px 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .dashboard-container {
+                padding: 12px;
+            }
+            
+            .stat-value {
+                font-size: 1.5rem;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+            
+            .modal {
+                max-height: 90vh;
+            }
+            
+            .logo-area h1 {
+                font-size: 1rem;
+            }
+        }
+    </style>
 </head>
 <body data-theme="dark">
     <header class="admin-header">
         <div class="header-content">
-            <div class="logo">
+            <div class="logo-area">
                 <i class="fas fa-crown"></i>
-                Painel Administrativo
+                <h1>Painel Admin</h1>
             </div>
             <div class="header-actions">
-                <a href="/" class="btn">
-                    <i class="fas fa-eye"></i> Ver Site
+                <a href="/" class="header-btn icon-only">
+                    <i class="fas fa-eye"></i>
+                    <span>Ver Site</span>
                 </a>
-                <button class="theme-toggle" id="themeToggle">
+                <button class="header-btn icon-only" id="themeToggle">
                     <i class="fas fa-sun"></i>
-                    <span>Claro</span>
+                    <span>Tema</span>
                 </button>
-                <button class="btn" id="changePasswordBtn">
-                    <i class="fas fa-key"></i> Alterar Senha
+                <button class="header-btn icon-only" id="changePasswordBtn">
+                    <i class="fas fa-key"></i>
+                    <span>Senha</span>
                 </button>
-                <button class="btn" id="logoutBtn">
-                    <i class="fas fa-sign-out-alt"></i> Sair
+                <button class="header-btn icon-only" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Sair</span>
                 </button>
             </div>
         </div>
     </header>
     
-    <div class="container">
-        <div class="stats-grid" id="statsGrid">
+    <div class="dashboard-container">
+        <div class="stats-grid">
             <div class="stat-card">
-                <h3><i class="fas fa-box"></i> Total de Itens</h3>
+                <div class="stat-header">
+                    <i class="fas fa-box"></i>
+                    <span>Total Itens</span>
+                </div>
                 <div class="stat-value" id="totalItems">-</div>
             </div>
             <div class="stat-card">
-                <h3><i class="fas fa-eye"></i> Visualizações Hoje</h3>
+                <div class="stat-header">
+                    <i class="fas fa-eye"></i>
+                    <span>Views Hoje</span>
+                </div>
                 <div class="stat-value" id="todayViews">-</div>
-                <div class="stat-change" id="viewsChange">-</div>
+                <div class="stat-change" id="viewsChange"></div>
             </div>
             <div class="stat-card">
-                <h3><i class="fas fa-download"></i> Downloads Hoje</h3>
+                <div class="stat-header">
+                    <i class="fas fa-download"></i>
+                    <span>Downloads Hoje</span>
+                </div>
                 <div class="stat-value" id="todayDownloads">-</div>
-                <div class="stat-change" id="downloadsChange">-</div>
+                <div class="stat-change" id="downloadsChange"></div>
             </div>
             <div class="stat-card">
-                <h3><i class="fas fa-chart-line"></i> Taxa de Conversão</h3>
+                <div class="stat-header">
+                    <i class="fas fa-percent"></i>
+                    <span>Conversão</span>
+                </div>
                 <div class="stat-value" id="conversionRate">-</div>
             </div>
         </div>
         
-        <div class="chart-container">
-            <h2><i class="fas fa-calendar"></i> Últimos 7 dias</h2>
-            <canvas id="statsChart"></canvas>
+        <div class="chart-card">
+            <div class="chart-header">
+                <i class="fas fa-chart-line"></i>
+                <h2>Últimos 7 dias</h2>
+            </div>
+            <div class="chart-container">
+                <canvas id="statsChart"></canvas>
+            </div>
         </div>
         
         <div class="section-header">
-            <h2><i class="fas fa-list"></i> Itens Cadastrados</h2>
-            <button class="btn btn-primary" id="newItemBtn">
-                <i class="fas fa-plus"></i> Novo Item
+            <h2>
+                <i class="fas fa-list"></i>
+                Itens Cadastrados
+            </h2>
+            <button class="add-btn" id="newItemBtn">
+                <i class="fas fa-plus"></i>
+                <span>Novo Item</span>
             </button>
         </div>
         
-        <div class="items-table">
-            <table>
+        <div class="items-table-wrapper">
+            <table class="items-table">
                 <thead>
                     <tr>
                         <th>Título</th>
                         <th>Categoria</th>
-                        <th>Visualizações</th>
+                        <th>Views</th>
                         <th>Downloads</th>
                         <th>Taxa</th>
                         <th>Status</th>
-                        <th>Ações</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody id="itemsTableBody">
-                    <tr><td colspan="7" style="text-align: center;">Carregando...</td></tr>
+                    <tr><td colspan="7" class="loading-row"><i class="fas fa-spinner fa-pulse"></i> Carregando...</td></tr>
                 </tbody>
             </table>
         </div>
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px;">
-            <div class="chart-container">
-                <h2><i class="fas fa-trophy"></i> Resumo Geral</h2>
-                <div class="summary-stats">
-                    <div class="summary-item">
-                        <span>Total de Visualizações:</span>
-                        <strong id="totalViews">-</strong>
-                    </div>
-                    <div class="summary-item">
-                        <span>Total de Downloads:</span>
-                        <strong id="totalDownloads">-</strong>
-                    </div>
-                    <div class="summary-item">
-                        <span>Itens Ativos:</span>
-                        <strong id="activeItems">-</strong>
-                    </div>
-                    <div class="summary-item">
-                        <span>Média de Downloads/Item:</span>
-                        <strong id="avgDownloads">-</strong>
-                    </div>
-                </div>
+        <div class="summary-card">
+            <div class="summary-item">
+                <span class="summary-label"><i class="fas fa-eye"></i> Total Visualizações</span>
+                <span class="summary-value" id="totalViews">-</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label"><i class="fas fa-download"></i> Total Downloads</span>
+                <span class="summary-value" id="totalDownloads">-</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label"><i class="fas fa-check-circle"></i> Itens Ativos</span>
+                <span class="summary-value" id="activeItems">-</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label"><i class="fas fa-chart-bar"></i> Média Downloads/Item</span>
+                <span class="summary-value" id="avgDownloads">-</span>
             </div>
         </div>
     </div>
     
     <!-- Modal de Item -->
-    <div class="modal" id="itemModal">
-        <div class="modal-content">
+    <div class="modal-overlay" id="itemModal">
+        <div class="modal">
             <div class="modal-header">
-                <h2 id="modalTitle">Novo Item</h2>
-                <button class="close-btn" onclick="closeItemModal()">&times;</button>
+                <h3 id="modalTitle">Novo Item</h3>
+                <button class="modal-close" onclick="closeItemModal()">&times;</button>
             </div>
-            <form id="itemForm">
-                <input type="hidden" id="itemId">
-                <div class="form-group">
-                    <label>Título</label>
-                    <input type="text" id="itemTitulo" required>
-                </div>
-                <div class="form-group">
-                    <label>Descrição</label>
-                    <textarea id="itemDescricao" rows="3"></textarea>
-                </div>
-                <div class="form-group">
-                    <label>URL da Imagem</label>
-                    <input type="url" id="itemImagem" placeholder="https://...">
-                </div>
-                <div class="form-group">
-                    <label>URL Original (Link Final)</label>
-                    <input type="url" id="itemUrl" required>
-                </div>
-                <div class="form-group">
-                    <label>Categoria</label>
-                    <select id="itemCategoria">
-                        <option value="filmes">Filmes</option>
-                        <option value="series">Séries</option>
-                        <option value="jogos">Jogos</option>
-                        <option value="cursos">Cursos</option>
-                        <option value="apps">Apps</option>
-                        <option value="outros">Outros</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Data de Expiração (opcional)</label>
-                    <input type="datetime-local" id="itemExpira">
-                </div>
-                <div class="form-group">
-                    <label>Status</label>
-                    <select id="itemAtivo">
-                        <option value="true">Ativo</option>
-                        <option value="false">Inativo</option>
-                    </select>
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn" onclick="closeItemModal()">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Salvar</button>
-                </div>
-            </form>
+            <div class="modal-body">
+                <form id="itemForm">
+                    <input type="hidden" id="itemId">
+                    <div class="form-group">
+                        <label><i class="fas fa-heading"></i> Título</label>
+                        <input type="text" id="itemTitulo" placeholder="Ex: Filme 1080p Dublado" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-align-left"></i> Descrição</label>
+                        <textarea id="itemDescricao" placeholder="Descreva o conteúdo..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-image"></i> URL da Imagem</label>
+                        <input type="url" id="itemImagem" placeholder="https://... (opcional)">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-link"></i> Link Original</label>
+                        <input type="url" id="itemUrl" placeholder="https://... (link final)" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-folder"></i> Categoria</label>
+                            <select id="itemCategoria">
+                                <option value="filmes">Filmes</option>
+                                <option value="series">Séries</option>
+                                <option value="jogos">Jogos</option>
+                                <option value="cursos">Cursos</option>
+                                <option value="apps">Apps</option>
+                                <option value="outros">Outros</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-toggle-on"></i> Status</label>
+                            <select id="itemAtivo">
+                                <option value="true">Ativo</option>
+                                <option value="false">Inativo</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-calendar-times"></i> Expira em (opcional)</label>
+                        <input type="datetime-local" id="itemExpira">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" onclick="closeItemModal()">Cancelar</button>
+                <button class="modal-btn save" onclick="saveItem()">Salvar</button>
+            </div>
         </div>
     </div>
     
-    <!-- Modal de Alterar Senha -->
-    <div class="modal" id="passwordModal">
-        <div class="modal-content">
+    <!-- Modal de Senha -->
+    <div class="modal-overlay" id="passwordModal">
+        <div class="modal">
             <div class="modal-header">
-                <h2>Alterar Senha</h2>
-                <button class="close-btn" onclick="closePasswordModal()">&times;</button>
+                <h3>Alterar Senha</h3>
+                <button class="modal-close" onclick="closePasswordModal()">&times;</button>
             </div>
-            <form id="passwordForm">
-                <div class="form-group">
-                    <label>Senha Atual</label>
-                    <input type="password" id="currentPassword" required>
-                </div>
-                <div class="form-group">
-                    <label>Nova Senha</label>
-                    <input type="password" id="newPassword" required>
-                </div>
-                <div class="form-group">
-                    <label>Confirmar Nova Senha</label>
-                    <input type="password" id="confirmPassword" required>
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn" onclick="closePasswordModal()">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Alterar</button>
-                </div>
-            </form>
+            <div class="modal-body">
+                <form id="passwordForm">
+                    <div class="form-group">
+                        <label><i class="fas fa-lock"></i> Senha Atual</label>
+                        <input type="password" id="currentPassword" placeholder="••••••••" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-key"></i> Nova Senha</label>
+                        <input type="password" id="newPassword" placeholder="••••••••" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-check"></i> Confirmar Senha</label>
+                        <input type="password" id="confirmPassword" placeholder="••••••••" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" onclick="closePasswordModal()">Cancelar</button>
+                <button class="modal-btn save" onclick="changePassword()">Alterar</button>
+            </div>
         </div>
     </div>
     
-    <script src="admin.js"></script>
+    <script>
+        let chart = null;
+        let currentItems = [];
+        
+        // Tema
+        function initTheme() {
+            const theme = localStorage.getItem('theme') || 'dark';
+            document.body.setAttribute('data-theme', theme);
+            updateThemeIcon(theme);
+        }
+        
+        function updateThemeIcon(theme) {
+            const icon = document.querySelector('#themeToggle i');
+            if (icon) icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        }
+        
+        // Formatação
+        function formatNumber(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
+            return num.toString();
+        }
+        
+        // Carregar estatísticas
+        async function loadStats() {
+            try {
+                const res = await fetch('/admin/api/stats');
+                const data = await res.json();
+                
+                document.getElementById('totalItems').textContent = data.totalItems;
+                document.getElementById('todayViews').textContent = formatNumber(data.today.views);
+                document.getElementById('todayDownloads').textContent = formatNumber(data.today.downloads);
+                document.getElementById('conversionRate').textContent = data.conversionRate + '%';
+                document.getElementById('totalViews').textContent = formatNumber(data.totalViews);
+                document.getElementById('totalDownloads').textContent = formatNumber(data.totalDownloads);
+                document.getElementById('activeItems').textContent = data.totalItems;
+                
+                const avg = data.totalItems > 0 ? Math.round(data.totalDownloads / data.totalItems) : 0;
+                document.getElementById('avgDownloads').textContent = formatNumber(avg);
+                
+                // Variação
+                const viewsDiff = data.today.views - data.yesterday.views;
+                const viewsChange = document.getElementById('viewsChange');
+                if (viewsDiff >= 0) {
+                    viewsChange.innerHTML = '<i class="fas fa-arrow-up"></i> +' + viewsDiff;
+                    viewsChange.className = 'stat-change positive';
+                } else {
+                    viewsChange.innerHTML = '<i class="fas fa-arrow-down"></i> ' + viewsDiff;
+                    viewsChange.className = 'stat-change negative';
+                }
+                
+                const downloadsDiff = data.today.downloads - data.yesterday.downloads;
+                const downloadsChange = document.getElementById('downloadsChange');
+                if (downloadsDiff >= 0) {
+                    downloadsChange.innerHTML = '<i class="fas fa-arrow-up"></i> +' + downloadsDiff;
+                    downloadsChange.className = 'stat-change positive';
+                } else {
+                    downloadsChange.innerHTML = '<i class="fas fa-arrow-down"></i> ' + downloadsDiff;
+                    downloadsChange.className = 'stat-change negative';
+                }
+                
+                // Gráfico
+                const ctx = document.getElementById('statsChart').getContext('2d');
+                if (chart) chart.destroy();
+                
+                const theme = document.body.getAttribute('data-theme');
+                const textColor = theme === 'dark' ? '#94a3b8' : '#64748b';
+                const gridColor = theme === 'dark' ? '#1e293b' : '#e2e8f0';
+                
+                chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.last7Days.map(d => new Date(d.date).toLocaleDateString('pt-BR', { weekday: 'short' })),
+                        datasets: [{
+                            label: 'Visualizações',
+                            data: data.last7Days.map(d => d.views),
+                            borderColor: '#7c3aed',
+                            backgroundColor: 'rgba(124, 58, 237, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }, {
+                            label: 'Downloads',
+                            data: data.last7Days.map(d => d.downloads),
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: textColor, font: { family: 'Quicksand' } } }
+                        },
+                        scales: {
+                            y: { 
+                                beginAtZero: true, 
+                                grid: { color: gridColor }, 
+                                ticks: { color: textColor } 
+                            },
+                            x: { 
+                                grid: { display: false }, 
+                                ticks: { color: textColor } 
+                            }
+                        }
+                    }
+                });
+            } catch (e) {
+                console.error('Erro stats:', e);
+            }
+        }
+        
+        // Carregar itens
+        async function loadItems() {
+            try {
+                const res = await fetch('/admin/api/items');
+                const data = await res.json();
+                currentItems = data.items;
+                
+                const tbody = document.getElementById('itemsTableBody');
+                
+                if (!data.items.length) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="empty-row"><i class="fas fa-box-open"></i> Nenhum item cadastrado</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = '';
+                data.items.forEach(item => {
+                    const rate = item.visualizacoes > 0 ? ((item.downloads / item.visualizacoes) * 100).toFixed(1) : '0';
+                    const isActive = item.ativo === 'true';
+                    
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${item.titulo}</td>
+                            <td>${item.categoria || 'outros'}</td>
+                            <td>${formatNumber(item.visualizacoes)}</td>
+                            <td>${formatNumber(item.downloads)}</td>
+                            <td>${rate}%</td>
+                            <td>
+                                <span class="item-status ${isActive ? 'active' : 'inactive'}">
+                                    <i class="fas fa-${isActive ? 'check' : 'times'}-circle"></i>
+                                    ${isActive ? 'Ativo' : 'Inativo'}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="item-actions">
+                                    <button class="action-btn" onclick="editItem('${item.id}')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="action-btn delete" onclick="deleteItem('${item.id}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (e) {
+                console.error('Erro itens:', e);
+            }
+        }
+        
+        // Modal de item
+        function openItemModal(itemId = null) {
+            const modal = document.getElementById('itemModal');
+            const title = document.getElementById('modalTitle');
+            
+            if (itemId) {
+                title.textContent = 'Editar Item';
+                const item = currentItems.find(i => i.id === itemId);
+                if (item) {
+                    document.getElementById('itemId').value = item.id;
+                    document.getElementById('itemTitulo').value = item.titulo;
+                    document.getElementById('itemDescricao').value = item.descricao || '';
+                    document.getElementById('itemImagem').value = item.imagem || '';
+                    document.getElementById('itemUrl').value = item.url_original;
+                    document.getElementById('itemCategoria').value = item.categoria || 'outros';
+                    document.getElementById('itemAtivo').value = item.ativo;
+                    document.getElementById('itemExpira').value = item.expira_em ? item.expira_em.slice(0, 16) : '';
+                }
+            } else {
+                title.textContent = 'Novo Item';
+                document.getElementById('itemForm').reset();
+                document.getElementById('itemId').value = '';
+            }
+            
+            modal.classList.add('active');
+        }
+        
+        function closeItemModal() {
+            document.getElementById('itemModal').classList.remove('active');
+        }
+        
+        function editItem(itemId) {
+            openItemModal(itemId);
+        }
+        
+        async function saveItem() {
+            const formData = {
+                id: document.getElementById('itemId').value || null,
+                titulo: document.getElementById('itemTitulo').value,
+                descricao: document.getElementById('itemDescricao').value,
+                imagem: document.getElementById('itemImagem').value,
+                url_original: document.getElementById('itemUrl').value,
+                categoria: document.getElementById('itemCategoria').value,
+                ativo: document.getElementById('itemAtivo').value,
+                expira_em: document.getElementById('itemExpira').value || null
+            };
+            
+            if (!formData.titulo || !formData.url_original) {
+                alert('Título e Link Original são obrigatórios');
+                return;
+            }
+            
+            try {
+                const res = await fetch('/admin/api/item', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    closeItemModal();
+                    loadItems();
+                    loadStats();
+                } else {
+                    alert(data.error || 'Erro ao salvar');
+                }
+            } catch (e) {
+                alert('Erro de conexão');
+            }
+        }
+        
+        async function deleteItem(itemId) {
+            if (!confirm('Excluir este item?')) return;
+            
+            try {
+                const res = await fetch('/admin/api/item/' + itemId, { method: 'DELETE' });
+                const data = await res.json();
+                if (data.success) {
+                    loadItems();
+                    loadStats();
+                }
+            } catch (e) {
+                alert('Erro ao excluir');
+            }
+        }
+        
+        // Modal de senha
+        function openPasswordModal() {
+            document.getElementById('passwordModal').classList.add('active');
+        }
+        
+        function closePasswordModal() {
+            document.getElementById('passwordModal').classList.remove('active');
+            document.getElementById('passwordForm').reset();
+        }
+        
+        async function changePassword() {
+            const current = document.getElementById('currentPassword').value;
+            const newPass = document.getElementById('newPassword').value;
+            const confirm = document.getElementById('confirmPassword').value;
+            
+            if (newPass !== confirm) {
+                alert('As senhas não coincidem');
+                return;
+            }
+            
+            try {
+                const res = await fetch('/admin/api/change-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ currentPassword: current, newPassword: newPass })
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    alert('Senha alterada!');
+                    closePasswordModal();
+                } else {
+                    alert(data.error || 'Erro');
+                }
+            } catch (e) {
+                alert('Erro de conexão');
+            }
+        }
+        
+        async function logout() {
+            try {
+                await fetch('/admin/api/logout', { method: 'POST' });
+            } catch (e) {}
+            window.location.href = '/admin-login';
+        }
+        
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            loadStats();
+            loadItems();
+            
+            document.getElementById('themeToggle').addEventListener('click', () => {
+                const current = document.body.getAttribute('data-theme');
+                const newTheme = current === 'dark' ? 'light' : 'dark';
+                document.body.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                updateThemeIcon(newTheme);
+                loadStats();
+            });
+            
+            document.getElementById('newItemBtn').addEventListener('click', () => openItemModal());
+            document.getElementById('changePasswordBtn').addEventListener('click', openPasswordModal);
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+            
+            setInterval(loadStats, 30000);
+        });
+    </script>
 </body>
 </html>
