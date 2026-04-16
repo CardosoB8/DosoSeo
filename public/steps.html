@@ -2,28 +2,437 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Processando - Mr Doso</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <style>
+        :root {
+            --primary: #7c3aed;
+            --primary-light: #a78bfa;
+            --secondary: #ec4899;
+            --accent: #06b6d4;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0f0f1a;
+            --bg-secondary: #1a1a2e;
+            --bg-card: #16213e;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-color: #1e293b;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --border-color: #e2e8f0;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            transition: background 0.3s, color 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        /* Container principal */
+        .step-container {
+            background: var(--bg-card);
+            border-radius: 32px;
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            max-width: 480px;
+            padding: 32px 24px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .step-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+        }
+
+        /* Etapas */
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .step-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            flex: 1;
+            position: relative;
+            z-index: 2;
+        }
+
+        .step-dot {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            color: var(--text-muted);
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .step-dot.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-color: transparent;
+            color: white;
+            box-shadow: 0 0 20px rgba(124, 58, 237, 0.4);
+        }
+
+        .step-dot.completed {
+            background: var(--success);
+            border-color: transparent;
+            color: white;
+        }
+
+        .step-dot.completed i {
+            font-size: 1.2rem;
+        }
+
+        .step-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .step-label.active {
+            color: var(--primary);
+        }
+
+        /* Barra de progresso */
+        .progress-bar-wrapper {
+            margin: 24px 0;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 20px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        .progress-text {
+            text-align: right;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        /* Cabeçalho */
+        .step-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .step-header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: var(--text-primary);
+        }
+
+        .step-header h1 i {
+            color: var(--primary);
+            font-size: 1.6rem;
+        }
+
+        .step-header .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Timer */
+        .timer-section {
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-card));
+            border-radius: 24px;
+            padding: 28px 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .countdown-number {
+            font-size: 4rem;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1;
+            margin-bottom: 8px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .countdown-label {
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Container de anúncio */
+        .ad-container {
+            margin: 20px 0;
+            min-height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        /* Caixa de informação */
+        .info-box {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05));
+            border-left: 4px solid var(--warning);
+            padding: 16px;
+            border-radius: 12px;
+            margin: 20px 0;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .info-box.success {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
+            border-left-color: var(--success);
+        }
+
+        .info-box i {
+            font-size: 1.3rem;
+            color: var(--warning);
+        }
+
+        .info-box.success i {
+            color: var(--success);
+        }
+
+        .info-box-content {
+            flex: 1;
+        }
+
+        .info-box-content strong {
+            display: block;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            font-size: 0.95rem;
+        }
+
+        .info-box-content p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        /* Botão de ação */
+        .action-button {
+            width: 100%;
+            padding: 18px 24px;
+            border: none;
+            border-radius: 60px;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 10px 30px rgba(124, 58, 237, 0.3);
+        }
+
+        .action-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .action-button.cpa {
+            background: linear-gradient(135deg, var(--warning), #ea580c);
+            box-shadow: 0 10px 30px rgba(245, 158, 11, 0.3);
+        }
+
+        .action-button.final {
+            background: linear-gradient(135deg, var(--success), #059669);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+        }
+
+        .action-button:not(:disabled):active {
+            transform: scale(0.97);
+        }
+
+        .action-button i {
+            font-size: 1.2rem;
+        }
+
+        /* Link secundário */
+        .secondary-link {
+            display: inline-block;
+            margin-top: 16px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: color 0.2s;
+            text-align: center;
+            width: 100%;
+        }
+
+        .secondary-link i {
+            margin-right: 6px;
+        }
+
+        .secondary-link:hover {
+            color: var(--primary-light);
+        }
+
+        /* Footer */
+        .footer-note {
+            text-align: center;
+            margin-top: 24px;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        /* Mobile */
+        @media (max-width: 480px) {
+            body {
+                padding: 12px;
+            }
+            
+            .step-container {
+                padding: 24px 16px;
+            }
+            
+            .step-dot {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+            
+            .step-label {
+                font-size: 0.6rem;
+            }
+            
+            .step-header h1 {
+                font-size: 1.3rem;
+            }
+            
+            .countdown-number {
+                font-size: 3rem;
+            }
+            
+            .action-button {
+                padding: 16px 20px;
+                font-size: 1rem;
+            }
+            
+            .info-box {
+                padding: 12px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .step-dot {
+                width: 35px;
+                height: 35px;
+            }
+            
+            .step-label {
+                display: none;
+            }
+        }
+    </style>
 </head>
 <body data-theme="dark">
     <div class="step-container">
         <div class="progress-steps" id="progressSteps"></div>
-        <div class="progress-bar-container">
-            <div class="progress-bar-fill" id="progressFill"></div>
+        
+        <div class="progress-bar-wrapper">
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">Etapa 1 de 3</div>
         </div>
         
-        <h1 id="stepTitle">
-            <i class="fas fa-shield-alt"></i>
-            <span>Verificação Inicial</span>
-        </h1>
-        <p class="subtitle" id="stepSubtitle">Preparando seu link seguro...</p>
+        <div class="step-header">
+            <h1 id="stepTitle">
+                <i class="fas fa-shield-alt"></i>
+                <span>Verificação Inicial</span>
+            </h1>
+            <p class="subtitle" id="stepSubtitle">Preparando seu link seguro...</p>
+        </div>
         
         <div class="timer-section">
-            <div id="countdown">20</div>
-            <div class="countdown-label">SEGUNDOS RESTANTES</div>
+            <div class="countdown-number" id="countdown">20</div>
+            <div class="countdown-label">Segundos restantes</div>
         </div>
         
         <div class="ad-container" id="adsterraContainer" style="display: none;">
@@ -32,7 +441,7 @@
         
         <div class="info-box" id="infoBox">
             <i class="fas fa-shield-alt"></i>
-            <div>
+            <div class="info-box-content">
                 <strong id="infoTitle">Aguarde um momento</strong>
                 <p id="infoText">O botão será liberado em breve</p>
             </div>
@@ -48,9 +457,9 @@
         </a>
     </div>
     
-    <footer>
-        <p>© 2026 Mr Doso Web</p>
-    </footer>
+    <div class="footer-note">
+        <i class="fas fa-lock"></i> Conexão segura
+    </div>
     
     <!-- Monetag -->
     <script>
@@ -66,6 +475,314 @@
         })();
     </script>
     
-    <script src="steps.js"></script>
+    <script>
+        // Configuração
+        let config = {
+            etapa: 1,
+            totalSteps: 3,
+            timer: 20,
+            cpaLink: null,
+            temAdsterra: false,
+            temCPA: false,
+            isFinalStep: false,
+            cpaJaAberto: false,
+            icone: 'fa-shield-alt',
+            titulo: 'Verificação Inicial',
+            subtitulo: 'Preparando seu link seguro...',
+            botaoTexto: 'Continuar'
+        };
+        
+        let timeLeft = 20;
+        let cpaOpened = false;
+        let isProcessing = false;
+        let sessionId = '';
+        let timerInterval = null;
+        
+        // CPA Links para bônus
+        const BONUS_CPA_LINKS = [
+            'https://omg10.com/4/10420694',
+            'https://pertlouv.com/pZ0Ob1Vxs8U=?',
+            'https://bony-teaching.com/KUN7HR'
+        ];
+        
+        // Pegar cookie
+        function getCookie(name) {
+            const value = '; ' + document.cookie;
+            const parts = value.split('; ' + name + '=');
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+        
+        // Inicializar tema
+        function initTheme() {
+            const theme = localStorage.getItem('theme') || 'dark';
+            document.body.setAttribute('data-theme', theme);
+        }
+        
+        // Atualizar UI
+        function updateUI() {
+            // Etapas
+            const progressSteps = document.getElementById('progressSteps');
+            progressSteps.innerHTML = '';
+            
+            for (let i = 1; i <= config.totalSteps; i++) {
+                const stepItem = document.createElement('div');
+                stepItem.className = 'step-item';
+                
+                let dotClass = 'step-dot';
+                let dotContent = i;
+                
+                if (i < config.etapa) {
+                    dotClass += ' completed';
+                    dotContent = '<i class="fas fa-check"></i>';
+                } else if (i === config.etapa) {
+                    dotClass += ' active';
+                }
+                
+                stepItem.innerHTML = `
+                    <div class="${dotClass}">${dotContent}</div>
+                    <span class="step-label ${i === config.etapa ? 'active' : ''}">Etapa ${i}</span>
+                `;
+                
+                progressSteps.appendChild(stepItem);
+            }
+            
+            // Barra de progresso
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            progressFill.style.width = (config.etapa / config.totalSteps) * 100 + '%';
+            progressText.textContent = 'Etapa ' + config.etapa + ' de ' + config.totalSteps;
+            
+            // Título e subtítulo
+            document.getElementById('stepTitle').innerHTML = `
+                <i class="fas ${config.icone}"></i>
+                <span>${config.titulo}</span>
+            `;
+            document.getElementById('stepSubtitle').textContent = config.subtitulo;
+            
+            // Info box
+            const infoBox = document.getElementById('infoBox');
+            const infoIcon = infoBox.querySelector('i');
+            const infoTitle = document.getElementById('infoTitle');
+            const infoText = document.getElementById('infoText');
+            
+            if (config.temCPA) {
+                infoBox.className = 'info-box';
+                infoIcon.className = 'fas fa-user-check';
+                infoTitle.textContent = 'Verificação de segurança';
+                infoText.textContent = 'Clique no botão abaixo para confirmar seu acesso';
+            } else if (config.isFinalStep) {
+                infoBox.className = 'info-box success';
+                infoIcon.className = 'fas fa-trophy';
+                infoTitle.textContent = 'Pronto para acessar!';
+                infoText.textContent = 'Seu conteúdo está pronto. Clique no botão para acessar.';
+            } else {
+                infoBox.className = 'info-box';
+                infoIcon.className = 'fas fa-shield-alt';
+                infoTitle.textContent = 'Aguarde um momento';
+                infoText.textContent = 'O botão será liberado em breve';
+            }
+            
+            // Adsterra
+            const adsterraContainer = document.getElementById('adsterraContainer');
+            if (config.temAdsterra) {
+                adsterraContainer.style.display = 'flex';
+                if (!window.adsterraLoaded) {
+                    window.adsterraLoaded = true;
+                    const script = document.createElement('script');
+                    script.src = '//pl27551656.revenuecpmgate.com/57af132f9a89824d027d70445ba09a9a/invoke.js';
+                    script.async = true;
+                    script.setAttribute('data-cfasync', 'false');
+                    document.head.appendChild(script);
+                }
+            } else {
+                adsterraContainer.style.display = 'none';
+            }
+            
+            // Oferta bônus
+            const bonusOffer = document.getElementById('bonusOffer');
+            if (config.isFinalStep && config.temCPA) {
+                bonusOffer.style.display = 'inline-block';
+            } else {
+                bonusOffer.style.display = 'none';
+            }
+            
+            // Timer
+            document.getElementById('countdown').textContent = timeLeft;
+        }
+        
+        // Habilitar botão
+        function enableButton() {
+            const mainBtn = document.getElementById('mainActionBtn');
+            mainBtn.disabled = false;
+            
+            if (config.isFinalStep) {
+                mainBtn.innerHTML = '<i class="fas fa-external-link-alt"></i><span>' + config.botaoTexto + '</span>';
+                mainBtn.className = 'action-button final';
+            } else if (config.temCPA) {
+                if (!cpaOpened) {
+                    mainBtn.innerHTML = '<i class="fas fa-external-link-alt"></i><span>' + config.botaoTexto + '</span>';
+                    mainBtn.className = 'action-button cpa';
+                } else {
+                    mainBtn.innerHTML = '<i class="fas fa-arrow-right"></i><span>Continuar</span>';
+                    mainBtn.className = 'action-button';
+                }
+            } else {
+                mainBtn.innerHTML = '<i class="fas fa-arrow-right"></i><span>' + config.botaoTexto + '</span>';
+                mainBtn.className = 'action-button';
+            }
+        }
+        
+        // Iniciar timer
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            
+            const countdownEl = document.getElementById('countdown');
+            
+            if (config.timer === 0) {
+                enableButton();
+                return;
+            }
+            
+            timerInterval = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    countdownEl.textContent = timeLeft;
+                }
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    enableButton();
+                }
+            }, 1000);
+        }
+        
+        // Carregar configuração da etapa
+        async function loadStepConfig() {
+            try {
+                sessionId = getCookie('dsessId');
+                
+                const response = await fetch('/api/step-config', {
+                    headers: { 'x-session-id': sessionId }
+                });
+                
+                if (!response.ok) {
+                    window.location.href = '/';
+                    return;
+                }
+                
+                const data = await response.json();
+                config = data;
+                timeLeft = config.timer;
+                cpaOpened = config.cpaJaAberto || false;
+                
+                updateUI();
+                startTimer();
+            } catch (error) {
+                console.error('Erro:', error);
+                window.location.href = '/';
+            }
+        }
+        
+        // Próxima etapa
+        async function nextStep() {
+            if (isProcessing) return;
+            if (timeLeft > 0 && config.timer > 0) {
+                alert('Aguarde ' + timeLeft + ' segundos.');
+                return;
+            }
+            
+            isProcessing = true;
+            const mainBtn = document.getElementById('mainActionBtn');
+            
+            if (config.isFinalStep) {
+                mainBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i><span>Redirecionando...</span>';
+                
+                try {
+                    const response = await fetch('/api/next-step', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            currentStep: config.etapa, 
+                            sessionId,
+                            cpaOpened
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                    }
+                } catch (error) {
+                    alert('Erro de conexão');
+                    isProcessing = false;
+                    enableButton();
+                }
+                return;
+            }
+            
+            if (config.temCPA && !cpaOpened && config.cpaLink) {
+                mainBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i><span>Abrindo...</span>';
+                window.open(config.cpaLink, '_blank');
+                cpaOpened = true;
+                enableButton();
+                isProcessing = false;
+                return;
+            }
+            
+            mainBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i><span>Processando...</span>';
+            mainBtn.disabled = true;
+            
+            try {
+                const response = await fetch('/api/next-step', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        currentStep: config.etapa, 
+                        sessionId,
+                        cpaOpened
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.redirect) {
+                    window.location.href = data.redirect;
+                } else {
+                    alert(data.error || 'Erro ao avançar');
+                    mainBtn.disabled = false;
+                    enableButton();
+                }
+            } catch (e) {
+                alert('Erro de conexão');
+                mainBtn.disabled = false;
+                enableButton();
+            } finally {
+                isProcessing = false;
+            }
+        }
+        
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            loadStepConfig();
+            
+            const mainBtn = document.getElementById('mainActionBtn');
+            mainBtn.addEventListener('click', nextStep);
+            
+            const bonusOffer = document.getElementById('bonusOffer');
+            bonusOffer.addEventListener('click', () => {
+                const randomLink = BONUS_CPA_LINKS[Math.floor(Math.random() * BONUS_CPA_LINKS.length)];
+                window.open(randomLink, '_blank');
+            });
+        });
+        
+        // Limpar timer ao sair
+        window.addEventListener('beforeunload', () => {
+            if (timerInterval) clearInterval(timerInterval);
+        });
+    </script>
 </body>
 </html>
