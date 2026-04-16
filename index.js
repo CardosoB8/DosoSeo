@@ -589,6 +589,9 @@ app.post('/admin/api/change-password', requireAdmin, async (req, res) => {
 // =================================================================
 // INICIAR SERVIDOR
 // =================================================================
+// De isso:
+
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`🚀 Servidor rodando na porta ${PORT}`);
 });
