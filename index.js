@@ -13,7 +13,7 @@ const bcrypt = require('bcrypt');
 const app = express();
 
 // =================================================================
-// CONFIGURAÇÕES
+// CONFIGURAÇÕES DIRETAS
 // =================================================================
 const CONFIG = {
     REDIS_URL: 'redis://default:JyefUsxHJljfdvs8HACumEyLE7XNgLvG@redis-19242.c266.us-east-1-3.ec2.cloud.redislabs.com:19242',
@@ -21,8 +21,10 @@ const CONFIG = {
     SESSION_SECRET: 'mr-doso-secret-key-2026'
 };
 
+const PORT = process.env.PORT || 3000;
+
 // =================================================================
-// REDIS CLIENT
+// CONFIGURAÇÃO DO REDIS
 // =================================================================
 const redisClient = redis.createClient({
     url: CONFIG.REDIS_URL,
@@ -34,15 +36,14 @@ const redisClient = redis.createClient({
 redisClient.on('error', (err) => console.error('Redis Error:', err));
 redisClient.on('connect', () => console.log('✅ Redis conectado'));
 
-// Conectar ao Redis (com retry)
 let redisConnected = false;
+
 async function connectRedis() {
     try {
         await redisClient.connect();
         redisConnected = true;
-        console.log('🚀 Redis pronto!');
+        console.log('🚀 Redis pronto para uso!');
         
-        // Inicializar admin
         const adminExists = await redisClient.exists('admin:config');
         if (!adminExists) {
             const hashedPassword = await bcrypt.hash(CONFIG.ADMIN_PASSWORD, 10);
@@ -54,27 +55,31 @@ async function connectRedis() {
         }
     } catch (err) {
         console.error('Falha ao conectar Redis:', err);
+        redisConnected = false;
     }
 }
+
 connectRedis();
 
 // =================================================================
-// MIDDLEWARES
+// CONFIGURAÇÕES DE SEGURANÇA
 // =================================================================
 app.set('trust proxy', 1);
+
 app.use(helmet({
     contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false,
     crossOriginOpenerPolicy: false,
     crossOriginResourcePolicy: false
 }));
+
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Sessão com Redis Store
+// Sessão para o painel admin
 app.use(session({
     store: new RedisStore({ 
         client: redisClient,
@@ -93,11 +98,14 @@ app.use(session({
 }));
 
 // Rate limits
-app.use(rateLimit({
+const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
-    message: { error: 'Muitas requisições' }
-}));
+    message: { error: 'Muitas requisições' },
+    standardHeaders: true,
+    legacyHeaders: false
+});
+app.use(limiter);
 
 const adminLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -128,6 +136,17 @@ const STEP_CONFIGS = {
 };
 
 // =================================================================
+// CARREGAR LINKS ANTIGOS (compatibilidade)
+// =================================================================
+let linksData = [];
+try {
+    linksData = require('./data/links.js');
+    console.log(`✅ Links antigos carregados: ${linksData.length} links`);
+} catch (error) {
+    console.log('ℹ️ Nenhum links.js encontrado, usando apenas Redis');
+}
+
+// =================================================================
 // FUNÇÕES AUXILIARES
 // =================================================================
 function generateSessionId() {
@@ -135,7 +154,7 @@ function generateSessionId() {
 }
 
 function getClientFingerprint(req) {
-    const ip = req.ip || req.connection?.remoteAddress || '0.0.0.0';
+    const ip = req.ip || req.connection?.remoteAddress || req.headers['x-forwarded-for'] || '0.0.0.0';
     const userAgent = req.headers['user-agent'] || '';
     return crypto.createHash('sha256').update(ip + userAgent).digest('hex').substring(0, 16);
 }
@@ -145,7 +164,7 @@ function getRandomCpaLink() {
 }
 
 // =================================================================
-// FUNÇÕES DE SESSÃO DE DOWNLOAD (separada da sessão admin)
+// FUNÇÕES DE SESSÃO DE DOWNLOAD
 // =================================================================
 async function createDownloadSession(itemId, req) {
     const sessionId = generateSessionId();
@@ -164,6 +183,7 @@ async function createDownloadSession(itemId, req) {
     await redisClient.setEx(`dsess:${sessionId}`, SESSION_EXPIRATION, JSON.stringify(sessionData));
     await redisClient.setEx(`fp:${fingerprint}`, SESSION_EXPIRATION, sessionId);
     
+    console.log(`✅ Sessão criada: ${sessionId.substring(0, 8)}... para ${itemId}`);
     return sessionData;
 }
 
@@ -181,14 +201,21 @@ async function getDownloadSession(sessionId) {
     }
 }
 
-async function updateDownloadSession(sessionId, etapa, cpaAberto = null) {
-    const session = await getDownloadSession(sessionId);
-    if (!session) return null;
-    session.etapa_atual = etapa;
-    session.ultima_acao = Date.now();
-    if (cpaAberto !== null) session.cpa_aberto_etapa2 = cpaAberto;
-    await redisClient.setEx(`dsess:${sessionId}`, SESSION_EXPIRATION, JSON.stringify(session));
-    return session;
+async function recoverDownloadSession(req) {
+    let sessionId = req.cookies?.dsessId;
+    
+    if (!sessionId) {
+        sessionId = req.headers['x-session-id'];
+    }
+    
+    if (!sessionId) {
+        const fingerprint = getClientFingerprint(req);
+        sessionId = await redisClient.get(`fp:${fingerprint}`);
+    }
+    
+    if (!sessionId) return null;
+    
+    return await getDownloadSession(sessionId);
 }
 
 // =================================================================
@@ -203,6 +230,38 @@ function requireAdmin(req, res, next) {
     }
     next();
 }
+
+// =================================================================
+// MIDDLEWARE DE SESSÃO DE DOWNLOAD
+// =================================================================
+app.use(async (req, res, next) => {
+    const publicPaths = ['/admin-login', '/admin-panel', '/item', '/api/items', '/api/item', '/api/start-download'];
+    const isPublic = publicPaths.some(p => req.path.startsWith(p)) || 
+                     req.path === '/' ||
+                     req.path.startsWith('/css') || 
+                     req.path.startsWith('/js') ||
+                     req.path.startsWith('/admin') ||
+                     req.path.startsWith('/page');
+    
+    if (isPublic) {
+        return next();
+    }
+    
+    const session = await recoverDownloadSession(req);
+    req.downloadSession = session;
+    
+    if (session && !req.cookies?.dsessId) {
+        res.cookie('dsessId', session.id, {
+            maxAge: SESSION_EXPIRATION * 1000,
+            httpOnly: true,
+            secure: false,
+            sameSite: 'lax',
+            path: '/'
+        });
+    }
+    
+    next();
+});
 
 // =================================================================
 // ROTAS DE PÁGINAS ESTÁTICAS
@@ -225,6 +284,24 @@ app.get('/admin-panel', requireAdmin, (req, res) => {
 });
 
 app.get('/page:step', (req, res) => {
+    const step = parseInt(req.params.step);
+    
+    if (!req.downloadSession) {
+        console.log('❌ Page: Sem sessão');
+        return res.redirect('/');
+    }
+    
+    const session = req.downloadSession;
+    
+    if (step !== session.etapa_atual) {
+        console.log(`⚠️ Redirecionando page: ${step} → ${session.etapa_atual}`);
+        return res.redirect(`/page${session.etapa_atual}`);
+    }
+    
+    if (step > TOTAL_STEPS) {
+        return res.redirect('/');
+    }
+    
     res.sendFile(path.join(__dirname, 'public', 'steps.html'));
 });
 
@@ -237,7 +314,7 @@ app.get('/api/items', async (req, res) => {
     try {
         const categoria = req.query.categoria || 'todos';
         const page = parseInt(req.query.page) || 1;
-        const limit = 12;
+        const limit = 24;
         const start = (page - 1) * limit;
         
         let itemIds;
@@ -266,6 +343,7 @@ app.get('/api/items', async (req, res) => {
         
         res.json({ items, hasMore: itemIds.length === limit });
     } catch (error) {
+        console.error('Erro /api/items:', error);
         res.status(500).json({ error: 'Erro ao buscar itens' });
     }
 });
@@ -274,11 +352,11 @@ app.get('/api/items', async (req, res) => {
 app.get('/api/item/:id', async (req, res) => {
     try {
         const item = await redisClient.hGetAll(`item:${req.params.id}`);
-        if (!item || item.ativo !== 'true') {
+        
+        if (!item || Object.keys(item).length === 0) {
             return res.status(404).json({ error: 'Item não encontrado' });
         }
         
-        // Incrementar visualização
         const today = new Date().toISOString().split('T')[0];
         await redisClient.hIncrBy(`item:${req.params.id}`, 'visualizacoes', 1);
         await redisClient.hIncrBy(`stats:daily:${today}`, 'visualizacoes_total', 1);
@@ -287,9 +365,10 @@ app.get('/api/item/:id', async (req, res) => {
             id: req.params.id,
             ...item,
             downloads: parseInt(item.downloads) || 0,
-            visualizacoes: parseInt(item.visualizacoes) || 0
+            visualizacoes: (parseInt(item.visualizacoes) || 0) + 1
         });
     } catch (error) {
+        console.error('Erro /api/item:', error);
         res.status(500).json({ error: 'Erro ao buscar item' });
     }
 });
@@ -298,9 +377,11 @@ app.get('/api/item/:id', async (req, res) => {
 app.post('/api/start-download/:id', async (req, res) => {
     try {
         const itemId = req.params.id;
-        const item = await redisClient.hGetAll(`item:${itemId}`);
         
-        if (!item || item.ativo !== 'true') {
+        const redisItem = await redisClient.hGetAll(`item:${itemId}`);
+        const oldLink = linksData.find(l => l.alias === itemId);
+        
+        if ((!redisItem || Object.keys(redisItem).length === 0) && !oldLink) {
             return res.status(404).json({ error: 'Item não encontrado' });
         }
         
@@ -310,8 +391,11 @@ app.post('/api/start-download/:id', async (req, res) => {
             maxAge: SESSION_EXPIRATION * 1000,
             httpOnly: true,
             secure: false,
-            sameSite: 'lax'
+            sameSite: 'lax',
+            path: '/'
         });
+        
+        console.log(`🚀 Download iniciado: ${itemId}, sessão: ${session.id.substring(0, 8)}`);
         
         res.json({ 
             success: true, 
@@ -319,21 +403,37 @@ app.post('/api/start-download/:id', async (req, res) => {
             sessionId: session.id
         });
     } catch (error) {
+        console.error('Erro start-download:', error);
         res.status(500).json({ error: 'Erro ao iniciar download' });
     }
 });
 
-// Configuração da etapa atual
+// Configuração da etapa
 app.get('/api/step-config', async (req, res) => {
     try {
-        const sessionId = req.cookies?.dsessId || req.headers['x-session-id'];
-        if (!sessionId) {
+        const session = req.downloadSession;
+        
+        if (!session) {
+            console.log('❌ Step-config: Sem sessão');
             return res.status(403).json({ error: 'Sessão inválida' });
         }
         
-        const session = await getDownloadSession(sessionId);
-        if (!session) {
-            return res.status(403).json({ error: 'Sessão expirada' });
+        let item;
+        let urlOriginal;
+        
+        const redisItem = await redisClient.hGetAll(`item:${session.itemId}`);
+        
+        if (redisItem && Object.keys(redisItem).length > 0) {
+            item = redisItem;
+            urlOriginal = redisItem.url_original;
+        } else {
+            const oldLink = linksData.find(l => l.alias === session.itemId);
+            if (oldLink) {
+                item = { titulo: oldLink.alias };
+                urlOriginal = oldLink.original_url;
+            } else {
+                return res.status(404).json({ error: 'Item não encontrado' });
+            }
         }
         
         const config = STEP_CONFIGS[session.etapa_atual];
@@ -344,64 +444,74 @@ app.get('/api/step-config', async (req, res) => {
             totalSteps: TOTAL_STEPS,
             ...config,
             cpaLink,
-            cpaJaAberto: session.cpa_aberto_etapa2 || false
+            cpaJaAberto: session.cpa_aberto_etapa2 || false,
+            urlOriginal
         });
     } catch (error) {
-        res.status(500).json({ error: 'Erro ao buscar configuração' });
+        console.error('Erro step-config:', error);
+        res.status(500).json({ error: 'Erro interno' });
     }
 });
 
 // Próxima etapa
 app.post('/api/next-step', async (req, res) => {
     try {
-        const { currentStep, sessionId, cpaOpened } = req.body;
+        const { currentStep, cpaOpened } = req.body;
+        const session = req.downloadSession;
         
-        if (!sessionId) {
-            return res.status(403).json({ error: 'Sessão inválida' });
-        }
-        
-        const session = await getDownloadSession(sessionId);
         if (!session) {
-            return res.status(403).json({ error: 'Sessão expirada' });
+            console.log('❌ Next-step: Sem sessão');
+            return res.status(403).json({ error: 'Sessão inválida' });
         }
         
         const clientStep = parseInt(currentStep);
         
         if (session.etapa_atual !== clientStep) {
+            console.log(`⚠️ Etapa incorreta: esperado ${session.etapa_atual}, recebido ${clientStep}`);
             return res.status(400).json({ error: 'Sequência inválida' });
         }
         
-        const item = await redisClient.hGetAll(`item:${session.itemId}`);
-        if (!item) {
-            return res.status(404).json({ error: 'Item não encontrado' });
+        let urlOriginal;
+        
+        const redisItem = await redisClient.hGetAll(`item:${session.itemId}`);
+        if (redisItem && Object.keys(redisItem).length > 0) {
+            urlOriginal = redisItem.url_original;
+        } else {
+            const oldLink = linksData.find(l => l.alias === session.itemId);
+            if (oldLink) {
+                urlOriginal = oldLink.original_url;
+            } else {
+                return res.status(404).json({ error: 'Item não encontrado' });
+            }
         }
         
-        // Se for etapa final
         if (clientStep >= TOTAL_STEPS) {
             const today = new Date().toISOString().split('T')[0];
-            await redisClient.hIncrBy(`item:${session.itemId}`, 'downloads', 1);
-            await redisClient.hIncrBy(`stats:daily:${today}`, 'downloads_total', 1);
             
-            return res.json({ 
-                redirect: item.url_original, 
-                final: true 
-            });
+            if (redisItem && Object.keys(redisItem).length > 0) {
+                await redisClient.hIncrBy(`item:${session.itemId}`, 'downloads', 1);
+                await redisClient.hIncrBy(`stats:daily:${today}`, 'downloads_total', 1);
+            }
+            
+            console.log(`✅ Download finalizado: ${urlOriginal}`);
+            return res.json({ redirect: urlOriginal, final: true });
         }
         
         const novaEtapa = clientStep + 1;
+        session.etapa_atual = novaEtapa;
         
         if (clientStep === 2 && cpaOpened) {
-            await updateDownloadSession(sessionId, novaEtapa, true);
-        } else {
-            await updateDownloadSession(sessionId, novaEtapa);
+            session.cpa_aberto_etapa2 = true;
         }
         
-        res.json({ 
-            redirect: `/page${novaEtapa}`, 
-            final: false 
-        });
+        await redisClient.setEx(`dsess:${session.id}`, SESSION_EXPIRATION, JSON.stringify(session));
+        
+        console.log(`✅ Avançando: etapa ${clientStep} → ${novaEtapa}`);
+        res.json({ redirect: `/page${novaEtapa}`, final: false });
+        
     } catch (error) {
-        res.status(500).json({ error: 'Erro ao processar' });
+        console.error('Erro next-step:', error);
+        res.status(500).json({ error: 'Erro interno' });
     }
 });
 
@@ -409,7 +519,6 @@ app.post('/api/next-step', async (req, res) => {
 // API ADMIN
 // =================================================================
 
-// Login
 app.post('/admin/api/login', adminLimiter, async (req, res) => {
     try {
         const { password } = req.body;
@@ -428,13 +537,11 @@ app.post('/admin/api/login', adminLimiter, async (req, res) => {
     }
 });
 
-// Logout
 app.post('/admin/api/logout', requireAdmin, (req, res) => {
     req.session.destroy();
     res.json({ success: true });
 });
 
-// Estatísticas
 app.get('/admin/api/stats', requireAdmin, async (req, res) => {
     try {
         const today = new Date().toISOString().split('T')[0];
@@ -484,7 +591,6 @@ app.get('/admin/api/stats', requireAdmin, async (req, res) => {
     }
 });
 
-// Listar itens (admin)
 app.get('/admin/api/items', requireAdmin, async (req, res) => {
     try {
         const itemIds = await redisClient.zRange('itens:ativos', 0, -1, { REV: true });
@@ -506,7 +612,6 @@ app.get('/admin/api/items', requireAdmin, async (req, res) => {
     }
 });
 
-// Criar/Editar item
 app.post('/admin/api/item', requireAdmin, async (req, res) => {
     try {
         const { id, titulo, descricao, imagem, url_original, categoria, expira_em, ativo } = req.body;
@@ -548,7 +653,6 @@ app.post('/admin/api/item', requireAdmin, async (req, res) => {
     }
 });
 
-// Deletar item
 app.delete('/admin/api/item/:id', requireAdmin, async (req, res) => {
     try {
         const itemId = req.params.id;
@@ -566,7 +670,6 @@ app.delete('/admin/api/item/:id', requireAdmin, async (req, res) => {
     }
 });
 
-// Alterar senha
 app.post('/admin/api/change-password', requireAdmin, async (req, res) => {
     try {
         const { currentPassword, newPassword } = req.body;
@@ -587,14 +690,50 @@ app.post('/admin/api/change-password', requireAdmin, async (req, res) => {
 });
 
 // =================================================================
-// INICIAR SERVIDOR
+// ROTA CORINGA PARA LINKS ANTIGOS (DEVE SER A ÚLTIMA)
 // =================================================================
-// De isso:
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`🚀 Servidor rodando na porta ${PORT}`);
+app.get('/:alias', async (req, res) => {
+    const alias = req.params.alias;
+    
+    const reservedRoutes = ['page1', 'page2', 'page3', 'admin', 'admin-login', 'admin-panel', 'item', 'api', 'css', 'js', 'favicon.ico'];
+    if (reservedRoutes.includes(alias) || alias.includes('.')) {
+        return res.status(404).send('Not found');
+    }
+    
+    const link = linksData.find(l => l.alias === alias);
+    
+    if (!link) {
+        console.log(`❌ Alias não encontrado: ${alias}`);
+        return res.redirect('/');
+    }
+    
+    console.log(`🔗 Link antigo acessado: ${alias}`);
+    
+    const session = await createDownloadSession(alias, req);
+    
+    res.cookie('dsessId', session.id, {
+        maxAge: SESSION_EXPIRATION * 1000,
+        httpOnly: true,
+        secure: false,
+        sameSite: 'lax',
+        path: '/'
+    });
+    
+    res.redirect('/page1');
 });
 
-// Exportar para Vercel
+// =================================================================
+// INICIAR SERVIDOR
+// =================================================================
+app.listen(PORT, () => {
+    console.log(`
+    🚀 MR DOSO HUB RODANDO NA PORTA ${PORT}
+    
+    ✅ REDIS: ${redisConnected ? 'CONECTADO' : 'FALHA - Verificar URL'}
+    ✅ LINKS ANTIGOS: ${linksData.length} carregados
+    ✅ PAINEL ADMIN: /admin-login
+    ✅ SENHA PADRÃO: MrDoso2026@Admin
+    `);
+});
+
 module.exports = app;
