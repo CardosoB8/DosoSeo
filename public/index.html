@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mr Doso - Hub de Links</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body data-theme="dark">
+    <header class="header">
+        <div class="header-content">
+            <a href="/" class="logo">
+                <i class="fas fa-cloud-download-alt"></i>
+                Mr Doso Hub
+            </a>
+            <div class="header-actions">
+                <input type="text" class="search-bar" placeholder="🔍 Buscar links..." id="searchInput">
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-sun"></i>
+                    <span>Claro</span>
+                </button>
+                <a href="/admin-login" class="admin-link">
+                    <i class="fas fa-crown"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+    
+    <div class="categories">
+        <button class="category-btn active" data-category="todos">Todos</button>
+        <button class="category-btn" data-category="filmes">🎬 Filmes</button>
+        <button class="category-btn" data-category="series">📺 Séries</button>
+        <button class="category-btn" data-category="jogos">🎮 Jogos</button>
+        <button class="category-btn" data-category="cursos">📚 Cursos</button>
+        <button class="category-btn" data-category="apps">📱 Apps</button>
+    </div>
+    
+    <div class="items-grid" id="itemsGrid">
+        <div class="loading">
+            <i class="fas fa-spinner fa-spin"></i> Carregando...
+        </div>
+    </div>
+    
+    <footer>
+        <p>© 2026 Mr Doso Web - Todos os direitos reservados</p>
+    </footer>
+    
+    <!-- Monetag -->
+    <script>
+        (function() {
+            if (!window.monetagLoaded) {
+                window.monetagLoaded = true;
+                const script = document.createElement('script');
+                script.src = 'https://quge5.com/88/tag.min.js';
+                script.setAttribute('data-zone', '203209');
+                script.async = true;
+                document.head.appendChild(script);
+            }
+        })();
+    </script>
+    
+    <script src="home.js"></script>
+</body>
+</html>
