@@ -202,12 +202,20 @@ async function getDownloadSession(sessionId) {
 }
 
 async function recoverDownloadSession(req) {
+    // 1. Tentar cookie
     let sessionId = req.cookies?.dsessId;
     
+    // 2. Tentar header
     if (!sessionId) {
         sessionId = req.headers['x-session-id'];
     }
     
+    // 3. Tentar query param (FALLBACK PARA VERCEL)
+    if (!sessionId && req.query.sid) {
+        sessionId = req.query.sid;
+    }
+    
+    // 4. Tentar fingerprint
     if (!sessionId) {
         const fingerprint = getClientFingerprint(req);
         sessionId = await redisClient.get(`fp:${fingerprint}`);
@@ -241,7 +249,7 @@ app.use(async (req, res, next) => {
                      req.path.startsWith('/css') || 
                      req.path.startsWith('/js') ||
                      req.path.startsWith('/admin') ||
-                     req.path.startsWith('/page');
+                     req.path === '/page1' || req.path === '/page2' || req.path === '/page3';
     
     if (isPublic) {
         return next();
@@ -250,6 +258,7 @@ app.use(async (req, res, next) => {
     const session = await recoverDownloadSession(req);
     req.downloadSession = session;
     
+    // Se tem sessão mas não tem cookie, setar cookie
     if (session && !req.cookies?.dsessId) {
         res.cookie('dsessId', session.id, {
             maxAge: SESSION_EXPIRATION * 1000,
@@ -283,19 +292,36 @@ app.get('/admin-panel', requireAdmin, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin-panel.html'));
 });
 
-app.get('/page:step', (req, res) => {
+app.get('/page:step', async (req, res) => {
     const step = parseInt(req.params.step);
     
-    if (!req.downloadSession) {
+    // Tentar recuperar sessão de todas as formas possíveis
+    let session = req.downloadSession;
+    
+    // Se não tiver sessão no middleware, tentar via query param diretamente
+    if (!session && req.query.sid) {
+        session = await getDownloadSession(req.query.sid);
+        if (session) {
+            // Setar cookie para requisições futuras
+            res.cookie('dsessId', session.id, {
+                maxAge: SESSION_EXPIRATION * 1000,
+                httpOnly: true,
+                secure: false,
+                sameSite: 'lax',
+                path: '/'
+            });
+            req.downloadSession = session;
+        }
+    }
+    
+    if (!session) {
         console.log('❌ Page: Sem sessão');
         return res.redirect('/');
     }
     
-    const session = req.downloadSession;
-    
     if (step !== session.etapa_atual) {
         console.log(`⚠️ Redirecionando page: ${step} → ${session.etapa_atual}`);
-        return res.redirect(`/page${session.etapa_atual}`);
+        return res.redirect(`/page${session.etapa_atual}?sid=${session.id}`);
     }
     
     if (step > TOTAL_STEPS) {
@@ -387,6 +413,7 @@ app.post('/api/start-download/:id', async (req, res) => {
         
         const session = await createDownloadSession(itemId, req);
         
+        // Cookie com configurações para Vercel
         res.cookie('dsessId', session.id, {
             maxAge: SESSION_EXPIRATION * 1000,
             httpOnly: true,
@@ -397,9 +424,10 @@ app.post('/api/start-download/:id', async (req, res) => {
         
         console.log(`🚀 Download iniciado: ${itemId}, sessão: ${session.id.substring(0, 8)}`);
         
+        // Retornar sessionId para o frontend usar como fallback via query param
         res.json({ 
             success: true, 
-            redirect: '/page1',
+            redirect: `/page1?sid=${session.id}`,
             sessionId: session.id
         });
     } catch (error) {
@@ -411,25 +439,28 @@ app.post('/api/start-download/:id', async (req, res) => {
 // Configuração da etapa
 app.get('/api/step-config', async (req, res) => {
     try {
-        const session = req.downloadSession;
+        // Tentar recuperar sessão de todas as formas
+        let sessionId = req.cookies?.dsessId || req.headers['x-session-id'] || req.query.sid;
+        let session = null;
+        
+        if (sessionId) {
+            session = await getDownloadSession(sessionId);
+        }
         
         if (!session) {
             console.log('❌ Step-config: Sem sessão');
             return res.status(403).json({ error: 'Sessão inválida' });
         }
         
-        let item;
         let urlOriginal;
         
         const redisItem = await redisClient.hGetAll(`item:${session.itemId}`);
         
         if (redisItem && Object.keys(redisItem).length > 0) {
-            item = redisItem;
             urlOriginal = redisItem.url_original;
         } else {
             const oldLink = linksData.find(l => l.alias === session.itemId);
             if (oldLink) {
-                item = { titulo: oldLink.alias };
                 urlOriginal = oldLink.original_url;
             } else {
                 return res.status(404).json({ error: 'Item não encontrado' });
@@ -445,7 +476,8 @@ app.get('/api/step-config', async (req, res) => {
             ...config,
             cpaLink,
             cpaJaAberto: session.cpa_aberto_etapa2 || false,
-            urlOriginal
+            urlOriginal,
+            sessionId: session.id
         });
     } catch (error) {
         console.error('Erro step-config:', error);
@@ -456,8 +488,15 @@ app.get('/api/step-config', async (req, res) => {
 // Próxima etapa
 app.post('/api/next-step', async (req, res) => {
     try {
-        const { currentStep, cpaOpened } = req.body;
-        const session = req.downloadSession;
+        const { currentStep, cpaOpened, sessionId: bodySessionId } = req.body;
+        
+        // Tentar recuperar sessão de todas as formas
+        let sessionId = req.cookies?.dsessId || req.headers['x-session-id'] || req.query.sid || bodySessionId;
+        let session = null;
+        
+        if (sessionId) {
+            session = await getDownloadSession(sessionId);
+        }
         
         if (!session) {
             console.log('❌ Next-step: Sem sessão');
@@ -507,7 +546,11 @@ app.post('/api/next-step', async (req, res) => {
         await redisClient.setEx(`dsess:${session.id}`, SESSION_EXPIRATION, JSON.stringify(session));
         
         console.log(`✅ Avançando: etapa ${clientStep} → ${novaEtapa}`);
-        res.json({ redirect: `/page${novaEtapa}`, final: false });
+        res.json({ 
+            redirect: `/page${novaEtapa}?sid=${session.id}`, 
+            final: false,
+            sessionId: session.id
+        });
         
     } catch (error) {
         console.error('Erro next-step:', error);
@@ -719,7 +762,8 @@ app.get('/:alias', async (req, res) => {
         path: '/'
     });
     
-    res.redirect('/page1');
+    // Redirecionar COM sessionId na URL como fallback para Vercel
+    res.redirect(`/page1?sid=${session.id}`);
 });
 
 // =================================================================
@@ -730,9 +774,8 @@ app.listen(PORT, () => {
     🚀 MR DOSO HUB RODANDO NA PORTA ${PORT}
     
     ✅ REDIS: ${redisConnected ? 'CONECTADO' : 'FALHA - Verificar URL'}
-    ✅ LINKS ANTIGOS: ${linksData.length} carregados
-    ✅ PAINEL ADMIN: /admin-login
-    ✅ SENHA PADRÃO: MrDoso2026@Admin
+    ✅ LINKS ANTIGOS: ${linksData.length} carregadoss
+    
     `);
 });
 
