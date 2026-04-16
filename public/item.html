@@ -2,27 +2,424 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Detalhes - Mr Doso</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <style>
+        :root {
+            --primary: #7c3aed;
+            --primary-light: #a78bfa;
+            --secondary: #ec4899;
+            --accent: #06b6d4;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0f0f1a;
+            --bg-secondary: #1a1a2e;
+            --bg-card: #16213e;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-color: #1e293b;
+            --header-bg: #0f172a;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --border-color: #e2e8f0;
+            --header-bg: #7c3aed;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            transition: background 0.3s, color 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: var(--header-bg);
+            padding: 12px 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .logo i {
+            font-size: 1.4rem;
+            color: var(--accent);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            font-size: 1.1rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s;
+        }
+
+        .back-btn i {
+            font-size: 0.9rem;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Container principal */
+        .container {
+            flex: 1;
+            padding: 16px;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Card de detalhes */
+        .item-detail {
+            background: var(--bg-card);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+        }
+
+        .item-cover {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+
+        .item-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .cover-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 40px 20px 20px;
+            background: linear-gradient(to top, var(--bg-card) 0%, transparent 100%);
+        }
+
+        .item-content {
+            padding: 20px;
+        }
+
+        .item-title-large {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            line-height: 1.2;
+            color: var(--text-primary);
+        }
+
+        .item-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: var(--bg-secondary);
+            border-radius: 30px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        .badge i {
+            color: var(--primary);
+            font-size: 0.9rem;
+        }
+
+        .badge.warning i {
+            color: var(--warning);
+        }
+
+        .item-description {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            padding: 16px;
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .stats-section {
+            display: flex;
+            justify-content: space-around;
+            padding: 20px 0;
+            margin-bottom: 20px;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .stat-block {
+            text-align: center;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+            color: white;
+            font-size: 1.3rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .download-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .download-btn-large {
+            padding: 18px 24px;
+            border: none;
+            border-radius: 60px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 700;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            box-shadow: 0 10px 30px rgba(124, 58, 237, 0.3);
+        }
+
+        .download-btn-large i {
+            font-size: 1.3rem;
+        }
+
+        .download-btn-large:active {
+            transform: scale(0.97);
+        }
+
+        .download-btn-large:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(124, 58, 237, 0.4);
+        }
+
+        /* Estados */
+        .loading, .error-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .loading i, .error-state i {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .error-state h3 {
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .error-state p {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .retry-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 30px;
+            background: var(--primary);
+            color: white;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: auto;
+        }
+
+        /* Mobile */
+        @media (max-width: 640px) {
+            .container {
+                padding: 12px;
+            }
+            
+            .item-title-large {
+                font-size: 1.4rem;
+            }
+            
+            .item-description {
+                font-size: 0.95rem;
+                padding: 12px;
+            }
+            
+            .stat-value {
+                font-size: 1.2rem;
+            }
+            
+            .stat-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+            
+            .download-btn-large {
+                padding: 16px 20px;
+                font-size: 1rem;
+            }
+            
+            .back-btn span {
+                display: none;
+            }
+            
+            .back-btn {
+                padding: 8px 12px;
+            }
+            
+            .logo span {
+                display: none;
+            }
+        }
+
+        @media (min-width: 641px) {
+            .header-content {
+                padding: 0 20px;
+            }
+        }
+    </style>
 </head>
 <body data-theme="dark">
     <header class="header">
         <div class="header-content">
             <a href="/" class="logo">
-                <i class="fas fa-cloud-download-alt"></i>
-                Mr Doso Hub
+                <i class="fas fa-bolt"></i>
+                <span>Mr Doso</span>
             </a>
             <div class="header-actions">
-                <button class="theme-toggle" id="themeToggle">
+                <button class="icon-btn" id="themeToggle">
                     <i class="fas fa-sun"></i>
-                    <span>Claro</span>
                 </button>
                 <a href="/" class="back-btn">
                     <i class="fas fa-arrow-left"></i>
-                    Voltar
+                    <span>Voltar</span>
                 </a>
             </div>
         </div>
@@ -31,13 +428,14 @@
     <div class="container">
         <div class="item-detail" id="itemDetail">
             <div class="loading">
-                <i class="fas fa-spinner fa-spin"></i> Carregando...
+                <i class="fas fa-spinner fa-pulse"></i>
+                <p>Carregando detalhes...</p>
             </div>
         </div>
     </div>
     
     <footer>
-        <p>© 2026 Mr Doso Web - Todos os direitos reservados</p>
+        <p>Mr Doso Hub - Sua biblioteca de conteúdo</p>
     </footer>
     
     <!-- Monetag -->
@@ -55,24 +453,58 @@
     </script>
     
     <script>
-        // Código embutido para evitar problemas de carregamento
+        // Configuração do tema
         function initTheme() {
             const theme = localStorage.getItem('theme') || 'dark';
             document.body.setAttribute('data-theme', theme);
-            updateThemeButton(theme);
+            updateThemeIcon(theme);
         }
         
-        function updateThemeButton(theme) {
-            const btn = document.getElementById('themeToggle');
-            if (btn) {
-                btn.innerHTML = theme === 'dark' 
-                    ? '<i class="fas fa-sun"></i><span>Claro</span>'
-                    : '<i class="fas fa-moon"></i><span>Escuro</span>';
+        function updateThemeIcon(theme) {
+            const icon = document.querySelector('#themeToggle i');
+            if (icon) {
+                icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
             }
         }
         
+        // Formatação de números
+        function formatNumber(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
+            return num.toString();
+        }
+        
+        // Formatação de data
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('pt-BR');
+        }
+        
+        // Iniciar download
+        async function startDownload(itemId) {
+            try {
+                const response = await fetch('/api/start-download/' + itemId, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await response.json();
+                
+                if (data.redirect) {
+                    window.location.href = data.redirect;
+                } else {
+                    alert('Erro ao iniciar download');
+                }
+            } catch (error) {
+                alert('Erro de conexão');
+            }
+        }
+        
+        // Carregar detalhes do item
         async function loadItem() {
-            const itemId = window.location.pathname.split('/').filter(p => p).pop();
+            const pathParts = window.location.pathname.split('/').filter(p => p);
+            const itemId = pathParts[pathParts.length - 1];
             const container = document.getElementById('itemDetail');
             
             try {
@@ -85,87 +517,96 @@
                 
                 const item = await response.json();
                 
+                const coverUrl = item.imagem || 'https://via.placeholder.com/800x450/7c3aed/ffffff?text=' + encodeURIComponent(item.titulo);
+                const categoria = item.categoria || 'Geral';
+                const downloads = parseInt(item.downloads) || 0;
+                const visualizacoes = parseInt(item.visualizacoes) || 0;
+                
                 container.innerHTML = `
-                    <div class="item-header">
-                        <img src="${item.imagem || 'https://via.placeholder.com/1000x400/667eea/ffffff?text=' + encodeURIComponent(item.titulo)}" 
-                             alt="${item.titulo}"
-                             onerror="this.src='https://via.placeholder.com/1000x400/667eea/ffffff?text=Sem+Imagem'">
-                        <div class="item-header-overlay">
-                            <h1 class="item-title-large">${item.titulo}</h1>
-                        </div>
+                    <div class="item-cover">
+                        <img src="${coverUrl}" alt="${item.titulo}" 
+                             onerror="this.src='https://via.placeholder.com/800x450/7c3aed/ffffff?text=' + encodeURIComponent('${item.titulo.substring(0, 20)}')">
+                        <div class="cover-overlay"></div>
                     </div>
                     
                     <div class="item-content">
-                        <div class="item-meta-detail">
-                            <span><i class="fas fa-tag"></i> ${item.categoria || 'Geral'}</span>
-                            <span><i class="fas fa-calendar"></i> ${new Date(item.criado_em).toLocaleDateString('pt-BR')}</span>
-                            ${item.expira_em ? '<span><i class="fas fa-hourglass-half"></i> Expira em ' + new Date(item.expira_em).toLocaleDateString('pt-BR') + '</span>' : ''}
+                        <h1 class="item-title-large">${item.titulo}</h1>
+                        
+                        <div class="item-badges">
+                            <span class="badge">
+                                <i class="fas fa-tag"></i>
+                                ${categoria}
+                            </span>
+                            <span class="badge">
+                                <i class="fas fa-calendar"></i>
+                                ${formatDate(item.criado_em)}
+                            </span>
+                            ${item.expira_em ? `
+                            <span class="badge warning">
+                                <i class="fas fa-hourglass-half"></i>
+                                Expira ${formatDate(item.expira_em)}
+                            </span>
+                            ` : ''}
                         </div>
                         
-                        <p class="item-description-full">${item.descricao || 'Nenhuma descrição disponível.'}</p>
+                        <div class="item-description">
+                            <i class="fas fa-quote-left" style="opacity: 0.5; margin-right: 8px;"></i>
+                            ${item.descricao || 'Nenhuma descrição disponível para este item.'}
+                        </div>
+                        
+                        <div class="stats-section">
+                            <div class="stat-block">
+                                <div class="stat-icon">
+                                    <i class="fas fa-download"></i>
+                                </div>
+                                <div class="stat-value">${formatNumber(downloads)}</div>
+                                <div class="stat-label">Downloads</div>
+                            </div>
+                            <div class="stat-block">
+                                <div class="stat-icon">
+                                    <i class="fas fa-eye"></i>
+                                </div>
+                                <div class="stat-value">${formatNumber(visualizacoes)}</div>
+                                <div class="stat-label">Visualizações</div>
+                            </div>
+                        </div>
                         
                         <div class="download-section">
                             <button class="download-btn-large" onclick="startDownload('${itemId}')">
                                 <i class="fas fa-download"></i>
                                 Baixar Agora
                             </button>
-                            
-                            <div class="stats">
-                                <div class="stat-item">
-                                    <i class="fas fa-download"></i>
-                                    <span>${formatNumber(item.downloads || 0)} downloads</span>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 `;
             } catch (error) {
+                console.error('Erro:', error);
                 container.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-exclamation-triangle"></i>
+                    <div class="error-state">
+                        <i class="fas fa-exclamation-circle"></i>
                         <h3>Erro ao carregar</h3>
-                        <p>Tente novamente mais tarde</p>
+                        <p>Não foi possível carregar os detalhes deste item.</p>
+                        <button class="retry-btn" onclick="location.reload()">
+                            <i class="fas fa-redo-alt"></i> Tentar novamente
+                        </button>
                     </div>
                 `;
             }
         }
         
-        async function startDownload(itemId) {
-            try {
-                const response = await fetch('/api/start-download/' + itemId, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                
-                const data = await response.json();
-                
-                if (data.redirect) {
-                    window.location.href = data.redirect;
-                }
-            } catch (error) {
-                alert('Erro de conexão');
-            }
-        }
-        
-        function formatNumber(num) {
-            if (num >= 1000) {
-                return (num / 1000).toFixed(1) + 'k';
-            }
-            return num.toString();
-        }
-        
+        // Inicialização
         document.addEventListener('DOMContentLoaded', () => {
             initTheme();
+            loadItem();
             
+            // Toggle tema
             document.getElementById('themeToggle').addEventListener('click', () => {
-                const currentTheme = document.body.getAttribute('data-theme');
-                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                const current = document.body.getAttribute('data-theme');
+                const newTheme = current === 'dark' ? 'light' : 'dark';
                 document.body.setAttribute('data-theme', newTheme);
                 localStorage.setItem('theme', newTheme);
-                updateThemeButton(newTheme);
+                updateThemeIcon(newTheme);
             });
-            
-            loadItem();
         });
     </script>
 </body>
