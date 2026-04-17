@@ -439,8 +439,9 @@
             <div class="countdown-label">Segundos restantes</div>
         </div>
         
-        <!-- ADSTERRA - Etapa 1 e 3 -->
+        <!-- ADSTERRA - Etapa 1 e 3 (visibilidade controlada por JS) -->
         <div class="ad-container" id="adsterraContainer" style="display: none;">
+            <script async="async" data-cfasync="false" src="//pl27551656.revenuecpmgate.com/57af132f9a89824d027d70445ba09a9a/invoke.js"></script>
             <div id="container-57af132f9a89824d027d70445ba09a9a"></div>
         </div>
         
@@ -478,22 +479,6 @@
                 document.head.appendChild(script);
             }
         })();
-    </script>
-    
-    <!-- Adsterra Script (carregado diretamente no HTML) -->
-    <script>
-        // Adsterra será carregado condicionalmente baseado na etapa
-        window.loadAdsterra = function() {
-            if (!window.adsterraLoaded) {
-                window.adsterraLoaded = true;
-                const script = document.createElement('script');
-                script.src = '//pl27551656.revenuecpmgate.com/57af132f9a89824d027d70445ba09a9a/invoke.js';
-                script.async = true;
-                script.setAttribute('data-cfasync', 'false');
-                document.head.appendChild(script);
-                console.log('📢 Adsterra carregado');
-            }
-        };
     </script>
     
     <script>
@@ -633,13 +618,10 @@
                 infoText.textContent = 'O botão será liberado em breve';
             }
             
-            // Adsterra - Etapa 1 OU Etapa 3
+            // Adsterra - Mostrar/Esconder o container (script já está no HTML)
             const adsterraContainer = document.getElementById('adsterraContainer');
             if (config.temAdsterra) {
                 adsterraContainer.style.display = 'flex';
-                if (typeof window.loadAdsterra === 'function') {
-                    window.loadAdsterra();
-                }
             } else {
                 adsterraContainer.style.display = 'none';
             }
@@ -787,7 +769,7 @@
                 return;
             }
             
-            // Etapa com CPA - Abrir link
+            // Etapa com link - Abrir
             if (config.temCPA && !cpaOpened && config.cpaLink) {
                 mainBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i><span>Abrindo...</span>';
                 
