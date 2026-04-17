@@ -522,34 +522,48 @@
             return null;
         }
         
-        // Pegar sessionId de todas as fontes possíveis
+        // Pegar sessionId de TODAS as fontes possíveis (SISTEMA ROBUSTO)
         function getSessionId() {
-            // 1. Query param (mais confiável no Vercel)
+            // 1. Query param (mais confiável)
             const urlParams = new URLSearchParams(window.location.search);
             const urlSid = urlParams.get('sid');
             if (urlSid) {
-                // Salvar no cookie para futuras requisições
-                document.cookie = `dsessId=${urlSid}; path=/; max-age=${24*60*60}`;
+                saveSessionId(urlSid);
                 return urlSid;
             }
             
-            // 2. Cookie
-            const cookieSid = getCookie('dsessId');
-            if (cookieSid) return cookieSid;
-            
-            // 3. LocalStorage (fallback)
+            // 2. localStorage (sobrevive a fechar aba - perfeito para CPA)
             const storageSid = localStorage.getItem('lastSessionId');
-            if (storageSid) return storageSid;
+            if (storageSid) {
+                return storageSid;
+            }
+            
+            // 3. sessionStorage (sobrevive a recarregar)
+            const sessionSid = sessionStorage.getItem('currentSessionId');
+            if (sessionSid) {
+                return sessionSid;
+            }
+            
+            // 4. Cookie
+            const cookieSid = getCookie('dsessId');
+            if (cookieSid) {
+                return cookieSid;
+            }
             
             return null;
         }
         
-        // Salvar sessionId
+        // Salvar sessionId em TODOS os lugares possíveis
         function saveSessionId(sid) {
             if (sid) {
                 sessionId = sid;
-                document.cookie = `dsessId=${sid}; path=/; max-age=${24*60*60}`;
+                // Cookie (72 horas)
+                document.cookie = `dsessId=${sid}; path=/; max-age=${72*60*60}`;
+                // localStorage (sobrevive a fechar aba)
                 localStorage.setItem('lastSessionId', sid);
+                // sessionStorage (sobrevive a recarregar)
+                sessionStorage.setItem('currentSessionId', sid);
+                console.log('✅ SessionId salvo:', sid.substring(0, 8));
             }
         }
         
@@ -573,7 +587,6 @@
         
         // Atualizar UI
         function updateUI() {
-            // Etapas
             const progressSteps = document.getElementById('progressSteps');
             progressSteps.innerHTML = '';
             
@@ -599,20 +612,17 @@
                 progressSteps.appendChild(stepItem);
             }
             
-            // Barra de progresso
             const progressFill = document.getElementById('progressFill');
             const progressText = document.getElementById('progressText');
             progressFill.style.width = (config.etapa / config.totalSteps) * 100 + '%';
             progressText.textContent = 'Etapa ' + config.etapa + ' de ' + config.totalSteps;
             
-            // Título e subtítulo
             document.getElementById('stepTitle').innerHTML = `
                 <i class="fas ${config.icone}"></i>
                 <span>${config.titulo}</span>
             `;
             document.getElementById('stepSubtitle').textContent = config.subtitulo;
             
-            // Info box
             const infoBox = document.getElementById('infoBox');
             const infoIcon = infoBox.querySelector('i');
             const infoTitle = document.getElementById('infoTitle');
@@ -635,7 +645,6 @@
                 infoText.textContent = 'O botão será liberado em breve';
             }
             
-            // Adsterra
             const adsterraContainer = document.getElementById('adsterraContainer');
             if (config.temAdsterra) {
                 adsterraContainer.style.display = 'flex';
@@ -651,7 +660,6 @@
                 adsterraContainer.style.display = 'none';
             }
             
-            // Oferta bônus
             const bonusOffer = document.getElementById('bonusOffer');
             if (config.isFinalStep && config.temCPA) {
                 bonusOffer.style.display = 'inline-block';
@@ -659,7 +667,6 @@
                 bonusOffer.style.display = 'none';
             }
             
-            // Timer
             document.getElementById('countdown').textContent = timeLeft;
         }
         
@@ -713,17 +720,15 @@
         // Carregar configuração da etapa
         async function loadStepConfig() {
             try {
-                // Pegar sessionId
                 const sid = getSessionId();
                 if (!sid) {
-                    showError('Sessão não encontrada. Tente novamente.');
+                    showError('Sessão não encontrada. Redirecionando...');
                     setTimeout(() => window.location.href = '/', 2000);
                     return;
                 }
                 
                 saveSessionId(sid);
                 
-                // Fazer requisição com sessionId no header
                 const response = await fetch('/api/step-config', {
                     headers: { 
                         'x-session-id': sessionId,
@@ -745,7 +750,6 @@
                 timeLeft = config.timer;
                 cpaOpened = config.cpaJaAberto || false;
                 
-                // Atualizar sessionId se veio na resposta
                 if (data.sessionId) {
                     saveSessionId(data.sessionId);
                 }
@@ -755,8 +759,6 @@
             } catch (error) {
                 console.error('Erro:', error);
                 showError('Erro ao carregar. Tentando novamente...');
-                
-                // Tentar novamente após 2 segundos
                 setTimeout(loadStepConfig, 2000);
             }
         }
@@ -791,6 +793,10 @@
                     
                     const data = await response.json();
                     
+                    if (data.sessionId) {
+                        saveSessionId(data.sessionId);
+                    }
+                    
                     if (data.redirect) {
                         window.location.href = data.redirect;
                     } else {
@@ -804,12 +810,25 @@
                 return;
             }
             
+            // CPA - Abrir em nova aba
             if (config.temCPA && !cpaOpened && config.cpaLink) {
                 mainBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i><span>Abrindo...</span>';
+                
+                // Salvar estado antes de abrir CPA
+                saveSessionId(sessionId);
+                
+                // Abrir CPA
                 window.open(config.cpaLink, '_blank');
                 cpaOpened = true;
+                
+                // Marcar que CPA foi aberto
+                config.cpaJaAberto = true;
+                
                 enableButton();
                 isProcessing = false;
+                
+                // Mostrar dica
+                showError('CPA aberto! Após verificar, clique em Continuar.');
                 return;
             }
             
@@ -837,7 +856,6 @@
                 }
                 
                 if (data.redirect) {
-                    // Adicionar sessionId à URL de redirect se necessário
                     let redirectUrl = data.redirect;
                     if (redirectUrl.startsWith('/page') && sessionId) {
                         redirectUrl += `?sid=${sessionId}`;
@@ -858,16 +876,32 @@
             }
         }
         
+        // Verificar quando usuário volta à aba (após CPA)
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && cpaOpened && !isProcessing) {
+                console.log('🔄 Usuário voltou à aba, verificando sessão...');
+                // Recarregar configuração para garantir que está tudo certo
+                setTimeout(() => {
+                    loadStepConfig();
+                }, 500);
+            }
+        });
+        
+        // Também verificar quando a página ganha foco
+        window.addEventListener('focus', () => {
+            if (cpaOpened && !isProcessing) {
+                console.log('🔄 Página ganhou foco, verificando sessão...');
+            }
+        });
+        
         // Inicialização
         document.addEventListener('DOMContentLoaded', () => {
             initTheme();
             
-            // Pegar sessionId da URL e salvar
             const urlParams = new URLSearchParams(window.location.search);
             const urlSid = urlParams.get('sid');
             if (urlSid) {
                 saveSessionId(urlSid);
-                // Limpar URL para não mostrar o token
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
             
@@ -883,9 +917,12 @@
             });
         });
         
-        // Limpar timer ao sair
         window.addEventListener('beforeunload', () => {
             if (timerInterval) clearInterval(timerInterval);
+            // Garantir que sessionId está salvo
+            if (sessionId) {
+                saveSessionId(sessionId);
+            }
         });
     </script>
 </body>
