@@ -100,7 +100,7 @@ app.use(session({
 // Rate limits
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 100,
+    max: 500,
     message: { error: 'Muitas requisições' },
     standardHeaders: true,
     legacyHeaders: false
@@ -109,7 +109,7 @@ app.use(limiter);
 
 const adminLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 30,
+    max: 10,
     message: { error: 'Muitas tentativas' }
 });
 
@@ -127,8 +127,8 @@ const CPA_LINKS = [
 
 const STEP_CONFIGS = {
     1: { titulo: 'Verificação Inicial', subtitulo: 'Preparando seu link seguro...', timer: 20, temAdsterra: true, temCPA: false, icone: 'fa-shield-alt', botaoTexto: 'Continuar' },
-    2: { titulo: 'Confirmação de Acesso', subtitulo: 'Confirme que você não é um robô', timer: 25, temAdsterra: false, temCPA: true, icone: 'fa-user-check', botaoTexto: 'Verificar Acesso' },
-    3: { titulo: 'Link Pronto!', subtitulo: 'Seu conteúdo está disponível', timer: 20, temAdsterra: true, temCPA: true, icone: 'fa-check-circle', botaoTexto: 'Acessar Conteúdo' }
+    2: { titulo: 'Confirmação de Acesso', subtitulo: 'Confirme que você não é um robô', timer: 20, temAdsterra: false, temCPA: true, icone: 'fa-user-check', botaoTexto: 'Verificar Acesso' },
+    3: { titulo: 'Link Pronto!', subtitulo: 'Seu conteúdo está disponível', timer: 25, temAdsterra: true, temCPA: true, icone: 'fa-check-circle', botaoTexto: 'Acessar Conteúdo' }
 };
 
 // =================================================================
