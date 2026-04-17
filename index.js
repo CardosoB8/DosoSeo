@@ -116,7 +116,7 @@ const adminLimiter = rateLimit({
 // =================================================================
 // CONFIGURAÇÕES DO SISTEMA
 // =================================================================
-const SESSION_EXPIRATION = 24 * 60 * 60;
+const SESSION_EXPIRATION = 72 * 60 * 60; // 72 horas
 const TOTAL_STEPS = 3;
 
 const CPA_LINKS = [
@@ -153,10 +153,12 @@ function generateSessionId() {
     return crypto.randomBytes(32).toString('hex');
 }
 
+// Fingerprint ROBUSTO - não muda com CPA
 function getClientFingerprint(req) {
-    const ip = req.ip || req.connection?.remoteAddress || req.headers['x-forwarded-for'] || '0.0.0.0';
+    const ip = req.ip || req.connection?.remoteAddress || req.headers['x-forwarded-for']?.split(',')[0] || '0.0.0.0';
     const userAgent = req.headers['user-agent'] || '';
-    return crypto.createHash('sha256').update(ip + userAgent).digest('hex').substring(0, 16);
+    const acceptLanguage = req.headers['accept-language'] || '';
+    return crypto.createHash('sha256').update(ip + userAgent + acceptLanguage).digest('hex').substring(0, 20);
 }
 
 function getRandomCpaLink() {
@@ -183,7 +185,7 @@ async function createDownloadSession(itemId, req) {
     await redisClient.setEx(`dsess:${sessionId}`, SESSION_EXPIRATION, JSON.stringify(sessionData));
     await redisClient.setEx(`fp:${fingerprint}`, SESSION_EXPIRATION, sessionId);
     
-    console.log(`✅ Sessão criada: ${sessionId.substring(0, 8)}... para ${itemId}`);
+    console.log(`✅ Sessão criada: ${sessionId.substring(0, 8)}... fp: ${fingerprint.substring(0, 8)}`);
     return sessionData;
 }
 
@@ -194,36 +196,51 @@ async function getDownloadSession(sessionId) {
         if (!data) return null;
         const session = JSON.parse(data);
         session.ultima_acao = Date.now();
-        await redisClient.setEx(`dsess:${sessionId}`, SESSION_EXPIRATION, JSON.stringify(session));
+        // Renovar TTL
+        await redisClient.expire(`dsess:${sessionId}`, SESSION_EXPIRATION);
         return session;
     } catch (e) {
         return null;
     }
 }
 
+// Recuperar sessão - FINGERPRINT COMO FONTE PRINCIPAL
 async function recoverDownloadSession(req) {
-    // 1. Tentar cookie
-    let sessionId = req.cookies?.dsessId;
+    const fingerprint = getClientFingerprint(req);
     
-    // 2. Tentar header
+    // 1. Tentar via fingerprint (MAIS CONFIÁVEL - SOBREVIVE A TUDO)
+    let sessionId = await redisClient.get(`fp:${fingerprint}`);
+    
+    // 2. Se não achou, tentar cookie
+    if (!sessionId) {
+        sessionId = req.cookies?.dsessId;
+    }
+    
+    // 3. Tentar header
     if (!sessionId) {
         sessionId = req.headers['x-session-id'];
     }
     
-    // 3. Tentar query param (FALLBACK PARA VERCEL)
+    // 4. Tentar query param
     if (!sessionId && req.query.sid) {
         sessionId = req.query.sid;
     }
     
-    // 4. Tentar fingerprint
-    if (!sessionId) {
-        const fingerprint = getClientFingerprint(req);
-        sessionId = await redisClient.get(`fp:${fingerprint}`);
+    // 5. Tentar body
+    if (!sessionId && req.body?.sessionId) {
+        sessionId = req.body.sessionId;
     }
     
     if (!sessionId) return null;
     
-    return await getDownloadSession(sessionId);
+    const session = await getDownloadSession(sessionId);
+    
+    // Se achou sessão, atualizar fingerprint e renovar TTL
+    if (session) {
+        await redisClient.setEx(`fp:${fingerprint}`, SESSION_EXPIRATION, sessionId);
+    }
+    
+    return session;
 }
 
 // =================================================================
@@ -295,14 +312,11 @@ app.get('/admin-panel', requireAdmin, (req, res) => {
 app.get('/page:step', async (req, res) => {
     const step = parseInt(req.params.step);
     
-    // Tentar recuperar sessão de todas as formas possíveis
     let session = req.downloadSession;
     
-    // Se não tiver sessão no middleware, tentar via query param diretamente
     if (!session && req.query.sid) {
         session = await getDownloadSession(req.query.sid);
         if (session) {
-            // Setar cookie para requisições futuras
             res.cookie('dsessId', session.id, {
                 maxAge: SESSION_EXPIRATION * 1000,
                 httpOnly: true,
@@ -312,6 +326,11 @@ app.get('/page:step', async (req, res) => {
             });
             req.downloadSession = session;
         }
+    }
+    
+    // Se ainda não tem sessão, tentar recuperar via fingerprint
+    if (!session) {
+        session = await recoverDownloadSession(req);
     }
     
     if (!session) {
@@ -335,7 +354,6 @@ app.get('/page:step', async (req, res) => {
 // API PÚBLICA
 // =================================================================
 
-// Listar itens
 app.get('/api/items', async (req, res) => {
     try {
         const categoria = req.query.categoria || 'todos';
@@ -374,7 +392,6 @@ app.get('/api/items', async (req, res) => {
     }
 });
 
-// Detalhes do item
 app.get('/api/item/:id', async (req, res) => {
     try {
         const item = await redisClient.hGetAll(`item:${req.params.id}`);
@@ -399,7 +416,6 @@ app.get('/api/item/:id', async (req, res) => {
     }
 });
 
-// Iniciar download
 app.post('/api/start-download/:id', async (req, res) => {
     try {
         const itemId = req.params.id;
@@ -413,7 +429,6 @@ app.post('/api/start-download/:id', async (req, res) => {
         
         const session = await createDownloadSession(itemId, req);
         
-        // Cookie com configurações para Vercel
         res.cookie('dsessId', session.id, {
             maxAge: SESSION_EXPIRATION * 1000,
             httpOnly: true,
@@ -424,7 +439,6 @@ app.post('/api/start-download/:id', async (req, res) => {
         
         console.log(`🚀 Download iniciado: ${itemId}, sessão: ${session.id.substring(0, 8)}`);
         
-        // Retornar sessionId para o frontend usar como fallback via query param
         res.json({ 
             success: true, 
             redirect: `/page1?sid=${session.id}`,
@@ -436,15 +450,13 @@ app.post('/api/start-download/:id', async (req, res) => {
     }
 });
 
-// Configuração da etapa
 app.get('/api/step-config', async (req, res) => {
     try {
-        // Tentar recuperar sessão de todas as formas
-        let sessionId = req.cookies?.dsessId || req.headers['x-session-id'] || req.query.sid;
-        let session = null;
+        let session = req.downloadSession;
         
-        if (sessionId) {
-            session = await getDownloadSession(sessionId);
+        // Se não tem sessão, tentar recuperar via fingerprint
+        if (!session) {
+            session = await recoverDownloadSession(req);
         }
         
         if (!session) {
@@ -470,6 +482,15 @@ app.get('/api/step-config', async (req, res) => {
         const config = STEP_CONFIGS[session.etapa_atual];
         const cpaLink = config.temCPA ? getRandomCpaLink() : null;
         
+        // Reenviar cookie
+        res.cookie('dsessId', session.id, {
+            maxAge: SESSION_EXPIRATION * 1000,
+            httpOnly: true,
+            secure: false,
+            sameSite: 'lax',
+            path: '/'
+        });
+        
         res.json({
             etapa: session.etapa_atual,
             totalSteps: TOTAL_STEPS,
@@ -485,17 +506,15 @@ app.get('/api/step-config', async (req, res) => {
     }
 });
 
-// Próxima etapa
 app.post('/api/next-step', async (req, res) => {
     try {
         const { currentStep, cpaOpened, sessionId: bodySessionId } = req.body;
         
-        // Tentar recuperar sessão de todas as formas
-        let sessionId = req.cookies?.dsessId || req.headers['x-session-id'] || req.query.sid || bodySessionId;
-        let session = null;
+        let session = req.downloadSession;
         
-        if (sessionId) {
-            session = await getDownloadSession(sessionId);
+        // Se não tem sessão, tentar recuperar via fingerprint
+        if (!session) {
+            session = await recoverDownloadSession(req);
         }
         
         if (!session) {
@@ -533,7 +552,16 @@ app.post('/api/next-step', async (req, res) => {
             }
             
             console.log(`✅ Download finalizado: ${urlOriginal}`);
-            return res.json({ redirect: urlOriginal, final: true });
+            
+            res.cookie('dsessId', session.id, {
+                maxAge: SESSION_EXPIRATION * 1000,
+                httpOnly: true,
+                secure: false,
+                sameSite: 'lax',
+                path: '/'
+            });
+            
+            return res.json({ redirect: urlOriginal, final: true, sessionId: session.id });
         }
         
         const novaEtapa = clientStep + 1;
@@ -544,6 +572,15 @@ app.post('/api/next-step', async (req, res) => {
         }
         
         await redisClient.setEx(`dsess:${session.id}`, SESSION_EXPIRATION, JSON.stringify(session));
+        
+        // Reenviar cookie - ESSENCIAL
+        res.cookie('dsessId', session.id, {
+            maxAge: SESSION_EXPIRATION * 1000,
+            httpOnly: true,
+            secure: false,
+            sameSite: 'lax',
+            path: '/'
+        });
         
         console.log(`✅ Avançando: etapa ${clientStep} → ${novaEtapa}`);
         res.json({ 
@@ -762,7 +799,6 @@ app.get('/:alias', async (req, res) => {
         path: '/'
     });
     
-    // Redirecionar COM sessionId na URL como fallback para Vercel
     res.redirect(`/page1?sid=${session.id}`);
 });
 
@@ -773,9 +809,9 @@ app.listen(PORT, () => {
     console.log(`
     🚀 MR DOSO HUB RODANDO NA PORTA ${PORT}
     
-    ✅ REDIS: ${redisConnected ? 'CONECTADO' : 'FALHA - Verificar URL'}
-    ✅ LINKS ANTIGOS: ${linksData.length} carregadoss
-    
+    ✅ REDIS: ${redisConnected ? 'CONECTADO' : 'FALHA'}
+    ✅ LINKS ANTIGOS: ${linksData.length} carregados
+    ✅ SESSÃO VIA FINGERPRINT (À PROVA DE CPA)
     `);
 });
 
