@@ -225,7 +225,7 @@
 
         .ad-container {
             margin: 20px 0;
-            min-height: 200px;
+            min-height: 250px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -236,8 +236,8 @@
         }
 
         .info-box {
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05));
-            border-left: 4px solid var(--warning);
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(124, 58, 237, 0.05));
+            border-left: 4px solid var(--primary);
             padding: 16px;
             border-radius: 12px;
             margin: 20px 0;
@@ -253,7 +253,7 @@
 
         .info-box i {
             font-size: 1.3rem;
-            color: var(--warning);
+            color: var(--primary);
         }
 
         .info-box.success i {
@@ -303,11 +303,6 @@
             cursor: not-allowed;
             box-shadow: none;
             transform: none;
-        }
-
-        .action-button.cpa {
-            background: linear-gradient(135deg, var(--warning), #ea580c);
-            box-shadow: 0 10px 30px rgba(245, 158, 11, 0.3);
         }
 
         .action-button.final {
@@ -444,6 +439,7 @@
             <div class="countdown-label">Segundos restantes</div>
         </div>
         
+        <!-- ADSTERRA - Etapa 1 e 3 -->
         <div class="ad-container" id="adsterraContainer" style="display: none;">
             <div id="container-57af132f9a89824d027d70445ba09a9a"></div>
         </div>
@@ -484,6 +480,22 @@
         })();
     </script>
     
+    <!-- Adsterra Script (carregado diretamente no HTML) -->
+    <script>
+        // Adsterra será carregado condicionalmente baseado na etapa
+        window.loadAdsterra = function() {
+            if (!window.adsterraLoaded) {
+                window.adsterraLoaded = true;
+                const script = document.createElement('script');
+                script.src = '//pl27551656.revenuecpmgate.com/57af132f9a89824d027d70445ba09a9a/invoke.js';
+                script.async = true;
+                script.setAttribute('data-cfasync', 'false');
+                document.head.appendChild(script);
+                console.log('📢 Adsterra carregado');
+            }
+        };
+    </script>
+    
     <script>
         // Configuração
         let config = {
@@ -507,13 +519,6 @@
         let sessionId = '';
         let timerInterval = null;
         
-        // CPA Links para bônus
-        const BONUS_CPA_LINKS = [
-            'https://omg10.com/4/10420694',
-            'https://pertlouv.com/pZ0Ob1Vxs8U=?',
-            'https://bony-teaching.com/KUN7HR'
-        ];
-        
         // Pegar cookie
         function getCookie(name) {
             const value = '; ' + document.cookie;
@@ -522,9 +527,8 @@
             return null;
         }
         
-        // Pegar sessionId de TODAS as fontes possíveis (SISTEMA ROBUSTO)
+        // Pegar sessionId de TODAS as fontes possíveis
         function getSessionId() {
-            // 1. Query param (mais confiável)
             const urlParams = new URLSearchParams(window.location.search);
             const urlSid = urlParams.get('sid');
             if (urlSid) {
@@ -532,38 +536,25 @@
                 return urlSid;
             }
             
-            // 2. localStorage (sobrevive a fechar aba - perfeito para CPA)
             const storageSid = localStorage.getItem('lastSessionId');
-            if (storageSid) {
-                return storageSid;
-            }
+            if (storageSid) return storageSid;
             
-            // 3. sessionStorage (sobrevive a recarregar)
             const sessionSid = sessionStorage.getItem('currentSessionId');
-            if (sessionSid) {
-                return sessionSid;
-            }
+            if (sessionSid) return sessionSid;
             
-            // 4. Cookie
             const cookieSid = getCookie('dsessId');
-            if (cookieSid) {
-                return cookieSid;
-            }
+            if (cookieSid) return cookieSid;
             
             return null;
         }
         
-        // Salvar sessionId em TODOS os lugares possíveis
+        // Salvar sessionId
         function saveSessionId(sid) {
             if (sid) {
                 sessionId = sid;
-                // Cookie (72 horas)
                 document.cookie = `dsessId=${sid}; path=/; max-age=${72*60*60}`;
-                // localStorage (sobrevive a fechar aba)
                 localStorage.setItem('lastSessionId', sid);
-                // sessionStorage (sobrevive a recarregar)
                 sessionStorage.setItem('currentSessionId', sid);
-                console.log('✅ SessionId salvo:', sid.substring(0, 8));
             }
         }
         
@@ -573,10 +564,7 @@
             const text = document.getElementById('errorText');
             text.textContent = message;
             banner.classList.add('show');
-            
-            setTimeout(() => {
-                banner.classList.remove('show');
-            }, 5000);
+            setTimeout(() => banner.classList.remove('show'), 5000);
         }
         
         // Inicializar tema
@@ -628,16 +616,16 @@
             const infoTitle = document.getElementById('infoTitle');
             const infoText = document.getElementById('infoText');
             
-            if (config.temCPA) {
-                infoBox.className = 'info-box';
-                infoIcon.className = 'fas fa-user-check';
-                infoTitle.textContent = 'Verificação de segurança';
-                infoText.textContent = 'Clique no botão abaixo para confirmar seu acesso';
-            } else if (config.isFinalStep) {
+            if (config.isFinalStep) {
                 infoBox.className = 'info-box success';
-                infoIcon.className = 'fas fa-trophy';
-                infoTitle.textContent = 'Pronto para acessar!';
-                infoText.textContent = 'Seu conteúdo está pronto. Clique no botão para acessar.';
+                infoIcon.className = 'fas fa-check-circle';
+                infoTitle.textContent = 'Pronto!';
+                infoText.textContent = 'Seu conteúdo está disponível. Clique no botão para acessar.';
+            } else if (config.temCPA) {
+                infoBox.className = 'info-box';
+                infoIcon.className = 'fas fa-shield-alt';
+                infoTitle.textContent = 'Verificação adicional';
+                infoText.textContent = 'Clique no botão para continuar';
             } else {
                 infoBox.className = 'info-box';
                 infoIcon.className = 'fas fa-shield-alt';
@@ -645,23 +633,20 @@
                 infoText.textContent = 'O botão será liberado em breve';
             }
             
+            // Adsterra - Etapa 1 OU Etapa 3
             const adsterraContainer = document.getElementById('adsterraContainer');
             if (config.temAdsterra) {
                 adsterraContainer.style.display = 'flex';
-                if (!window.adsterraLoaded) {
-                    window.adsterraLoaded = true;
-                    const script = document.createElement('script');
-                    script.src = '//pl27551656.revenuecpmgate.com/57af132f9a89824d027d70445ba09a9a/invoke.js';
-                    script.async = true;
-                    script.setAttribute('data-cfasync', 'false');
-                    document.head.appendChild(script);
+                if (typeof window.loadAdsterra === 'function') {
+                    window.loadAdsterra();
                 }
             } else {
                 adsterraContainer.style.display = 'none';
             }
             
+            // Oferta bônus na etapa final
             const bonusOffer = document.getElementById('bonusOffer');
-            if (config.isFinalStep && config.temCPA) {
+            if (config.isFinalStep && config.cpaLink) {
                 bonusOffer.style.display = 'inline-block';
             } else {
                 bonusOffer.style.display = 'none';
@@ -678,14 +663,6 @@
             if (config.isFinalStep) {
                 mainBtn.innerHTML = '<i class="fas fa-external-link-alt"></i><span>' + config.botaoTexto + '</span>';
                 mainBtn.className = 'action-button final';
-            } else if (config.temCPA) {
-                if (!cpaOpened) {
-                    mainBtn.innerHTML = '<i class="fas fa-external-link-alt"></i><span>' + config.botaoTexto + '</span>';
-                    mainBtn.className = 'action-button cpa';
-                } else {
-                    mainBtn.innerHTML = '<i class="fas fa-arrow-right"></i><span>Continuar</span>';
-                    mainBtn.className = 'action-button';
-                }
             } else {
                 mainBtn.innerHTML = '<i class="fas fa-arrow-right"></i><span>' + config.botaoTexto + '</span>';
                 mainBtn.className = 'action-button';
@@ -810,25 +787,17 @@
                 return;
             }
             
-            // CPA - Abrir em nova aba
+            // Etapa com CPA - Abrir link
             if (config.temCPA && !cpaOpened && config.cpaLink) {
                 mainBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i><span>Abrindo...</span>';
                 
-                // Salvar estado antes de abrir CPA
                 saveSessionId(sessionId);
-                
-                // Abrir CPA
                 window.open(config.cpaLink, '_blank');
                 cpaOpened = true;
-                
-                // Marcar que CPA foi aberto
                 config.cpaJaAberto = true;
                 
                 enableButton();
                 isProcessing = false;
-                
-                // Mostrar dica
-                showError('CPA aberto! Após verificar, clique em Continuar.');
                 return;
             }
             
@@ -876,21 +845,10 @@
             }
         }
         
-        // Verificar quando usuário volta à aba (após CPA)
+        // Verificar quando usuário volta à aba
         document.addEventListener('visibilitychange', () => {
             if (!document.hidden && cpaOpened && !isProcessing) {
-                console.log('🔄 Usuário voltou à aba, verificando sessão...');
-                // Recarregar configuração para garantir que está tudo certo
-                setTimeout(() => {
-                    loadStepConfig();
-                }, 500);
-            }
-        });
-        
-        // Também verificar quando a página ganha foco
-        window.addEventListener('focus', () => {
-            if (cpaOpened && !isProcessing) {
-                console.log('🔄 Página ganhou foco, verificando sessão...');
+                setTimeout(() => loadStepConfig(), 500);
             }
         });
         
@@ -912,17 +870,15 @@
             
             const bonusOffer = document.getElementById('bonusOffer');
             bonusOffer.addEventListener('click', () => {
-                const randomLink = BONUS_CPA_LINKS[Math.floor(Math.random() * BONUS_CPA_LINKS.length)];
-                window.open(randomLink, '_blank');
+                if (config.cpaLink) {
+                    window.open(config.cpaLink, '_blank');
+                }
             });
         });
         
         window.addEventListener('beforeunload', () => {
             if (timerInterval) clearInterval(timerInterval);
-            // Garantir que sessionId está salvo
-            if (sessionId) {
-                saveSessionId(sessionId);
-            }
+            if (sessionId) saveSessionId(sessionId);
         });
     </script>
 </body>
