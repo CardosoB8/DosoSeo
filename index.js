@@ -122,17 +122,13 @@ const TOTAL_STEPS = 3;
 const CPA_LINKS = [
     'https://omg10.com/4/10420694',
     'https://www.effectivegatecpm.com/ki4e3ftt5h?key=99415bf2c750643bbcc7c1380848fee9',
-    'https://pertlouv.com/pZ0Ob1Vxs8U=?',
-    'https://record.elephantbet.com/_rhoOOvBxBOAWqcfzuvZcQGNd7ZgqdRLk/1/',
-    'https://media1.placard.co.mz/redirect.aspx?pid=5905&bid=1690',
-    'https://affiliates.bantubet.co.mz/links/?btag=2307928',
-    'https://bony-teaching.com/KUN7HR'
+    'https://app.sscashout.online/?pid=5905&bid=1712'
 ];
 
 const STEP_CONFIGS = {
     1: { titulo: 'Verificação Inicial', subtitulo: 'Preparando seu link seguro...', timer: 20, temAdsterra: true, temCPA: false, icone: 'fa-shield-alt', botaoTexto: 'Continuar' },
-    2: { titulo: 'Confirmação de Acesso', subtitulo: 'Confirme que você não é um robô', timer: 20, temAdsterra: false, temCPA: true, icone: 'fa-user-check', botaoTexto: 'Verificar Acesso' },
-    3: { titulo: 'Link Pronto!', subtitulo: 'Seu conteúdo está disponível', timer: 20, temAdsterra: false, temCPA: true, icone: 'fa-check-circle', botaoTexto: 'Acessar Conteúdo' }
+    2: { titulo: 'Confirmação de Acesso', subtitulo: 'Confirme que você não é um robô', timer: 25, temAdsterra: false, temCPA: true, icone: 'fa-user-check', botaoTexto: 'Verificar Acesso' },
+    3: { titulo: 'Link Pronto!', subtitulo: 'Seu conteúdo está disponível', timer: 20, temAdsterra: true, temCPA: true, icone: 'fa-check-circle', botaoTexto: 'Acessar Conteúdo' }
 };
 
 // =================================================================
