@@ -197,11 +197,12 @@
             padding: 12px;
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
+            gap: 12px;
             flex: 1;
+            align-items: start; /* ← Evita esticar cards desnecessariamente */
         }
 
-        /* CARD QUADRADO */
+        /* CARD - Altura baseada no conteúdo */
         .item-card {
             background: var(--bg-card);
             border-radius: 12px;
@@ -212,19 +213,20 @@
             border: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
-            aspect-ratio: 1 / 1; /* FORÇA O CARD A SER QUADRADO */
+            height: 100%; /* ← Importante para uniformidade */
         }
 
         .item-card:active {
             transform: scale(0.97);
         }
 
-        /* Container da imagem - ocupa a maior parte do card */
+        /* Container da imagem - Proporção 16:13 (ligeiramente retangular) */
         .item-image-wrapper {
-            flex: 1;
+            aspect-ratio: 16 / 13;
+            flex: none;
             position: relative;
             overflow: hidden;
-            padding: 8px;
+            padding: 8px 8px 6px;
             min-height: 0;
         }
 
@@ -239,22 +241,22 @@
         }
 
         .item-info {
-            padding: 8px 10px;
+            padding: 7px 9px 9px;
             background: var(--bg-card);
             border-top: 1px solid var(--border-color);
         }
 
         .item-title {
-            font-size: 0.75rem;
+            font-size: 0.73rem;
             font-weight: 600;
             color: var(--text-primary);
-            line-height: 1.3;
+            line-height: 1.25;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            margin-bottom: 4px;
-            min-height: 2.6em;
+            margin-bottom: 5px;
+            min-height: auto;
         }
 
         .item-meta {
@@ -334,15 +336,15 @@
             }
             
             .item-image-wrapper {
-                padding: 10px;
+                padding: 10px 10px 8px;
             }
             
             .item-info {
-                padding: 10px 12px;
+                padding: 9px 11px 11px;
             }
             
             .item-title {
-                font-size: 0.85rem;
+                font-size: 0.8rem;
                 margin-bottom: 6px;
             }
             
@@ -366,11 +368,11 @@
             }
             
             .item-image-wrapper {
-                padding: 12px;
+                padding: 12px 12px 8px;
             }
             
             .item-title {
-                font-size: 0.9rem;
+                font-size: 0.85rem;
             }
             
             .header-content {
@@ -388,21 +390,21 @@
         /* Ajustes para telas muito pequenas */
         @media (max-width: 360px) {
             .items-grid {
-                gap: 6px;
+                gap: 8px;
                 padding: 8px;
             }
             
             .item-image-wrapper {
-                padding: 5px;
+                padding: 6px 6px 4px;
             }
             
             .item-info {
-                padding: 6px 8px;
+                padding: 6px 8px 8px;
             }
             
             .item-title {
                 font-size: 0.65rem;
-                min-height: 2.4em;
+                margin-bottom: 4px;
             }
             
             .item-category {
@@ -510,7 +512,7 @@
             return num.toString();
         }
         
-        // Criação do card - CARD QUADRADO
+        // Criação do card
         function createItemCard(item) {
             const div = document.createElement('div');
             div.className = 'item-card';
