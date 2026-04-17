@@ -192,21 +192,19 @@
             transform: scale(0.95);
         }
 
-        /* Grid de Itens - ESPAÇAMENTO REDUZIDO */
+        /* Grid de Itens - ESTILO DSO TV */
         .items-grid {
-            padding: 6px;
+            padding: 12px;
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 5px;
-            row-gap: 5px;
-            column-gap: 5px;
+            gap: 10px;
             flex: 1;
         }
 
-        /* CARD - Com aspect-ratio e altura ajustada por JS */
+        /* CARD - Sem altura forçada, altura natural */
         .item-card {
             background: var(--bg-card);
-            border-radius: 10px;
+            border-radius: 12px;
             overflow: hidden;
             box-shadow: var(--shadow);
             transition: transform 0.2s, box-shadow 0.2s;
@@ -214,22 +212,18 @@
             border: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
-            aspect-ratio: 3 / 4;
-            height: auto;
-            width: 100%;
         }
 
         .item-card:active {
             transform: scale(0.97);
         }
 
-        /* Container da imagem - ocupa 60% do card */
+        /* Container da imagem - proporção fixa 2:3 */
         .item-image-wrapper {
-            flex: 6;
+            aspect-ratio: 2/3;
             position: relative;
             overflow: hidden;
-            padding: 5px 5px 3px;
-            min-height: 0;
+            padding: 6px 6px 4px;
         }
 
         /* Imagem */
@@ -238,50 +232,42 @@
             height: 100%;
             object-fit: cover;
             object-position: center;
-            border-radius: 5px;
+            border-radius: 6px;
             background: linear-gradient(135deg, var(--primary-light), var(--secondary));
         }
 
-        /* Info - ocupa 40% do card */
+        /* Info - altura natural, sem flex forçado */
         .item-info {
-            flex: 4;
-            padding: 5px 7px 7px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            min-height: 0;
+            padding: 10px 10px 12px;
         }
 
         .item-title {
-            font-size: 0.68rem;
-            line-height: 1.2;
+            font-size: 0.8rem;
+            line-height: 1.35;
             font-weight: 600;
             color: var(--text-primary);
-            margin-bottom: 4px;
+            margin-bottom: 8px;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            flex-shrink: 0;
         }
 
         .item-meta {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-top: auto;
-            flex-shrink: 0;
         }
 
         .item-category {
-            font-size: 0.48rem;
-            padding: 2px 4px;
+            font-size: 0.55rem;
+            padding: 2px 6px;
             background: linear-gradient(135deg, var(--primary), var(--primary-light));
             color: white;
             border-radius: 20px;
             font-weight: 600;
             text-transform: uppercase;
-            max-width: 45px;
+            max-width: 55px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -290,13 +276,13 @@
         .item-downloads {
             display: flex;
             align-items: center;
-            gap: 2px;
+            gap: 3px;
             color: var(--text-muted);
-            font-size: 0.5rem;
+            font-size: 0.6rem;
         }
 
         .item-downloads i {
-            font-size: 0.45rem;
+            font-size: 0.55rem;
         }
 
         /* Estados */
@@ -327,7 +313,7 @@
         /* Footer */
         footer {
             text-align: center;
-            padding: 10px;
+            padding: 12px;
             color: var(--text-muted);
             font-size: 0.7rem;
             border-top: 1px solid var(--border-color);
@@ -338,41 +324,35 @@
         @media (min-width: 640px) {
             .items-grid {
                 grid-template-columns: repeat(4, 1fr);
-                gap: 8px;
-                row-gap: 8px;
-                column-gap: 8px;
-                padding: 10px;
+                gap: 14px;
+                padding: 16px;
                 max-width: 1200px;
                 margin: 0 auto;
             }
             
-            .item-card {
-                aspect-ratio: 3 / 4.2;
-            }
-            
             .item-image-wrapper {
-                padding: 6px 6px 4px;
+                padding: 7px 7px 5px;
             }
             
             .item-info {
-                padding: 6px 8px 8px;
+                padding: 12px 12px 14px;
             }
             
             .item-title {
-                font-size: 0.75rem;
+                font-size: 0.9rem;
             }
             
             .item-category {
-                font-size: 0.5rem;
-                max-width: 55px;
+                font-size: 0.6rem;
+                max-width: 65px;
             }
             
             .item-downloads {
-                font-size: 0.55rem;
+                font-size: 0.65rem;
             }
             
             .item-downloads i {
-                font-size: 0.5rem;
+                font-size: 0.6rem;
             }
             
             .categories {
@@ -388,17 +368,11 @@
         @media (min-width: 1024px) {
             .items-grid {
                 grid-template-columns: repeat(5, 1fr);
-                gap: 10px;
-                row-gap: 10px;
-                column-gap: 10px;
-            }
-            
-            .item-card {
-                aspect-ratio: 3 / 4;
+                gap: 16px;
             }
             
             .item-title {
-                font-size: 0.8rem;
+                font-size: 0.95rem;
             }
             
             .header-content {
@@ -416,14 +390,8 @@
         /* Telas muito pequenas */
         @media (max-width: 360px) {
             .items-grid {
-                gap: 4px;
-                row-gap: 4px;
-                column-gap: 4px;
-                padding: 4px;
-            }
-            
-            .item-card {
-                aspect-ratio: 3 / 4.5;
+                gap: 6px;
+                padding: 8px;
             }
             
             .item-image-wrapper {
@@ -431,22 +399,22 @@
             }
             
             .item-info {
-                padding: 4px 5px 6px;
+                padding: 8px 8px 10px;
             }
             
             .item-title {
-                font-size: 0.58rem;
-                margin-bottom: 3px;
+                font-size: 0.7rem;
+                margin-bottom: 6px;
             }
             
             .item-category {
-                font-size: 0.4rem;
-                padding: 1px 3px;
-                max-width: 38px;
+                font-size: 0.5rem;
+                padding: 2px 4px;
+                max-width: 45px;
             }
             
             .item-downloads {
-                font-size: 0.45rem;
+                font-size: 0.55rem;
             }
             
             .logo span {
@@ -548,46 +516,18 @@
             return num.toString();
         }
         
-        // Ajuste fino de altura dos cards
-        function equalizeCardHeights() {
-            const cards = document.querySelectorAll('.item-card');
-            if (cards.length === 0) return;
-            
-            cards.forEach(card => {
-                card.style.height = 'auto';
-            });
-            
-            const rows = {};
-            cards.forEach(card => {
-                const top = card.getBoundingClientRect().top;
-                if (!rows[top]) rows[top] = [];
-                rows[top].push(card);
-            });
-            
-            Object.values(rows).forEach(rowCards => {
-                let maxHeight = 0;
-                rowCards.forEach(card => {
-                    const height = card.offsetHeight;
-                    if (height > maxHeight) maxHeight = height;
-                });
-                rowCards.forEach(card => {
-                    card.style.height = maxHeight + 'px';
-                });
-            });
-        }
-        
-        // Criação do card
+        // Criação do card - SIMPLES E DIRETO
         function createItemCard(item) {
             const div = document.createElement('div');
             div.className = 'item-card';
             div.onclick = () => window.location.href = '/item/' + item.id;
             
-            const imageUrl = item.imagem || 'https://via.placeholder.com/300x400/7c3aed/ffffff?text=' + encodeURIComponent(item.titulo.substring(0, 10));
+            const imageUrl = item.imagem || 'https://via.placeholder.com/300x450/7c3aed/ffffff?text=' + encodeURIComponent(item.titulo.substring(0, 10));
             
             div.innerHTML = `
                 <div class="item-image-wrapper">
                     <img src="${imageUrl}" alt="${item.titulo}" class="item-image" loading="lazy"
-                         onerror="this.src='https://via.placeholder.com/300x400/7c3aed/ffffff?text=...'">
+                         onerror="this.src='https://via.placeholder.com/300x450/7c3aed/ffffff?text=...'">
                 </div>
                 <div class="item-info">
                     <h3 class="item-title">${item.titulo}</h3>
@@ -649,10 +589,6 @@
                     grid.appendChild(createItemCard(item));
                 });
                 
-                setTimeout(() => {
-                    equalizeCardHeights();
-                }, 50);
-                
                 hasMore = data.hasMore;
                 currentPage++;
             } catch (error) {
@@ -683,7 +619,6 @@
                 document.body.setAttribute('data-theme', newTheme);
                 localStorage.setItem('theme', newTheme);
                 updateThemeIcon(newTheme);
-                setTimeout(equalizeCardHeights, 100);
             });
             
             // Categorias
@@ -721,15 +656,6 @@
                     grid.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-pulse"></i><p>Carregando...</p></div>';
                     loadItems(e.target.value);
                 }, 400);
-            });
-            
-            // Reajustar alturas no resize
-            let resizeTimeout;
-            window.addEventListener('resize', () => {
-                clearTimeout(resizeTimeout);
-                resizeTimeout = setTimeout(() => {
-                    equalizeCardHeights();
-                }, 100);
             });
         });
     </script>
