@@ -519,6 +519,82 @@
             gap: 16px;
         }
 
+        /* Tabs para escolher tipo de imagem */
+        .image-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 16px;
+            background: var(--bg-secondary);
+            padding: 4px;
+            border-radius: 12px;
+        }
+
+        .image-tab {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .image-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .image-tab i {
+            font-size: 0.9rem;
+        }
+
+        /* Preview do placeholder */
+        .placeholder-preview {
+            display: flex;
+            justify-content: center;
+            margin: 16px 0;
+        }
+
+        .preview-box {
+            width: 120px;
+            height: 120px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            border: 2px solid var(--border-color);
+        }
+
+        .color-inputs {
+            display: flex;
+            gap: 12px;
+        }
+
+        .color-input {
+            flex: 1;
+        }
+
+        .color-input label {
+            font-size: 0.8rem;
+            margin-bottom: 4px;
+        }
+
+        .color-input input {
+            padding: 8px;
+            height: 45px;
+        }
+
         .modal-footer {
             padding: 16px 24px 24px;
             display: flex;
@@ -601,6 +677,11 @@
             
             .logo-area h1 {
                 font-size: 1rem;
+            }
+            
+            .color-inputs {
+                flex-direction: column;
+                gap: 8px;
             }
         }
     </style>
@@ -745,10 +826,51 @@
                         <label><i class="fas fa-align-left"></i> Descrição</label>
                         <textarea id="itemDescricao" placeholder="Descreva o conteúdo..."></textarea>
                     </div>
-                    <div class="form-group">
+                    
+                    <!-- Tabs para escolher tipo de imagem -->
+                    <div class="image-tabs">
+                        <button type="button" class="image-tab active" data-tab="url">
+                            <i class="fas fa-link"></i> URL
+                        </button>
+                        <button type="button" class="image-tab" data-tab="placeholder">
+                            <i class="fas fa-palette"></i> Placeholder
+                        </button>
+                    </div>
+                    
+                    <!-- Campo URL -->
+                    <div class="form-group" id="urlField">
                         <label><i class="fas fa-image"></i> URL da Imagem</label>
                         <input type="url" id="itemImagem" placeholder="https://... (opcional)">
                     </div>
+                    
+                    <!-- Campos do Placeholder -->
+                    <div id="placeholderFields" style="display: none;">
+                        <div class="form-group">
+                            <label><i class="fas fa-font"></i> Texto do Placeholder</label>
+                            <input type="text" id="placeholderText" placeholder="Ex: EM BREVE" maxlength="20" value="BREVE">
+                        </div>
+                        <div class="color-inputs">
+                            <div class="color-input">
+                                <label><i class="fas fa-fill-drip"></i> Cor de Fundo</label>
+                                <input type="color" id="placeholderBg" value="#7c3aed">
+                            </div>
+                            <div class="color-input">
+                                <label><i class="fas fa-font"></i> Cor do Texto</label>
+                                <input type="color" id="placeholderTextColor" value="#ffffff">
+                            </div>
+                        </div>
+                        
+                        <!-- Preview -->
+                        <div class="placeholder-preview">
+                            <div class="preview-box" id="placeholderPreview" style="background: #7c3aed; color: #ffffff;">
+                                BREVE
+                            </div>
+                        </div>
+                        <p style="font-size: 0.75rem; color: var(--text-muted); text-align: center;">
+                            <i class="fas fa-info-circle"></i> Tamanho: 400x400px (se ajusta automaticamente)
+                        </p>
+                    </div>
+                    
                     <div class="form-group">
                         <label><i class="fas fa-link"></i> Link Original</label>
                         <input type="url" id="itemUrl" placeholder="https://... (link final)" required>
@@ -757,12 +879,12 @@
                         <div class="form-group">
                             <label><i class="fas fa-folder"></i> Categoria</label>
                             <select id="itemCategoria">
-    <option value="arquivos">Arquivos</option>
-    <option value="codigos">Códigos / Chaves</option>
-    <option value="apps">Apps</option>
-    <option value="videos">Vídeos</option>
-    <option value="outros">Outros</option>
-</select>
+                                <option value="arquivos">Arquivos</option>
+                                <option value="codigos">Códigos / Chaves</option>
+                                <option value="apps">Apps</option>
+                                <option value="videos">Vídeos</option>
+                                <option value="outros">Outros</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label><i class="fas fa-toggle-on"></i> Status</label>
@@ -818,6 +940,7 @@
     <script>
         let chart = null;
         let currentItems = [];
+        let currentImageMode = 'url';
         
         // Tema
         function initTheme() {
@@ -838,6 +961,26 @@
             return num.toString();
         }
         
+        // Gerar URL do placeholder
+        function generatePlaceholderUrl() {
+            const text = document.getElementById('placeholderText').value || 'BREVE';
+            const bgColor = document.getElementById('placeholderBg').value.replace('#', '');
+            const textColor = document.getElementById('placeholderTextColor').value.replace('#', '');
+            return `https://placehold.co/400x400/${bgColor}/${textColor}?text=${encodeURIComponent(text)}`;
+        }
+        
+        // Atualizar preview
+        function updatePlaceholderPreview() {
+            const preview = document.getElementById('placeholderPreview');
+            const text = document.getElementById('placeholderText').value || 'BREVE';
+            const bgColor = document.getElementById('placeholderBg').value;
+            const textColor = document.getElementById('placeholderTextColor').value;
+            
+            preview.style.background = bgColor;
+            preview.style.color = textColor;
+            preview.textContent = text.substring(0, 3).toUpperCase();
+        }
+        
         // Carregar estatísticas
         async function loadStats() {
             try {
@@ -855,7 +998,6 @@
                 const avg = data.totalItems > 0 ? Math.round(data.totalDownloads / data.totalItems) : 0;
                 document.getElementById('avgDownloads').textContent = formatNumber(avg);
                 
-                // Variação
                 const viewsDiff = data.today.views - data.yesterday.views;
                 const viewsChange = document.getElementById('viewsChange');
                 if (viewsDiff >= 0) {
@@ -876,7 +1018,6 @@
                     downloadsChange.className = 'stat-change negative';
                 }
                 
-                // Gráfico
                 const ctx = document.getElementById('statsChart').getContext('2d');
                 if (chart) chart.destroy();
                 
@@ -983,6 +1124,8 @@
             const modal = document.getElementById('itemModal');
             const title = document.getElementById('modalTitle');
             
+            switchImageMode('url');
+            
             if (itemId) {
                 title.textContent = 'Editar Item';
                 const item = currentItems.find(i => i.id === itemId);
@@ -990,7 +1133,14 @@
                     document.getElementById('itemId').value = item.id;
                     document.getElementById('itemTitulo').value = item.titulo;
                     document.getElementById('itemDescricao').value = item.descricao || '';
-                    document.getElementById('itemImagem').value = item.imagem || '';
+                    
+                    if (item.imagem && item.imagem.includes('placehold.co')) {
+                        switchImageMode('placeholder');
+                        document.getElementById('itemImagem').value = '';
+                    } else {
+                        document.getElementById('itemImagem').value = item.imagem || '';
+                    }
+                    
                     document.getElementById('itemUrl').value = item.url_original;
                     document.getElementById('itemCategoria').value = item.categoria || 'outros';
                     document.getElementById('itemAtivo').value = item.ativo;
@@ -1000,9 +1150,33 @@
                 title.textContent = 'Novo Item';
                 document.getElementById('itemForm').reset();
                 document.getElementById('itemId').value = '';
+                document.getElementById('placeholderText').value = 'BREVE';
+                document.getElementById('placeholderBg').value = '#7c3aed';
+                document.getElementById('placeholderTextColor').value = '#ffffff';
+                updatePlaceholderPreview();
             }
             
             modal.classList.add('active');
+        }
+        
+        function switchImageMode(mode) {
+            currentImageMode = mode;
+            
+            document.querySelectorAll('.image-tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.dataset.tab === mode) {
+                    tab.classList.add('active');
+                }
+            });
+            
+            if (mode === 'url') {
+                document.getElementById('urlField').style.display = 'block';
+                document.getElementById('placeholderFields').style.display = 'none';
+            } else {
+                document.getElementById('urlField').style.display = 'none';
+                document.getElementById('placeholderFields').style.display = 'block';
+                updatePlaceholderPreview();
+            }
         }
         
         function closeItemModal() {
@@ -1014,11 +1188,19 @@
         }
         
         async function saveItem() {
+            let imagemUrl;
+            
+            if (currentImageMode === 'url') {
+                imagemUrl = document.getElementById('itemImagem').value;
+            } else {
+                imagemUrl = generatePlaceholderUrl();
+            }
+            
             const formData = {
                 id: document.getElementById('itemId').value || null,
                 titulo: document.getElementById('itemTitulo').value,
                 descricao: document.getElementById('itemDescricao').value,
-                imagem: document.getElementById('itemImagem').value,
+                imagem: imagemUrl,
                 url_original: document.getElementById('itemUrl').value,
                 categoria: document.getElementById('itemCategoria').value,
                 ativo: document.getElementById('itemAtivo').value,
@@ -1065,7 +1247,6 @@
             }
         }
         
-        // Modal de senha
         function openPasswordModal() {
             document.getElementById('passwordModal').classList.add('active');
         }
@@ -1129,6 +1310,16 @@
             document.getElementById('newItemBtn').addEventListener('click', () => openItemModal());
             document.getElementById('changePasswordBtn').addEventListener('click', openPasswordModal);
             document.getElementById('logoutBtn').addEventListener('click', logout);
+            
+            document.querySelectorAll('.image-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    switchImageMode(tab.dataset.tab);
+                });
+            });
+            
+            document.getElementById('placeholderText').addEventListener('input', updatePlaceholderPreview);
+            document.getElementById('placeholderBg').addEventListener('input', updatePlaceholderPreview);
+            document.getElementById('placeholderTextColor').addEventListener('input', updatePlaceholderPreview);
             
             setInterval(loadStats, 30000);
         });
