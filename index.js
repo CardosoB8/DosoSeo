@@ -126,8 +126,8 @@ const CPA_LINKS = [
 ];
 
 const STEP_CONFIGS = {
-    1: { titulo: 'Verificação Inicial', subtitulo: 'Preparando seu link seguro...', timer: 20, temAdsterra: true, temCPA: true, icone: 'fa-shield-alt', botaoTexto: 'Continuar' },
-    2: { titulo: 'Confirmação de Acesso', subtitulo: 'Confirme que você não é um robô', timer: 20, temAdsterra: false, temCPA: false, icone: 'fa-user-check', botaoTexto: 'Verificar Acesso' },
+    1: { titulo: 'Verificação Inicial', subtitulo: 'Preparando seu link seguro...', timer: 20, temAdsterra: true, temCPA: false, icone: 'fa-shield-alt', botaoTexto: 'Continuar' },
+    2: { titulo: 'Confirmação de Acesso', subtitulo: 'Confirme que você não é um robô', timer: 20, temAdsterra: false, temCPA: true, icone: 'fa-user-check', botaoTexto: 'Verificar Acesso' },
     3: { titulo: 'Link Pronto!', subtitulo: 'Seu conteúdo está disponível', timer: 25, temAdsterra: true, temCPA: true, icone: 'fa-check-circle', botaoTexto: 'Acessar Conteúdo' }
 };
 
