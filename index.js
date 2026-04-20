@@ -121,13 +121,13 @@ const TOTAL_STEPS = 3;
 
 const CPA_LINKS = [
     'https://omg10.com/4/10420694',
-    'https://www.effectivegatecpm.com/ki4e3ftt5h?key=99415bf2c750643bbcc7c1380848fee9',
+    'https://t.mbjms.com/411401/3785/0?bo=2753,2754,2755,2756&target=videouploads&po=6456&aff_sub5=SF_006OG000004lmDN',
     'https://app.sscashout.online/?pid=5905&bid=1712'
 ];
 
 const STEP_CONFIGS = {
-    1: { titulo: 'Verificação Inicial', subtitulo: 'Preparando seu link seguro...', timer: 20, temAdsterra: true, temCPA: false, icone: 'fa-shield-alt', botaoTexto: 'Continuar' },
-    2: { titulo: 'Confirmação de Acesso', subtitulo: 'Confirme que você não é um robô', timer: 20, temAdsterra: false, temCPA: true, icone: 'fa-user-check', botaoTexto: 'Verificar Acesso' },
+    1: { titulo: 'Verificação Inicial', subtitulo: 'Preparando seu link seguro...', timer: 20, temAdsterra: true, temCPA: true, icone: 'fa-shield-alt', botaoTexto: 'Continuar' },
+    2: { titulo: 'Confirmação de Acesso', subtitulo: 'Confirme que você não é um robô', timer: 20, temAdsterra: false, temCPA: false, icone: 'fa-user-check', botaoTexto: 'Verificar Acesso' },
     3: { titulo: 'Link Pronto!', subtitulo: 'Seu conteúdo está disponível', timer: 25, temAdsterra: true, temCPA: true, icone: 'fa-check-circle', botaoTexto: 'Acessar Conteúdo' }
 };
 
