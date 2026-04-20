@@ -122,7 +122,8 @@ const TOTAL_STEPS = 3;
 const CPA_LINKS = [
     'https://omg10.com/4/10420694',
     'https://t.mbjms.com/411401/3785/0?bo=2753,2754,2755,2756&target=videouploads&po=6456&aff_sub5=SF_006OG000004lmDN',
-    'https://app.sscashout.online/?pid=5905&bid=1712'
+    'https://app.sscashout.online/?pid=5905&bid=1712',
+    'https://t.ajrkmx1.com/411401/6224/27794?bo=2779,2778,2777,2776,2775&po=6533&aff_sub5=SF_006OG000004lmDN'
 ];
 
 const STEP_CONFIGS = {
