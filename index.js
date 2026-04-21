@@ -124,9 +124,7 @@ const CPA_LINKS = [
     'https://t.mbjms.com/411401/3785/0?bo=2753,2754,2755,2756&target=videouploads&po=6456&aff_sub5=SF_006OG000004lmDN',
     'https://app.sscashout.online/?pid=5905&bid=1712',
     'https://t.ajrkmx1.com/411401/6224/27794?bo=2779,2778,2777,2776,2775&po=6533&aff_sub5=SF_006OG000004lmDN',
-    'https://t.amyfc.link/411401/779/0?bo=2779,2778,2777,2776,2775&po=6533&aff_sub5=SF_006OG000004lmDN',
-    'https://t.ajrkmx1.com/411401/6224/0?bo=2779,2778,2777,2776,2775&po=6533&aff_sub5=SF_006OG000004lmDN',
-    'https://eminentpercentvandalism.com/ub1ha7zr?key=d8d02483a91be089cb0ea712c656ca8a'
+    'https://t.amyfc.link/411401/779/0?bo=2779,2778,2777,2776,2775&po=6533&aff_sub5=SF_006OG000004lmDN'
 ];
 
 const STEP_CONFIGS = {
