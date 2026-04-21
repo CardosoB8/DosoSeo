@@ -125,7 +125,8 @@ const CPA_LINKS = [
     'https://app.sscashout.online/?pid=5905&bid=1712',
     'https://t.ajrkmx1.com/411401/6224/27794?bo=2779,2778,2777,2776,2775&po=6533&aff_sub5=SF_006OG000004lmDN',
     'https://t.amyfc.link/411401/779/0?bo=2779,2778,2777,2776,2775&po=6533&aff_sub5=SF_006OG000004lmDN',
-    'https://t.ajrkmx1.com/411401/6224/0?bo=2779,2778,2777,2776,2775&po=6533&aff_sub5=SF_006OG000004lmDN'
+    'https://t.ajrkmx1.com/411401/6224/0?bo=2779,2778,2777,2776,2775&po=6533&aff_sub5=SF_006OG000004lmDN',
+    'https://eminentpercentvandalism.com/ub1ha7zr?key=d8d02483a91be089cb0ea712c656ca8a'
 ];
 
 const STEP_CONFIGS = {
