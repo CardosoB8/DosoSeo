@@ -259,30 +259,18 @@ function requireAdmin(req, res, next) {
 // =================================================================
 // MIDDLEWARE DE SESSÃO DE DOWNLOAD
 // =================================================================
-app.use(async (req, res, next) => {
-    // 1. No index.js, linha ~70, mude para:
 const publicPaths = [
-    '/admin-login', 
-    '/admin-panel', 
-    '/item', 
-    '/api/items', 
-    '/api/item', 
-    '/api/start-download',
-    '/api/step-config',     // ADICIONE ESTA
-    '/api/next-step',       // ADICIONE ESTA
-    '/page1',               // ADICIONE ESTAS TAMBÉM
-    '/page2', 
-    '/page3'
+    '/admin-login', '/admin-panel', '/item', '/api/items', '/api/item', 
+    '/api/start-download', '/api/step-config', '/api/next-step',
+    '/page1', '/page2', '/page3'
 ];
 
-// 2. Reinicie o servidor
-// 3. Teste novamente
+app.use(async (req, res, next) => {
     const isPublic = publicPaths.some(p => req.path.startsWith(p)) || 
                      req.path === '/' ||
                      req.path.startsWith('/css') || 
                      req.path.startsWith('/js') ||
-                     req.path.startsWith('/admin') ||
-                     req.path === '/page1' || req.path === '/page2' || req.path === '/page3';
+                     req.path.startsWith('/admin');
     
     if (isPublic) {
         return next();
@@ -291,7 +279,6 @@ const publicPaths = [
     const session = await recoverDownloadSession(req);
     req.downloadSession = session;
     
-    // Se tem sessão mas não tem cookie, setar cookie
     if (session && !req.cookies?.dsessId) {
         res.cookie('dsessId', session.id, {
             maxAge: SESSION_EXPIRATION * 1000,
