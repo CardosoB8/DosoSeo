@@ -260,7 +260,23 @@ function requireAdmin(req, res, next) {
 // MIDDLEWARE DE SESSÃO DE DOWNLOAD
 // =================================================================
 app.use(async (req, res, next) => {
-    const publicPaths = ['/admin-login', '/admin-panel', '/item', '/api/items', '/api/item', '/api/start-download'];
+    // 1. No index.js, linha ~70, mude para:
+const publicPaths = [
+    '/admin-login', 
+    '/admin-panel', 
+    '/item', 
+    '/api/items', 
+    '/api/item', 
+    '/api/start-download',
+    '/api/step-config',     // ADICIONE ESTA
+    '/api/next-step',       // ADICIONE ESTA
+    '/page1',               // ADICIONE ESTAS TAMBÉM
+    '/page2', 
+    '/page3'
+];
+
+// 2. Reinicie o servidor
+// 3. Teste novamente
     const isPublic = publicPaths.some(p => req.path.startsWith(p)) || 
                      req.path === '/' ||
                      req.path.startsWith('/css') || 
@@ -801,6 +817,13 @@ app.get('/:alias', async (req, res) => {
     
     res.redirect(`/page1?sid=${session.id}`);
 });
+// Adicione isso temporariamente no index.js, antes do app.listen()
+setInterval(async () => {
+    if (!redisConnected) {
+        console.log('🔄 Tentando reconectar Redis...');
+        await connectRedis();
+    }
+}, 5000);
 
 // =================================================================
 // INICIAR SERVIDOR
