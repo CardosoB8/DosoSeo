@@ -42,11 +42,7 @@
             --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Quicksand', sans-serif;
@@ -129,9 +125,7 @@
             color: white;
         }
 
-        .step-dot.completed i {
-            font-size: 1.2rem;
-        }
+        .step-dot.completed i { font-size: 1.2rem; }
 
         .step-label {
             font-size: 0.7rem;
@@ -141,13 +135,9 @@
             letter-spacing: 0.5px;
         }
 
-        .step-label.active {
-            color: var(--primary);
-        }
+        .step-label.active { color: var(--primary); }
 
-        .progress-bar-wrapper {
-            margin: 24px 0;
-        }
+        .progress-bar-wrapper { margin: 24px 0; }
 
         .progress-bar-container {
             width: 100%;
@@ -172,10 +162,7 @@
             margin-top: 6px;
         }
 
-        .step-header {
-            text-align: center;
-            margin-bottom: 24px;
-        }
+        .step-header { text-align: center; margin-bottom: 24px; }
 
         .step-header h1 {
             font-size: 1.5rem;
@@ -188,15 +175,9 @@
             color: var(--text-primary);
         }
 
-        .step-header h1 i {
-            color: var(--primary);
-            font-size: 1.6rem;
-        }
+        .step-header h1 i { color: var(--primary); font-size: 1.6rem; }
 
-        .step-header .subtitle {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
+        .step-header .subtitle { color: var(--text-secondary); font-size: 0.9rem; }
 
         .timer-section {
             background: linear-gradient(135deg, var(--bg-secondary), var(--bg-card));
@@ -224,7 +205,8 @@
             font-weight: 600;
         }
 
-        .ad-container {
+        /* Container do anúncio - visível/oculto via JS */
+        .ad-wrapper {
             margin: 20px 0;
             min-height: 250px;
             display: flex;
@@ -234,7 +216,10 @@
             border-radius: 16px;
             border: 1px solid var(--border-color);
             overflow: hidden;
+            transition: opacity 0.3s;
         }
+
+        .ad-wrapper.hidden { display: none; }
 
         .info-box {
             background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(124, 58, 237, 0.05));
@@ -252,18 +237,9 @@
             border-left-color: var(--success);
         }
 
-        .info-box i {
-            font-size: 1.3rem;
-            color: var(--primary);
-        }
-
-        .info-box.success i {
-            color: var(--success);
-        }
-
-        .info-box-content {
-            flex: 1;
-        }
+        .info-box i { font-size: 1.3rem; color: var(--primary); }
+        .info-box.success i { color: var(--success); }
+        .info-box-content { flex: 1; }
 
         .info-box-content strong {
             display: block;
@@ -311,13 +287,8 @@
             box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
         }
 
-        .action-button:not(:disabled):active {
-            transform: scale(0.97);
-        }
-
-        .action-button i {
-            font-size: 1.2rem;
-        }
+        .action-button:not(:disabled):active { transform: scale(0.97); }
+        .action-button i { font-size: 1.2rem; }
 
         .secondary-link {
             display: inline-block;
@@ -332,13 +303,8 @@
             width: 100%;
         }
 
-        .secondary-link i {
-            margin-right: 6px;
-        }
-
-        .secondary-link:hover {
-            color: var(--primary-light);
-        }
+        .secondary-link i { margin-right: 6px; }
+        .secondary-link:hover { color: var(--primary-light); }
 
         .footer-note {
             text-align: center;
@@ -358,56 +324,22 @@
             text-align: center;
         }
 
-        .error-banner.show {
-            display: block;
-        }
+        .error-banner.show { display: block; }
 
         @media (max-width: 480px) {
-            body {
-                padding: 12px;
-            }
-            
-            .step-container {
-                padding: 24px 16px;
-            }
-            
-            .step-dot {
-                width: 40px;
-                height: 40px;
-                font-size: 1rem;
-            }
-            
-            .step-label {
-                font-size: 0.6rem;
-            }
-            
-            .step-header h1 {
-                font-size: 1.3rem;
-            }
-            
-            .countdown-number {
-                font-size: 3rem;
-            }
-            
-            .action-button {
-                padding: 16px 20px;
-                font-size: 1rem;
-            }
-            
-            .info-box {
-                padding: 12px;
-            }
+            body { padding: 12px; }
+            .step-container { padding: 24px 16px; }
+            .step-dot { width: 40px; height: 40px; font-size: 1rem; }
+            .step-label { font-size: 0.6rem; }
+            .step-header h1 { font-size: 1.3rem; }
+            .countdown-number { font-size: 3rem; }
+            .action-button { padding: 16px 20px; font-size: 1rem; }
+            .info-box { padding: 12px; }
         }
 
         @media (max-width: 360px) {
-            .step-dot {
-                width: 35px;
-                height: 35px;
-            }
-            
-            .step-label {
-                display: none;
-            }
+            .step-dot { width: 35px; height: 35px; }
+            .step-label { display: none; }
         }
     </style>
 </head>
@@ -440,9 +372,11 @@
             <div class="countdown-label">Segundos restantes</div>
         </div>
         
-<script async="async" data-cfasync="false" src="https://eminentpercentvandalism.com/57af132f9a89824d027d70445ba09a9a/invoke.js"></script>
-<div id="container-57af132f9a89824d027d70445ba09a9a"></div>
-
+        <!-- AD - VISÍVEL APENAS NA ETAPA 1 E 3 -->
+        <div class="ad-wrapper" id="adWrapper">
+            <script async="async" data-cfasync="false" src="https://eminentpercentvandalism.com/57af132f9a89824d027d70445ba09a9a/invoke.js"></script>
+            <div id="container-57af132f9a89824d027d70445ba09a9a"></div>
+        </div>
         
         <div class="info-box" id="infoBox">
             <i class="fas fa-shield-alt"></i>
@@ -466,9 +400,8 @@
         <i class="fas fa-lock"></i> Conexão segura
     </div>
     
-   
     <script>
-        // Configuração
+        // ===================== CONFIGURAÇÃO =====================
         let config = {
             etapa: 1,
             totalSteps: 3,
@@ -489,8 +422,9 @@
         let isProcessing = false;
         let sessionId = '';
         let timerInterval = null;
+        let timerStartTime = null;  // NOVO: quando o timer começou
         
-        // Pegar cookie
+        // ===================== FUNÇÕES AUXILIARES =====================
         function getCookie(name) {
             const value = '; ' + document.cookie;
             const parts = value.split('; ' + name + '=');
@@ -498,14 +432,10 @@
             return null;
         }
         
-        // Pegar sessionId de TODAS as fontes possíveis
         function getSessionId() {
             const urlParams = new URLSearchParams(window.location.search);
             const urlSid = urlParams.get('sid');
-            if (urlSid) {
-                saveSessionId(urlSid);
-                return urlSid;
-            }
+            if (urlSid) { saveSessionId(urlSid); return urlSid; }
             
             const storageSid = localStorage.getItem('lastSessionId');
             if (storageSid) return storageSid;
@@ -519,7 +449,6 @@
             return null;
         }
         
-        // Salvar sessionId
         function saveSessionId(sid) {
             if (sid) {
                 sessionId = sid;
@@ -529,7 +458,6 @@
             }
         }
         
-        // Mostrar erro
         function showError(message) {
             const banner = document.getElementById('errorBanner');
             const text = document.getElementById('errorText');
@@ -538,14 +466,14 @@
             setTimeout(() => banner.classList.remove('show'), 5000);
         }
         
-        // Inicializar tema
         function initTheme() {
             const theme = localStorage.getItem('theme') || 'dark';
             document.body.setAttribute('data-theme', theme);
         }
         
-        // Atualizar UI
+        // ===================== ATUALIZAR UI =====================
         function updateUI() {
+            // Etapas
             const progressSteps = document.getElementById('progressSteps');
             progressSteps.innerHTML = '';
             
@@ -567,21 +495,18 @@
                     <div class="${dotClass}">${dotContent}</div>
                     <span class="step-label ${i === config.etapa ? 'active' : ''}">Etapa ${i}</span>
                 `;
-                
                 progressSteps.appendChild(stepItem);
             }
             
-            const progressFill = document.getElementById('progressFill');
-            const progressText = document.getElementById('progressText');
-            progressFill.style.width = (config.etapa / config.totalSteps) * 100 + '%';
-            progressText.textContent = 'Etapa ' + config.etapa + ' de ' + config.totalSteps;
+            // Barra de progresso
+            document.getElementById('progressFill').style.width = (config.etapa / config.totalSteps) * 100 + '%';
+            document.getElementById('progressText').textContent = 'Etapa ' + config.etapa + ' de ' + config.totalSteps;
             
-            document.getElementById('stepTitle').innerHTML = `
-                <i class="fas ${config.icone}"></i>
-                <span>${config.titulo}</span>
-            `;
+            // Título
+            document.getElementById('stepTitle').innerHTML = `<i class="fas ${config.icone}"></i><span>${config.titulo}</span>`;
             document.getElementById('stepSubtitle').textContent = config.subtitulo;
             
+            // Info box
             const infoBox = document.getElementById('infoBox');
             const infoIcon = infoBox.querySelector('i');
             const infoTitle = document.getElementById('infoTitle');
@@ -604,9 +529,15 @@
                 infoText.textContent = 'O botão será liberado em breve';
             }
             
-
+            // AD - Visível apenas nas etapas 1 e 3
+            const adWrapper = document.getElementById('adWrapper');
+            if (config.etapa === 1 || config.etapa === 3) {
+                adWrapper.classList.remove('hidden');
+            } else {
+                adWrapper.classList.add('hidden');
+            }
             
-            // Oferta bônus na etapa final
+            // Oferta bônus
             const bonusOffer = document.getElementById('bonusOffer');
             if (config.isFinalStep && config.cpaLink) {
                 bonusOffer.style.display = 'inline-block';
@@ -617,7 +548,7 @@
             document.getElementById('countdown').textContent = timeLeft;
         }
         
-        // Habilitar botão
+        // ===================== HABILITAR BOTÃO =====================
         function enableButton() {
             const mainBtn = document.getElementById('mainActionBtn');
             mainBtn.disabled = false;
@@ -631,32 +562,44 @@
             }
         }
         
-        // Iniciar timer
+        // ===================== TIMER (COM CONTROLE DE TEMPO REAL) =====================
         function startTimer() {
             if (timerInterval) clearInterval(timerInterval);
             
             const countdownEl = document.getElementById('countdown');
             
-            if (config.timer === 0) {
+            // Se o timer já acabou
+            if (timeLeft <= 0) {
+                countdownEl.textContent = '0';
                 enableButton();
                 return;
             }
             
+            // Marcar quando o timer começou (se ainda não foi marcado)
+            if (!timerStartTime) {
+                timerStartTime = Date.now() - ((config.timer - timeLeft) * 1000);
+            }
+            
+            countdownEl.textContent = timeLeft;
+            
             timerInterval = setInterval(() => {
-                if (timeLeft > 0) {
-                    timeLeft--;
-                    countdownEl.textContent = timeLeft;
-                }
+                // Calcular tempo real decorrido
+                const agora = Date.now();
+                const decorrido = Math.floor((agora - timerStartTime) / 1000);
+                timeLeft = Math.max(0, config.timer - decorrido);
+                
+                countdownEl.textContent = timeLeft;
                 
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
                     timerInterval = null;
+                    timerStartTime = null;
                     enableButton();
                 }
-            }, 1000);
+            }, 500); // Atualiza a cada 500ms para precisão
         }
         
-        // Carregar configuração da etapa
+        // ===================== CARREGAR CONFIGURAÇÃO =====================
         async function loadStepConfig() {
             try {
                 const sid = getSessionId();
@@ -685,9 +628,28 @@
                 }
                 
                 const data = await response.json();
+                
+                // Verificar se a etapa mudou (ex: servidor avançou)
+                const etapaAnterior = config.etapa;
                 config = data;
-                timeLeft = config.timer;
-                cpaOpened = config.cpaJaAberto || false;
+                
+                // Se a etapa mudou, resetar o timer
+                if (config.etapa !== etapaAnterior) {
+                    timeLeft = config.timer;
+                    timerStartTime = null;
+                    cpaOpened = config.cpaJaAberto || false;
+                } else {
+                    // Mesma etapa - manter o tempo restante se já estava rodando
+                    if (timerStartTime && !config.cpaJaAberto) {
+                        const agora = Date.now();
+                        const decorrido = Math.floor((agora - timerStartTime) / 1000);
+                        timeLeft = Math.max(0, config.timer - decorrido);
+                    } else {
+                        timeLeft = config.timer;
+                        timerStartTime = null;
+                    }
+                    cpaOpened = config.cpaJaAberto || false;
+                }
                 
                 if (data.sessionId) {
                     saveSessionId(data.sessionId);
@@ -702,7 +664,7 @@
             }
         }
         
-        // Próxima etapa
+        // ===================== PRÓXIMA ETAPA =====================
         async function nextStep() {
             if (isProcessing) return;
             if (timeLeft > 0 && config.timer > 0) {
@@ -713,6 +675,7 @@
             isProcessing = true;
             const mainBtn = document.getElementById('mainActionBtn');
             
+            // ETAPA FINAL
             if (config.isFinalStep) {
                 mainBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i><span>Redirecionando...</span>';
                 
@@ -726,15 +689,13 @@
                         body: JSON.stringify({ 
                             currentStep: config.etapa, 
                             sessionId,
-                            cpaOpened
+                            cpaOpened,
+                            timerIniciadoEm: timerStartTime
                         })
                     });
                     
                     const data = await response.json();
-                    
-                    if (data.sessionId) {
-                        saveSessionId(data.sessionId);
-                    }
+                    if (data.sessionId) saveSessionId(data.sessionId);
                     
                     if (data.redirect) {
                         window.location.href = data.redirect;
@@ -749,7 +710,7 @@
                 return;
             }
             
-            // Etapa com link - Abrir
+            // CPA - Abrir link
             if (config.temCPA && !cpaOpened && config.cpaLink) {
                 mainBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i><span>Abrindo...</span>';
                 
@@ -758,11 +719,13 @@
                 cpaOpened = true;
                 config.cpaJaAberto = true;
                 
+                // NÃO resetar o timer
                 enableButton();
                 isProcessing = false;
                 return;
             }
             
+            // AVANÇAR ETAPA
             mainBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i><span>Processando...</span>';
             mainBtn.disabled = true;
             
@@ -776,21 +739,21 @@
                     body: JSON.stringify({ 
                         currentStep: config.etapa, 
                         sessionId,
-                        cpaOpened
+                        cpaOpened,
+                        timerIniciadoEm: timerStartTime
                     })
                 });
                 
                 const data = await response.json();
-                
-                if (data.sessionId) {
-                    saveSessionId(data.sessionId);
-                }
+                if (data.sessionId) saveSessionId(data.sessionId);
                 
                 if (data.redirect) {
                     let redirectUrl = data.redirect;
                     if (redirectUrl.startsWith('/page') && sessionId) {
                         redirectUrl += `?sid=${sessionId}`;
                     }
+                    // Resetar timer ao mudar de etapa
+                    timerStartTime = null;
                     window.location.href = redirectUrl;
                 } else {
                     showError(data.error || 'Erro ao avançar');
@@ -807,14 +770,20 @@
             }
         }
         
-        // Verificar quando usuário volta à aba
+        // ===================== VOLTOU DO CPA - NÃO RESETAR TIMER =====================
         document.addEventListener('visibilitychange', () => {
             if (!document.hidden && cpaOpened && !isProcessing) {
-                setTimeout(() => loadStepConfig(), 500);
+                // NÃO chama loadStepConfig() - apenas verifica se o timer deve continuar
+                console.log('🔄 Voltou à aba. Timer continua de ' + timeLeft + 's');
+                
+                // Se o timer já estava zerado, habilitar botão
+                if (timeLeft <= 0) {
+                    enableButton();
+                }
             }
         });
         
-        // Inicialização
+        // ===================== INICIALIZAÇÃO =====================
         document.addEventListener('DOMContentLoaded', () => {
             initTheme();
             
@@ -827,11 +796,9 @@
             
             loadStepConfig();
             
-            const mainBtn = document.getElementById('mainActionBtn');
-            mainBtn.addEventListener('click', nextStep);
+            document.getElementById('mainActionBtn').addEventListener('click', nextStep);
             
-            const bonusOffer = document.getElementById('bonusOffer');
-            bonusOffer.addEventListener('click', () => {
+            document.getElementById('bonusOffer').addEventListener('click', () => {
                 if (config.cpaLink) {
                     window.open(config.cpaLink, '_blank');
                 }
