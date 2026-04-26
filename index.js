@@ -61,6 +61,14 @@ async function connectRedis() {
 
 connectRedis();
 
+// Reconexão automática do Redis
+setInterval(async () => {
+    if (!redisConnected) {
+        console.log('🔄 Tentando reconectar Redis...');
+        await connectRedis();
+    }
+}, 5000);
+
 // =================================================================
 // CONFIGURAÇÕES DE SEGURANÇA
 // =================================================================
@@ -130,9 +138,33 @@ const CPA_LINKS = [
 ];
 
 const STEP_CONFIGS = {
-    1: { titulo: 'Verificação Inicial', subtitulo: 'Preparando seu link seguro...', timer: 20, temAdsterra: true, temCPA: true, icone: 'fa-shield-alt', botaoTexto: 'Continuar' },
-    2: { titulo: 'Confirmação de Acesso', subtitulo: 'Confirme que você não é um robô', timer: 20, temAdsterra: false, temCPA: false, icone: 'fa-user-check', botaoTexto: 'Verificar Acesso' },
-    3: { titulo: 'Link Pronto!', subtitulo: 'Seu conteúdo está disponível', timer: 25, temAdsterra: true, temCPA: true, icone: 'fa-check-circle', botaoTexto: 'Acessar Conteúdo' }
+    1: { 
+        titulo: 'Verificação Inicial', 
+        subtitulo: 'Preparando seu link seguro...', 
+        timer: 20, 
+        temAdsterra: true, 
+        temCPA: true, 
+        icone: 'fa-shield-alt', 
+        botaoTexto: 'Continuar' 
+    },
+    2: { 
+        titulo: 'Confirmação de Acesso', 
+        subtitulo: 'Confirme que você não é um robô', 
+        timer: 20, 
+        temAdsterra: false, 
+        temCPA: false, 
+        icone: 'fa-user-check', 
+        botaoTexto: 'Verificar Acesso' 
+    },
+    3: { 
+        titulo: 'Link Pronto!', 
+        subtitulo: 'Seu conteúdo está disponível', 
+        timer: 25, 
+        temAdsterra: true, 
+        temCPA: true, 
+        icone: 'fa-check-circle', 
+        botaoTexto: 'Acessar Conteúdo' 
+    }
 };
 
 // =================================================================
@@ -179,7 +211,11 @@ async function createDownloadSession(itemId, req) {
         fingerprint: fingerprint,
         criado_em: Date.now(),
         ultima_acao: Date.now(),
-        cpa_aberto_etapa2: false
+        cpa_aberto_etapa1: false,
+        cpa_aberto_etapa2: false,
+        cpa_aberto_etapa3: false,
+        timer_restante: 20,
+        timer_iniciado_em: null
     };
     
     await redisClient.setEx(`dsess:${sessionId}`, SESSION_EXPIRATION, JSON.stringify(sessionData));
@@ -357,6 +393,7 @@ app.get('/page:step', async (req, res) => {
 // API PÚBLICA
 // =================================================================
 
+// Listar itens
 app.get('/api/items', async (req, res) => {
     try {
         const categoria = req.query.categoria || 'todos';
@@ -395,6 +432,7 @@ app.get('/api/items', async (req, res) => {
     }
 });
 
+// Detalhes do item
 app.get('/api/item/:id', async (req, res) => {
     try {
         const item = await redisClient.hGetAll(`item:${req.params.id}`);
@@ -419,6 +457,7 @@ app.get('/api/item/:id', async (req, res) => {
     }
 });
 
+// Iniciar download
 app.post('/api/start-download/:id', async (req, res) => {
     try {
         const itemId = req.params.id;
@@ -453,6 +492,7 @@ app.post('/api/start-download/:id', async (req, res) => {
     }
 });
 
+// Configuração da etapa
 app.get('/api/step-config', async (req, res) => {
     try {
         let session = req.downloadSession;
@@ -485,6 +525,26 @@ app.get('/api/step-config', async (req, res) => {
         const config = STEP_CONFIGS[session.etapa_atual];
         const cpaLink = config.temCPA ? getRandomCpaLink() : null;
         
+        // CALCULAR TEMPO RESTANTE DO TIMER
+        let timerRestante = config.timer;
+        if (session.timer_iniciado_em) {
+            const decorrido = Math.floor((Date.now() - session.timer_iniciado_em) / 1000);
+            timerRestante = Math.max(0, config.timer - decorrido);
+            
+            // Se o timer já acabou, resetar
+            if (timerRestante <= 0) {
+                timerRestante = 0;
+                session.timer_iniciado_em = null;
+                await redisClient.setEx(`dsess:${session.id}`, SESSION_EXPIRATION, JSON.stringify(session));
+            }
+        }
+        
+        // CPA já aberto nesta etapa?
+        let cpaJaAberto = false;
+        if (session.etapa_atual === 1) cpaJaAberto = session.cpa_aberto_etapa1 || false;
+        if (session.etapa_atual === 2) cpaJaAberto = session.cpa_aberto_etapa2 || false;
+        if (session.etapa_atual === 3) cpaJaAberto = session.cpa_aberto_etapa3 || false;
+        
         // Reenviar cookie
         res.cookie('dsessId', session.id, {
             maxAge: SESSION_EXPIRATION * 1000,
@@ -498,8 +558,9 @@ app.get('/api/step-config', async (req, res) => {
             etapa: session.etapa_atual,
             totalSteps: TOTAL_STEPS,
             ...config,
+            timer: timerRestante,  // Tempo restante, não o original
             cpaLink,
-            cpaJaAberto: session.cpa_aberto_etapa2 || false,
+            cpaJaAberto: cpaJaAberto,
             urlOriginal,
             sessionId: session.id
         });
@@ -509,9 +570,10 @@ app.get('/api/step-config', async (req, res) => {
     }
 });
 
+// Próxima etapa
 app.post('/api/next-step', async (req, res) => {
     try {
-        const { currentStep, cpaOpened, sessionId: bodySessionId } = req.body;
+        const { currentStep, cpaOpened, sessionId: bodySessionId, timerIniciadoEm } = req.body;
         
         let session = req.downloadSession;
         
@@ -530,6 +592,18 @@ app.post('/api/next-step', async (req, res) => {
         if (session.etapa_atual !== clientStep) {
             console.log(`⚠️ Etapa incorreta: esperado ${session.etapa_atual}, recebido ${clientStep}`);
             return res.status(400).json({ error: 'Sequência inválida' });
+        }
+        
+        // SALVAR estado do timer
+        if (timerIniciadoEm && !session.timer_iniciado_em) {
+            session.timer_iniciado_em = timerIniciadoEm;
+        }
+        
+        // Marcar CPA como aberto na etapa correta
+        if (cpaOpened) {
+            if (session.etapa_atual === 1) session.cpa_aberto_etapa1 = true;
+            if (session.etapa_atual === 2) session.cpa_aberto_etapa2 = true;
+            if (session.etapa_atual === 3) session.cpa_aberto_etapa3 = true;
         }
         
         let urlOriginal;
@@ -570,9 +644,8 @@ app.post('/api/next-step', async (req, res) => {
         const novaEtapa = clientStep + 1;
         session.etapa_atual = novaEtapa;
         
-        if (clientStep === 2 && cpaOpened) {
-            session.cpa_aberto_etapa2 = true;
-        }
+        // Resetar timer ao avançar etapa
+        session.timer_iniciado_em = null;
         
         await redisClient.setEx(`dsess:${session.id}`, SESSION_EXPIRATION, JSON.stringify(session));
         
@@ -804,13 +877,6 @@ app.get('/:alias', async (req, res) => {
     
     res.redirect(`/page1?sid=${session.id}`);
 });
-// Adicione isso temporariamente no index.js, antes do app.listen()
-setInterval(async () => {
-    if (!redisConnected) {
-        console.log('🔄 Tentando reconectar Redis...');
-        await connectRedis();
-    }
-}, 5000);
 
 // =================================================================
 // INICIAR SERVIDOR
@@ -822,6 +888,7 @@ app.listen(PORT, () => {
     ✅ REDIS: ${redisConnected ? 'CONECTADO' : 'FALHA'}
     ✅ LINKS ANTIGOS: ${linksData.length} carregados
     ✅ SESSÃO VIA FINGERPRINT (À PROVA DE CPA)
+    ✅ TIMER PERSISTENTE (NÃO REINICIA APÓS CPA)
     `);
 });
 
