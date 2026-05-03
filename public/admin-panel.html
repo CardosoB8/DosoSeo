@@ -358,6 +358,11 @@
             color: white;
         }
 
+        .action-btn.duplicate:hover {
+            background: var(--accent);
+            color: white;
+        }
+
         .action-btn.delete:hover {
             background: var(--danger);
         }
@@ -467,6 +472,72 @@
 
         .modal-body {
             padding: 24px;
+        }
+
+        /* Área de clone */
+        .clone-area {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            border: 1px dashed var(--border-color);
+        }
+
+        .clone-area label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--accent);
+        }
+
+        .clone-area label i {
+            color: var(--accent);
+        }
+
+        .clone-select-wrapper {
+            display: flex;
+            gap: 8px;
+        }
+
+        .clone-select-wrapper select {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            font-family: 'Quicksand', sans-serif;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .clone-select-wrapper select:focus {
+            border-color: var(--accent);
+        }
+
+        .clone-btn {
+            background: var(--accent);
+            border: none;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .clone-btn:active {
+            transform: scale(0.95);
         }
 
         .form-group {
@@ -641,6 +712,30 @@
             color: var(--text-muted);
         }
 
+        /* Toast de notificação */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            z-index: 9999;
+            animation: slideIn 0.3s ease;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .toast.success { background: var(--success); }
+        .toast.error { background: var(--danger); }
+        .toast.info { background: var(--accent); }
+
+        @keyframes slideIn {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
         /* Mobile */
         @media (min-width: 640px) {
             .stats-grid {
@@ -680,6 +775,11 @@
             }
             
             .color-inputs {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .clone-select-wrapper {
                 flex-direction: column;
                 gap: 8px;
             }
@@ -816,6 +916,19 @@
                 <button class="modal-close" onclick="closeItemModal()">&times;</button>
             </div>
             <div class="modal-body">
+                <!-- Área de clonagem -->
+                <div class="clone-area" id="cloneArea">
+                    <label><i class="fas fa-clone"></i> Copiar dados de um item existente</label>
+                    <div class="clone-select-wrapper">
+                        <select id="cloneSource">
+                            <option value="">-- Nenhum (começar vazio) --</option>
+                        </select>
+                        <button type="button" class="clone-btn" onclick="cloneFromSource()">
+                            <i class="fas fa-magic"></i> Aplicar
+                        </button>
+                    </div>
+                </div>
+                
                 <form id="itemForm">
                     <input type="hidden" id="itemId">
                     <div class="form-group">
@@ -941,6 +1054,18 @@
         let chart = null;
         let currentItems = [];
         let currentImageMode = 'url';
+        let isEditing = false;
+        
+        // Toast notification
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
         
         // Tema
         function initTheme() {
@@ -961,6 +1086,23 @@
             return num.toString();
         }
         
+        // Parsear cores de URL do placeholder
+        function parsePlaceholderUrl(url) {
+            if (!url || !url.includes('placehold.co')) return null;
+            
+            try {
+                const match = url.match(/placehold\.co\/400x400\/([^/]+)\/([^/]+)\?text=(.+)/);
+                if (match) {
+                    return {
+                        bg: '#' + match[1],
+                        textColor: '#' + match[2],
+                        text: decodeURIComponent(match[3])
+                    };
+                }
+            } catch (e) {}
+            return null;
+        }
+        
         // Gerar URL do placeholder
         function generatePlaceholderUrl() {
             const text = document.getElementById('placeholderText').value || 'BREVE';
@@ -979,6 +1121,67 @@
             preview.style.background = bgColor;
             preview.style.color = textColor;
             preview.textContent = text.substring(0, 3).toUpperCase();
+        }
+        
+        // Preencher dropdown de clone
+        function populateCloneDropdown() {
+            const select = document.getElementById('cloneSource');
+            select.innerHTML = '<option value="">-- Nenhum (começar vazio) --</option>';
+            
+            currentItems.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.id;
+                option.textContent = item.titulo;
+                select.appendChild(option);
+            });
+        }
+        
+        // Clonar dados do item selecionado
+        function cloneFromSource() {
+            const sourceId = document.getElementById('cloneSource').value;
+            
+            if (!sourceId) {
+                // Limpar todos os campos
+                document.getElementById('itemForm').reset();
+                document.getElementById('itemId').value = '';
+                document.getElementById('placeholderText').value = 'BREVE';
+                document.getElementById('placeholderBg').value = '#7c3aed';
+                document.getElementById('placeholderTextColor').value = '#ffffff';
+                switchImageMode('url');
+                updatePlaceholderPreview();
+                document.getElementById('itemAtivo').value = 'true';
+                showToast('Campos limpos!', 'info');
+                return;
+            }
+            
+            const sourceItem = currentItems.find(i => i.id === sourceId);
+            if (!sourceItem) return;
+            
+            // Preencher campos básicos
+            document.getElementById('itemTitulo').value = sourceItem.titulo + ' (Cópia)';
+            document.getElementById('itemDescricao').value = sourceItem.descricao || '';
+            document.getElementById('itemUrl').value = sourceItem.url_original || '';
+            document.getElementById('itemCategoria').value = sourceItem.categoria || 'outros';
+            document.getElementById('itemAtivo').value = sourceItem.ativo || 'true';
+            document.getElementById('itemExpira').value = sourceItem.expira_em ? sourceItem.expira_em.slice(0, 16) : '';
+            
+            // Verificar se a imagem é placeholder
+            const placeholderData = parsePlaceholderUrl(sourceItem.imagem);
+            
+            if (placeholderData) {
+                // É placeholder - preencher campos do placeholder
+                switchImageMode('placeholder');
+                document.getElementById('placeholderText').value = placeholderData.text;
+                document.getElementById('placeholderBg').value = placeholderData.bg;
+                document.getElementById('placeholderTextColor').value = placeholderData.textColor;
+                updatePlaceholderPreview();
+            } else {
+                // É URL normal
+                switchImageMode('url');
+                document.getElementById('itemImagem').value = sourceItem.imagem || '';
+            }
+            
+            showToast(`Dados copiados de: ${sourceItem.titulo}`, 'success');
         }
         
         // Carregar estatísticas
@@ -1103,10 +1306,13 @@
                             </td>
                             <td>
                                 <div class="item-actions">
-                                    <button class="action-btn" onclick="editItem('${item.id}')">
+                                    <button class="action-btn duplicate" onclick="duplicateItem('${item.id}')" title="Duplicar">
+                                        <i class="fas fa-clone"></i>
+                                    </button>
+                                    <button class="action-btn" onclick="editItem('${item.id}')" title="Editar">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button class="action-btn delete" onclick="deleteItem('${item.id}')">
+                                    <button class="action-btn delete" onclick="deleteItem('${item.id}')" title="Excluir">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
@@ -1114,37 +1320,72 @@
                         </tr>
                     `;
                 });
+                
+                // Atualizar dropdown de clone se o modal estiver aberto
+                if (document.getElementById('itemModal').classList.contains('active')) {
+                    populateCloneDropdown();
+                }
             } catch (e) {
                 console.error('Erro itens:', e);
             }
         }
         
         // Modal de item
-        function openItemModal(itemId = null) {
+        function openItemModal(itemId = null, isDuplicating = false) {
             const modal = document.getElementById('itemModal');
             const title = document.getElementById('modalTitle');
+            const cloneArea = document.getElementById('cloneArea');
+            
+            isEditing = itemId && !isDuplicating;
+            
+            // Mostrar/esconder área de clone
+            if (itemId && !isDuplicating) {
+                // Editando - esconder área de clone
+                cloneArea.style.display = 'none';
+            } else {
+                // Novo item ou duplicando - mostrar área de clone
+                cloneArea.style.display = 'block';
+                populateCloneDropdown();
+            }
             
             switchImageMode('url');
             
             if (itemId) {
-                title.textContent = 'Editar Item';
                 const item = currentItems.find(i => i.id === itemId);
                 if (item) {
-                    document.getElementById('itemId').value = item.id;
-                    document.getElementById('itemTitulo').value = item.titulo;
-                    document.getElementById('itemDescricao').value = item.descricao || '';
+                    if (isDuplicating) {
+                        title.textContent = 'Duplicar Item';
+                        document.getElementById('itemId').value = '';
+                        document.getElementById('itemTitulo').value = item.titulo + ' (Cópia)';
+                    } else {
+                        title.textContent = 'Editar Item';
+                        document.getElementById('itemId').value = item.id;
+                        document.getElementById('itemTitulo').value = item.titulo;
+                    }
                     
-                    if (item.imagem && item.imagem.includes('placehold.co')) {
+                    document.getElementById('itemDescricao').value = item.descricao || '';
+                    document.getElementById('itemUrl').value = item.url_original || '';
+                    document.getElementById('itemCategoria').value = item.categoria || 'outros';
+                    document.getElementById('itemAtivo').value = item.ativo || 'true';
+                    document.getElementById('itemExpira').value = item.expira_em ? item.expira_em.slice(0, 16) : '';
+                    
+                    // Verificar placeholder
+                    const placeholderData = parsePlaceholderUrl(item.imagem);
+                    
+                    if (placeholderData) {
                         switchImageMode('placeholder');
-                        document.getElementById('itemImagem').value = '';
+                        document.getElementById('placeholderText').value = placeholderData.text;
+                        document.getElementById('placeholderBg').value = placeholderData.bg;
+                        document.getElementById('placeholderTextColor').value = placeholderData.textColor;
+                        updatePlaceholderPreview();
                     } else {
                         document.getElementById('itemImagem').value = item.imagem || '';
                     }
                     
-                    document.getElementById('itemUrl').value = item.url_original;
-                    document.getElementById('itemCategoria').value = item.categoria || 'outros';
-                    document.getElementById('itemAtivo').value = item.ativo;
-                    document.getElementById('itemExpira').value = item.expira_em ? item.expira_em.slice(0, 16) : '';
+                    // Se está duplicando, selecionar o item no dropdown
+                    if (isDuplicating) {
+                        document.getElementById('cloneSource').value = item.id;
+                    }
                 }
             } else {
                 title.textContent = 'Novo Item';
@@ -1153,7 +1394,12 @@
                 document.getElementById('placeholderText').value = 'BREVE';
                 document.getElementById('placeholderBg').value = '#7c3aed';
                 document.getElementById('placeholderTextColor').value = '#ffffff';
+                document.getElementById('itemAtivo').value = 'true';
                 updatePlaceholderPreview();
+                
+                // Resetar dropdown
+                const cloneSelect = document.getElementById('cloneSource');
+                if (cloneSelect) cloneSelect.value = '';
             }
             
             modal.classList.add('active');
@@ -1184,7 +1430,11 @@
         }
         
         function editItem(itemId) {
-            openItemModal(itemId);
+            openItemModal(itemId, false);
+        }
+        
+        function duplicateItem(itemId) {
+            openItemModal(itemId, true);
         }
         
         async function saveItem() {
@@ -1208,7 +1458,7 @@
             };
             
             if (!formData.titulo || !formData.url_original) {
-                alert('Título e Link Original são obrigatórios');
+                showToast('Título e Link Original são obrigatórios', 'error');
                 return;
             }
             
@@ -1224,16 +1474,17 @@
                     closeItemModal();
                     loadItems();
                     loadStats();
+                    showToast(isEditing ? 'Item atualizado!' : 'Item criado!', 'success');
                 } else {
-                    alert(data.error || 'Erro ao salvar');
+                    showToast(data.error || 'Erro ao salvar', 'error');
                 }
             } catch (e) {
-                alert('Erro de conexão');
+                showToast('Erro de conexão', 'error');
             }
         }
         
         async function deleteItem(itemId) {
-            if (!confirm('Excluir este item?')) return;
+            if (!confirm('Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.')) return;
             
             try {
                 const res = await fetch('/admin/api/item/' + itemId, { method: 'DELETE' });
@@ -1241,9 +1492,12 @@
                 if (data.success) {
                     loadItems();
                     loadStats();
+                    showToast('Item excluído!', 'success');
+                } else {
+                    showToast(data.error || 'Erro ao excluir', 'error');
                 }
             } catch (e) {
-                alert('Erro ao excluir');
+                showToast('Erro de conexão', 'error');
             }
         }
         
@@ -1261,8 +1515,18 @@
             const newPass = document.getElementById('newPassword').value;
             const confirm = document.getElementById('confirmPassword').value;
             
+            if (!current || !newPass || !confirm) {
+                showToast('Preencha todos os campos', 'error');
+                return;
+            }
+            
             if (newPass !== confirm) {
-                alert('As senhas não coincidem');
+                showToast('As senhas não coincidem', 'error');
+                return;
+            }
+            
+            if (newPass.length < 6) {
+                showToast('A senha deve ter no mínimo 6 caracteres', 'error');
                 return;
             }
             
@@ -1275,13 +1539,13 @@
                 
                 const data = await res.json();
                 if (data.success) {
-                    alert('Senha alterada!');
+                    showToast('Senha alterada com sucesso!', 'success');
                     closePasswordModal();
                 } else {
-                    alert(data.error || 'Erro');
+                    showToast(data.error || 'Erro ao alterar senha', 'error');
                 }
             } catch (e) {
-                alert('Erro de conexão');
+                showToast('Erro de conexão', 'error');
             }
         }
         
@@ -1321,6 +1585,16 @@
             document.getElementById('placeholderBg').addEventListener('input', updatePlaceholderPreview);
             document.getElementById('placeholderTextColor').addEventListener('input', updatePlaceholderPreview);
             
+            // Fechar modais clicando fora
+            document.getElementById('itemModal').addEventListener('click', function(e) {
+                if (e.target === this) closeItemModal();
+            });
+            
+            document.getElementById('passwordModal').addEventListener('click', function(e) {
+                if (e.target === this) closePasswordModal();
+            });
+            
+            // Atualizar estatísticas a cada 30 segundos
             setInterval(loadStats, 30000);
         });
     </script>
