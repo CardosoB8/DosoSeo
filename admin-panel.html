@@ -1,0 +1,1602 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Painel Admin - Mr Doso</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --primary: #7c3aed;
+            --primary-light: #a78bfa;
+            --secondary: #ec4899;
+            --accent: #06b6d4;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0f0f1a;
+            --bg-secondary: #1a1a2e;
+            --bg-card: #16213e;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-color: #1e293b;
+            --input-bg: #0f172a;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+            --header-bg: #0f172a;
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --border-color: #e2e8f0;
+            --input-bg: #ffffff;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --header-bg: #7c3aed;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        /* Header */
+        .admin-header {
+            background: var(--header-bg);
+            padding: 14px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1400px;
+            margin: 0 auto;
+            gap: 12px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+        }
+
+        .logo-area i {
+            font-size: 1.5rem;
+            color: var(--accent);
+        }
+
+        .logo-area h1 {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 10px 16px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 500;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            white-space: nowrap;
+        }
+
+        .header-btn i {
+            font-size: 1rem;
+        }
+
+        .header-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .header-btn.icon-only {
+            padding: 10px;
+        }
+
+        .header-btn.icon-only span {
+            display: none;
+        }
+
+        /* Container principal */
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Cards de estatísticas */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 18px 14px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+
+        .stat-header i {
+            color: var(--primary);
+            font-size: 1rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+
+        .stat-change {
+            font-size: 0.75rem;
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .stat-change.positive {
+            color: var(--success);
+        }
+
+        .stat-change.negative {
+            color: var(--danger);
+        }
+
+        /* Gráfico */
+        .chart-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .chart-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .chart-header i {
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+
+        .chart-header h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 200px;
+        }
+
+        /* Seção de itens */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .section-header h2 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .section-header h2 i {
+            color: var(--primary);
+        }
+
+        .add-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            box-shadow: 0 5px 15px rgba(124, 58, 237, 0.3);
+        }
+
+        .add-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Tabela de itens */
+        .items-table-wrapper {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 4px 0;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            overflow-x: auto;
+            margin-bottom: 24px;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+        }
+
+        .items-table th {
+            text-align: left;
+            padding: 16px 12px;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .items-table td {
+            padding: 14px 12px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .items-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .item-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .item-status.active {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+        }
+
+        .item-status.inactive {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .action-btn {
+            background: var(--bg-secondary);
+            border: none;
+            color: var(--text-secondary);
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .action-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .action-btn.duplicate:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .action-btn.delete:hover {
+            background: var(--danger);
+        }
+
+        /* Resumo */
+        .summary-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .summary-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .summary-label i {
+            color: var(--primary);
+            width: 20px;
+        }
+
+        .summary-value {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border-radius: 24px;
+            max-width: 550px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-header {
+            padding: 24px 24px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            background: var(--bg-card);
+            z-index: 10;
+        }
+
+        .modal-header h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+
+        .modal-close:hover {
+            color: var(--danger);
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        /* Área de clone */
+        .clone-area {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            border: 1px dashed var(--border-color);
+        }
+
+        .clone-area label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--accent);
+        }
+
+        .clone-area label i {
+            color: var(--accent);
+        }
+
+        .clone-select-wrapper {
+            display: flex;
+            gap: 8px;
+        }
+
+        .clone-select-wrapper select {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            font-family: 'Quicksand', sans-serif;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .clone-select-wrapper select:focus {
+            border-color: var(--accent);
+        }
+
+        .clone-btn {
+            background: var(--accent);
+            border: none;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .clone-btn:active {
+            transform: scale(0.95);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .form-group label i {
+            color: var(--primary);
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 14px;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            font-family: 'Quicksand', sans-serif;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: var(--primary);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        /* Tabs para escolher tipo de imagem */
+        .image-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 16px;
+            background: var(--bg-secondary);
+            padding: 4px;
+            border-radius: 12px;
+        }
+
+        .image-tab {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .image-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .image-tab i {
+            font-size: 0.9rem;
+        }
+
+        /* Preview do placeholder */
+        .placeholder-preview {
+            display: flex;
+            justify-content: center;
+            margin: 16px 0;
+        }
+
+        .preview-box {
+            width: 120px;
+            height: 120px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            border: 2px solid var(--border-color);
+        }
+
+        .color-inputs {
+            display: flex;
+            gap: 12px;
+        }
+
+        .color-input {
+            flex: 1;
+        }
+
+        .color-input label {
+            font-size: 0.8rem;
+            margin-bottom: 4px;
+        }
+
+        .color-input input {
+            padding: 8px;
+            height: 45px;
+        }
+
+        .modal-footer {
+            padding: 16px 24px 24px;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .modal-btn {
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .modal-btn.cancel {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+        }
+
+        .modal-btn.save {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .modal-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Loading */
+        .loading-row td {
+            text-align: center;
+            padding: 40px !important;
+            color: var(--text-muted);
+        }
+
+        .empty-row td {
+            text-align: center;
+            padding: 40px !important;
+            color: var(--text-muted);
+        }
+
+        /* Toast de notificação */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            z-index: 9999;
+            animation: slideIn 0.3s ease;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .toast.success { background: var(--success); }
+        .toast.error { background: var(--danger); }
+        .toast.info { background: var(--accent); }
+
+        @keyframes slideIn {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Mobile */
+        @media (min-width: 640px) {
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 16px;
+            }
+            
+            .header-btn.icon-only span {
+                display: inline;
+            }
+            
+            .header-btn.icon-only {
+                padding: 10px 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .dashboard-container {
+                padding: 12px;
+            }
+            
+            .stat-value {
+                font-size: 1.5rem;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+            
+            .modal {
+                max-height: 90vh;
+            }
+            
+            .logo-area h1 {
+                font-size: 1rem;
+            }
+            
+            .color-inputs {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .clone-select-wrapper {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body data-theme="dark">
+    <header class="admin-header">
+        <div class="header-content">
+            <div class="logo-area">
+                <i class="fas fa-crown"></i>
+                <h1>Painel Admin</h1>
+            </div>
+            <div class="header-actions">
+                <a href="/" class="header-btn icon-only">
+                    <i class="fas fa-eye"></i>
+                    <span>Ver Site</span>
+                </a>
+                <button class="header-btn icon-only" id="themeToggle">
+                    <i class="fas fa-sun"></i>
+                    <span>Tema</span>
+                </button>
+                <button class="header-btn icon-only" id="changePasswordBtn">
+                    <i class="fas fa-key"></i>
+                    <span>Senha</span>
+                </button>
+                <button class="header-btn icon-only" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Sair</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    
+    <div class="dashboard-container">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <i class="fas fa-box"></i>
+                    <span>Total Itens</span>
+                </div>
+                <div class="stat-value" id="totalItems">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <i class="fas fa-eye"></i>
+                    <span>Views Hoje</span>
+                </div>
+                <div class="stat-value" id="todayViews">-</div>
+                <div class="stat-change" id="viewsChange"></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <i class="fas fa-download"></i>
+                    <span>Downloads Hoje</span>
+                </div>
+                <div class="stat-value" id="todayDownloads">-</div>
+                <div class="stat-change" id="downloadsChange"></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <i class="fas fa-percent"></i>
+                    <span>Conversão</span>
+                </div>
+                <div class="stat-value" id="conversionRate">-</div>
+            </div>
+        </div>
+        
+        <div class="chart-card">
+            <div class="chart-header">
+                <i class="fas fa-chart-line"></i>
+                <h2>Últimos 7 dias</h2>
+            </div>
+            <div class="chart-container">
+                <canvas id="statsChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="section-header">
+            <h2>
+                <i class="fas fa-list"></i>
+                Itens Cadastrados
+            </h2>
+            <button class="add-btn" id="newItemBtn">
+                <i class="fas fa-plus"></i>
+                <span>Novo Item</span>
+            </button>
+        </div>
+        
+        <div class="items-table-wrapper">
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                        <th>Categoria</th>
+                        <th>Views</th>
+                        <th>Downloads</th>
+                        <th>Taxa</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="itemsTableBody">
+                    <tr><td colspan="7" class="loading-row"><i class="fas fa-spinner fa-pulse"></i> Carregando...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="summary-card">
+            <div class="summary-item">
+                <span class="summary-label"><i class="fas fa-eye"></i> Total Visualizações</span>
+                <span class="summary-value" id="totalViews">-</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label"><i class="fas fa-download"></i> Total Downloads</span>
+                <span class="summary-value" id="totalDownloads">-</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label"><i class="fas fa-check-circle"></i> Itens Ativos</span>
+                <span class="summary-value" id="activeItems">-</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label"><i class="fas fa-chart-bar"></i> Média Downloads/Item</span>
+                <span class="summary-value" id="avgDownloads">-</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal de Item -->
+    <div class="modal-overlay" id="itemModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modalTitle">Novo Item</h3>
+                <button class="modal-close" onclick="closeItemModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Área de clonagem -->
+                <div class="clone-area" id="cloneArea">
+                    <label><i class="fas fa-clone"></i> Copiar dados de um item existente</label>
+                    <div class="clone-select-wrapper">
+                        <select id="cloneSource">
+                            <option value="">-- Nenhum (começar vazio) --</option>
+                        </select>
+                        <button type="button" class="clone-btn" onclick="cloneFromSource()">
+                            <i class="fas fa-magic"></i> Aplicar
+                        </button>
+                    </div>
+                </div>
+                
+                <form id="itemForm">
+                    <input type="hidden" id="itemId">
+                    <div class="form-group">
+                        <label><i class="fas fa-heading"></i> Título</label>
+                        <input type="text" id="itemTitulo" placeholder="Ex: Filme 1080p Dublado" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-align-left"></i> Descrição</label>
+                        <textarea id="itemDescricao" placeholder="Descreva o conteúdo..."></textarea>
+                    </div>
+                    
+                    <!-- Tabs para escolher tipo de imagem -->
+                    <div class="image-tabs">
+                        <button type="button" class="image-tab active" data-tab="url">
+                            <i class="fas fa-link"></i> URL
+                        </button>
+                        <button type="button" class="image-tab" data-tab="placeholder">
+                            <i class="fas fa-palette"></i> Placeholder
+                        </button>
+                    </div>
+                    
+                    <!-- Campo URL -->
+                    <div class="form-group" id="urlField">
+                        <label><i class="fas fa-image"></i> URL da Imagem</label>
+                        <input type="url" id="itemImagem" placeholder="https://... (opcional)">
+                    </div>
+                    
+                    <!-- Campos do Placeholder -->
+                    <div id="placeholderFields" style="display: none;">
+                        <div class="form-group">
+                            <label><i class="fas fa-font"></i> Texto do Placeholder</label>
+                            <input type="text" id="placeholderText" placeholder="Ex: EM BREVE" maxlength="20" value="BREVE">
+                        </div>
+                        <div class="color-inputs">
+                            <div class="color-input">
+                                <label><i class="fas fa-fill-drip"></i> Cor de Fundo</label>
+                                <input type="color" id="placeholderBg" value="#7c3aed">
+                            </div>
+                            <div class="color-input">
+                                <label><i class="fas fa-font"></i> Cor do Texto</label>
+                                <input type="color" id="placeholderTextColor" value="#ffffff">
+                            </div>
+                        </div>
+                        
+                        <!-- Preview -->
+                        <div class="placeholder-preview">
+                            <div class="preview-box" id="placeholderPreview" style="background: #7c3aed; color: #ffffff;">
+                                BREVE
+                            </div>
+                        </div>
+                        <p style="font-size: 0.75rem; color: var(--text-muted); text-align: center;">
+                            <i class="fas fa-info-circle"></i> Tamanho: 400x400px (se ajusta automaticamente)
+                        </p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-link"></i> Link Original</label>
+                        <input type="url" id="itemUrl" placeholder="https://... (link final)" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-folder"></i> Categoria</label>
+                            <select id="itemCategoria">
+                                <option value="arquivos">Arquivos</option>
+                                <option value="codigos">Códigos / Chaves</option>
+                                <option value="apps">Apps</option>
+                                <option value="videos">Vídeos</option>
+                                <option value="outros">Outros</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-toggle-on"></i> Status</label>
+                            <select id="itemAtivo">
+                                <option value="true">Ativo</option>
+                                <option value="false">Inativo</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-calendar-times"></i> Expira em (opcional)</label>
+                        <input type="datetime-local" id="itemExpira">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" onclick="closeItemModal()">Cancelar</button>
+                <button class="modal-btn save" onclick="saveItem()">Salvar</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal de Senha -->
+    <div class="modal-overlay" id="passwordModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Alterar Senha</h3>
+                <button class="modal-close" onclick="closePasswordModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="passwordForm">
+                    <div class="form-group">
+                        <label><i class="fas fa-lock"></i> Senha Atual</label>
+                        <input type="password" id="currentPassword" placeholder="••••••••" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-key"></i> Nova Senha</label>
+                        <input type="password" id="newPassword" placeholder="••••••••" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-check"></i> Confirmar Senha</label>
+                        <input type="password" id="confirmPassword" placeholder="••••••••" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" onclick="closePasswordModal()">Cancelar</button>
+                <button class="modal-btn save" onclick="changePassword()">Alterar</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let chart = null;
+        let currentItems = [];
+        let currentImageMode = 'url';
+        let isEditing = false;
+        
+        // Toast notification
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+        
+        // Tema
+        function initTheme() {
+            const theme = localStorage.getItem('theme') || 'dark';
+            document.body.setAttribute('data-theme', theme);
+            updateThemeIcon(theme);
+        }
+        
+        function updateThemeIcon(theme) {
+            const icon = document.querySelector('#themeToggle i');
+            if (icon) icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        }
+        
+        // Formatação
+        function formatNumber(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
+            return num.toString();
+        }
+        
+        // Parsear cores de URL do placeholder
+        function parsePlaceholderUrl(url) {
+            if (!url || !url.includes('placehold.co')) return null;
+            
+            try {
+                const match = url.match(/placehold\.co\/400x400\/([^/]+)\/([^/]+)\?text=(.+)/);
+                if (match) {
+                    return {
+                        bg: '#' + match[1],
+                        textColor: '#' + match[2],
+                        text: decodeURIComponent(match[3])
+                    };
+                }
+            } catch (e) {}
+            return null;
+        }
+        
+        // Gerar URL do placeholder
+        function generatePlaceholderUrl() {
+            const text = document.getElementById('placeholderText').value || 'BREVE';
+            const bgColor = document.getElementById('placeholderBg').value.replace('#', '');
+            const textColor = document.getElementById('placeholderTextColor').value.replace('#', '');
+            return `https://placehold.co/400x400/${bgColor}/${textColor}?text=${encodeURIComponent(text)}`;
+        }
+        
+        // Atualizar preview
+        function updatePlaceholderPreview() {
+            const preview = document.getElementById('placeholderPreview');
+            const text = document.getElementById('placeholderText').value || 'BREVE';
+            const bgColor = document.getElementById('placeholderBg').value;
+            const textColor = document.getElementById('placeholderTextColor').value;
+            
+            preview.style.background = bgColor;
+            preview.style.color = textColor;
+            preview.textContent = text.substring(0, 3).toUpperCase();
+        }
+        
+        // Preencher dropdown de clone
+        function populateCloneDropdown() {
+            const select = document.getElementById('cloneSource');
+            select.innerHTML = '<option value="">-- Nenhum (começar vazio) --</option>';
+            
+            currentItems.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.id;
+                option.textContent = item.titulo;
+                select.appendChild(option);
+            });
+        }
+        
+        // Clonar dados do item selecionado
+        function cloneFromSource() {
+            const sourceId = document.getElementById('cloneSource').value;
+            
+            if (!sourceId) {
+                // Limpar todos os campos
+                document.getElementById('itemForm').reset();
+                document.getElementById('itemId').value = '';
+                document.getElementById('placeholderText').value = 'BREVE';
+                document.getElementById('placeholderBg').value = '#7c3aed';
+                document.getElementById('placeholderTextColor').value = '#ffffff';
+                switchImageMode('url');
+                updatePlaceholderPreview();
+                document.getElementById('itemAtivo').value = 'true';
+                showToast('Campos limpos!', 'info');
+                return;
+            }
+            
+            const sourceItem = currentItems.find(i => i.id === sourceId);
+            if (!sourceItem) return;
+            
+            // Preencher campos básicos
+            document.getElementById('itemTitulo').value = sourceItem.titulo + ' (Cópia)';
+            document.getElementById('itemDescricao').value = sourceItem.descricao || '';
+            document.getElementById('itemUrl').value = sourceItem.url_original || '';
+            document.getElementById('itemCategoria').value = sourceItem.categoria || 'outros';
+            document.getElementById('itemAtivo').value = sourceItem.ativo || 'true';
+            document.getElementById('itemExpira').value = sourceItem.expira_em ? sourceItem.expira_em.slice(0, 16) : '';
+            
+            // Verificar se a imagem é placeholder
+            const placeholderData = parsePlaceholderUrl(sourceItem.imagem);
+            
+            if (placeholderData) {
+                // É placeholder - preencher campos do placeholder
+                switchImageMode('placeholder');
+                document.getElementById('placeholderText').value = placeholderData.text;
+                document.getElementById('placeholderBg').value = placeholderData.bg;
+                document.getElementById('placeholderTextColor').value = placeholderData.textColor;
+                updatePlaceholderPreview();
+            } else {
+                // É URL normal
+                switchImageMode('url');
+                document.getElementById('itemImagem').value = sourceItem.imagem || '';
+            }
+            
+            showToast(`Dados copiados de: ${sourceItem.titulo}`, 'success');
+        }
+        
+        // Carregar estatísticas
+        async function loadStats() {
+            try {
+                const res = await fetch('/admin/api/stats');
+                const data = await res.json();
+                
+                document.getElementById('totalItems').textContent = data.totalItems;
+                document.getElementById('todayViews').textContent = formatNumber(data.today.views);
+                document.getElementById('todayDownloads').textContent = formatNumber(data.today.downloads);
+                document.getElementById('conversionRate').textContent = data.conversionRate + '%';
+                document.getElementById('totalViews').textContent = formatNumber(data.totalViews);
+                document.getElementById('totalDownloads').textContent = formatNumber(data.totalDownloads);
+                document.getElementById('activeItems').textContent = data.totalItems;
+                
+                const avg = data.totalItems > 0 ? Math.round(data.totalDownloads / data.totalItems) : 0;
+                document.getElementById('avgDownloads').textContent = formatNumber(avg);
+                
+                const viewsDiff = data.today.views - data.yesterday.views;
+                const viewsChange = document.getElementById('viewsChange');
+                if (viewsDiff >= 0) {
+                    viewsChange.innerHTML = '<i class="fas fa-arrow-up"></i> +' + viewsDiff;
+                    viewsChange.className = 'stat-change positive';
+                } else {
+                    viewsChange.innerHTML = '<i class="fas fa-arrow-down"></i> ' + viewsDiff;
+                    viewsChange.className = 'stat-change negative';
+                }
+                
+                const downloadsDiff = data.today.downloads - data.yesterday.downloads;
+                const downloadsChange = document.getElementById('downloadsChange');
+                if (downloadsDiff >= 0) {
+                    downloadsChange.innerHTML = '<i class="fas fa-arrow-up"></i> +' + downloadsDiff;
+                    downloadsChange.className = 'stat-change positive';
+                } else {
+                    downloadsChange.innerHTML = '<i class="fas fa-arrow-down"></i> ' + downloadsDiff;
+                    downloadsChange.className = 'stat-change negative';
+                }
+                
+                const ctx = document.getElementById('statsChart').getContext('2d');
+                if (chart) chart.destroy();
+                
+                const theme = document.body.getAttribute('data-theme');
+                const textColor = theme === 'dark' ? '#94a3b8' : '#64748b';
+                const gridColor = theme === 'dark' ? '#1e293b' : '#e2e8f0';
+                
+                chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.last7Days.map(d => new Date(d.date).toLocaleDateString('pt-BR', { weekday: 'short' })),
+                        datasets: [{
+                            label: 'Visualizações',
+                            data: data.last7Days.map(d => d.views),
+                            borderColor: '#7c3aed',
+                            backgroundColor: 'rgba(124, 58, 237, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }, {
+                            label: 'Downloads',
+                            data: data.last7Days.map(d => d.downloads),
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: textColor, font: { family: 'Quicksand' } } }
+                        },
+                        scales: {
+                            y: { 
+                                beginAtZero: true, 
+                                grid: { color: gridColor }, 
+                                ticks: { color: textColor } 
+                            },
+                            x: { 
+                                grid: { display: false }, 
+                                ticks: { color: textColor } 
+                            }
+                        }
+                    }
+                });
+            } catch (e) {
+                console.error('Erro stats:', e);
+            }
+        }
+        
+        // Carregar itens
+        async function loadItems() {
+            try {
+                const res = await fetch('/admin/api/items');
+                const data = await res.json();
+                currentItems = data.items;
+                
+                const tbody = document.getElementById('itemsTableBody');
+                
+                if (!data.items.length) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="empty-row"><i class="fas fa-box-open"></i> Nenhum item cadastrado</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = '';
+                data.items.forEach(item => {
+                    const rate = item.visualizacoes > 0 ? ((item.downloads / item.visualizacoes) * 100).toFixed(1) : '0';
+                    const isActive = item.ativo === 'true';
+                    
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${item.titulo}</td>
+                            <td>${item.categoria || 'outros'}</td>
+                            <td>${formatNumber(item.visualizacoes)}</td>
+                            <td>${formatNumber(item.downloads)}</td>
+                            <td>${rate}%</td>
+                            <td>
+                                <span class="item-status ${isActive ? 'active' : 'inactive'}">
+                                    <i class="fas fa-${isActive ? 'check' : 'times'}-circle"></i>
+                                    ${isActive ? 'Ativo' : 'Inativo'}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="item-actions">
+                                    <button class="action-btn duplicate" onclick="duplicateItem('${item.id}')" title="Duplicar">
+                                        <i class="fas fa-clone"></i>
+                                    </button>
+                                    <button class="action-btn" onclick="editItem('${item.id}')" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="action-btn delete" onclick="deleteItem('${item.id}')" title="Excluir">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                // Atualizar dropdown de clone se o modal estiver aberto
+                if (document.getElementById('itemModal').classList.contains('active')) {
+                    populateCloneDropdown();
+                }
+            } catch (e) {
+                console.error('Erro itens:', e);
+            }
+        }
+        
+        // Modal de item
+        function openItemModal(itemId = null, isDuplicating = false) {
+            const modal = document.getElementById('itemModal');
+            const title = document.getElementById('modalTitle');
+            const cloneArea = document.getElementById('cloneArea');
+            
+            isEditing = itemId && !isDuplicating;
+            
+            // Mostrar/esconder área de clone
+            if (itemId && !isDuplicating) {
+                // Editando - esconder área de clone
+                cloneArea.style.display = 'none';
+            } else {
+                // Novo item ou duplicando - mostrar área de clone
+                cloneArea.style.display = 'block';
+                populateCloneDropdown();
+            }
+            
+            switchImageMode('url');
+            
+            if (itemId) {
+                const item = currentItems.find(i => i.id === itemId);
+                if (item) {
+                    if (isDuplicating) {
+                        title.textContent = 'Duplicar Item';
+                        document.getElementById('itemId').value = '';
+                        document.getElementById('itemTitulo').value = item.titulo + ' (Cópia)';
+                    } else {
+                        title.textContent = 'Editar Item';
+                        document.getElementById('itemId').value = item.id;
+                        document.getElementById('itemTitulo').value = item.titulo;
+                    }
+                    
+                    document.getElementById('itemDescricao').value = item.descricao || '';
+                    document.getElementById('itemUrl').value = item.url_original || '';
+                    document.getElementById('itemCategoria').value = item.categoria || 'outros';
+                    document.getElementById('itemAtivo').value = item.ativo || 'true';
+                    document.getElementById('itemExpira').value = item.expira_em ? item.expira_em.slice(0, 16) : '';
+                    
+                    // Verificar placeholder
+                    const placeholderData = parsePlaceholderUrl(item.imagem);
+                    
+                    if (placeholderData) {
+                        switchImageMode('placeholder');
+                        document.getElementById('placeholderText').value = placeholderData.text;
+                        document.getElementById('placeholderBg').value = placeholderData.bg;
+                        document.getElementById('placeholderTextColor').value = placeholderData.textColor;
+                        updatePlaceholderPreview();
+                    } else {
+                        document.getElementById('itemImagem').value = item.imagem || '';
+                    }
+                    
+                    // Se está duplicando, selecionar o item no dropdown
+                    if (isDuplicating) {
+                        document.getElementById('cloneSource').value = item.id;
+                    }
+                }
+            } else {
+                title.textContent = 'Novo Item';
+                document.getElementById('itemForm').reset();
+                document.getElementById('itemId').value = '';
+                document.getElementById('placeholderText').value = 'BREVE';
+                document.getElementById('placeholderBg').value = '#7c3aed';
+                document.getElementById('placeholderTextColor').value = '#ffffff';
+                document.getElementById('itemAtivo').value = 'true';
+                updatePlaceholderPreview();
+                
+                // Resetar dropdown
+                const cloneSelect = document.getElementById('cloneSource');
+                if (cloneSelect) cloneSelect.value = '';
+            }
+            
+            modal.classList.add('active');
+        }
+        
+        function switchImageMode(mode) {
+            currentImageMode = mode;
+            
+            document.querySelectorAll('.image-tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.dataset.tab === mode) {
+                    tab.classList.add('active');
+                }
+            });
+            
+            if (mode === 'url') {
+                document.getElementById('urlField').style.display = 'block';
+                document.getElementById('placeholderFields').style.display = 'none';
+            } else {
+                document.getElementById('urlField').style.display = 'none';
+                document.getElementById('placeholderFields').style.display = 'block';
+                updatePlaceholderPreview();
+            }
+        }
+        
+        function closeItemModal() {
+            document.getElementById('itemModal').classList.remove('active');
+        }
+        
+        function editItem(itemId) {
+            openItemModal(itemId, false);
+        }
+        
+        function duplicateItem(itemId) {
+            openItemModal(itemId, true);
+        }
+        
+        async function saveItem() {
+            let imagemUrl;
+            
+            if (currentImageMode === 'url') {
+                imagemUrl = document.getElementById('itemImagem').value;
+            } else {
+                imagemUrl = generatePlaceholderUrl();
+            }
+            
+            const formData = {
+                id: document.getElementById('itemId').value || null,
+                titulo: document.getElementById('itemTitulo').value,
+                descricao: document.getElementById('itemDescricao').value,
+                imagem: imagemUrl,
+                url_original: document.getElementById('itemUrl').value,
+                categoria: document.getElementById('itemCategoria').value,
+                ativo: document.getElementById('itemAtivo').value,
+                expira_em: document.getElementById('itemExpira').value || null
+            };
+            
+            if (!formData.titulo || !formData.url_original) {
+                showToast('Título e Link Original são obrigatórios', 'error');
+                return;
+            }
+            
+            try {
+                const res = await fetch('/admin/api/item', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    closeItemModal();
+                    loadItems();
+                    loadStats();
+                    showToast(isEditing ? 'Item atualizado!' : 'Item criado!', 'success');
+                } else {
+                    showToast(data.error || 'Erro ao salvar', 'error');
+                }
+            } catch (e) {
+                showToast('Erro de conexão', 'error');
+            }
+        }
+        
+        async function deleteItem(itemId) {
+            if (!confirm('Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.')) return;
+            
+            try {
+                const res = await fetch('/admin/api/item/' + itemId, { method: 'DELETE' });
+                const data = await res.json();
+                if (data.success) {
+                    loadItems();
+                    loadStats();
+                    showToast('Item excluído!', 'success');
+                } else {
+                    showToast(data.error || 'Erro ao excluir', 'error');
+                }
+            } catch (e) {
+                showToast('Erro de conexão', 'error');
+            }
+        }
+        
+        function openPasswordModal() {
+            document.getElementById('passwordModal').classList.add('active');
+        }
+        
+        function closePasswordModal() {
+            document.getElementById('passwordModal').classList.remove('active');
+            document.getElementById('passwordForm').reset();
+        }
+        
+        async function changePassword() {
+            const current = document.getElementById('currentPassword').value;
+            const newPass = document.getElementById('newPassword').value;
+            const confirm = document.getElementById('confirmPassword').value;
+            
+            if (!current || !newPass || !confirm) {
+                showToast('Preencha todos os campos', 'error');
+                return;
+            }
+            
+            if (newPass !== confirm) {
+                showToast('As senhas não coincidem', 'error');
+                return;
+            }
+            
+            if (newPass.length < 6) {
+                showToast('A senha deve ter no mínimo 6 caracteres', 'error');
+                return;
+            }
+            
+            try {
+                const res = await fetch('/admin/api/change-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ currentPassword: current, newPassword: newPass })
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    showToast('Senha alterada com sucesso!', 'success');
+                    closePasswordModal();
+                } else {
+                    showToast(data.error || 'Erro ao alterar senha', 'error');
+                }
+            } catch (e) {
+                showToast('Erro de conexão', 'error');
+            }
+        }
+        
+        async function logout() {
+            try {
+                await fetch('/admin/api/logout', { method: 'POST' });
+            } catch (e) {}
+            window.location.href = '/admin-login';
+        }
+        
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            loadStats();
+            loadItems();
+            
+            document.getElementById('themeToggle').addEventListener('click', () => {
+                const current = document.body.getAttribute('data-theme');
+                const newTheme = current === 'dark' ? 'light' : 'dark';
+                document.body.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                updateThemeIcon(newTheme);
+                loadStats();
+            });
+            
+            document.getElementById('newItemBtn').addEventListener('click', () => openItemModal());
+            document.getElementById('changePasswordBtn').addEventListener('click', openPasswordModal);
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+            
+            document.querySelectorAll('.image-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    switchImageMode(tab.dataset.tab);
+                });
+            });
+            
+            document.getElementById('placeholderText').addEventListener('input', updatePlaceholderPreview);
+            document.getElementById('placeholderBg').addEventListener('input', updatePlaceholderPreview);
+            document.getElementById('placeholderTextColor').addEventListener('input', updatePlaceholderPreview);
+            
+            // Fechar modais clicando fora
+            document.getElementById('itemModal').addEventListener('click', function(e) {
+                if (e.target === this) closeItemModal();
+            });
+            
+            document.getElementById('passwordModal').addEventListener('click', function(e) {
+                if (e.target === this) closePasswordModal();
+            });
+            
+            // Atualizar estatísticas a cada 30 segundos
+            setInterval(loadStats, 30000);
+        });
+    </script>
+</body>
+</html>
