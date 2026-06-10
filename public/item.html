@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <script src="https://quge5.com/88/tag.min.js" data-zone="203209" async data-cfasync="false"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Detalhes - Mr Doso</title>
@@ -436,8 +435,21 @@
     </div>
     
     <footer>
-        <p>Mr Doso Hub - Sua biblioteca de conteúdo</p>
+        <p>Mr Doso web - Sua biblioteca de conteúdo</p>
     </footer>
+
+    <script>
+        (function() {
+            if (!window.monetagLoaded) {
+                window.monetagLoaded = true;
+                const script = document.createElement('script');
+                script.src = 'https://quge5.com/88/tag.min.js';
+                script.setAttribute('data-zone', '203209');
+                script.async = true;
+                document.head.appendChild(script);
+            }
+        })();
+    </script>
     
     <script>
         // Configuração do tema
