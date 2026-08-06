@@ -38,11 +38,15 @@ const CRYPTO_CONFIG = {
 
 function generatePassword(expiryHours = 48) {
     try {
+        console.log('🔐 Gerando senha com validade de', expiryHours, 'horas');
+        
         const expiryDate = new Date();
         expiryDate.setHours(expiryDate.getHours() + expiryHours);
         
         // MESMO FORMATO do frontend para compatibilidade
         const plainText = `${CRYPTO_CONFIG.FIXED_USERNAME}|${expiryDate.getTime()}|${CRYPTO_CONFIG.FIXED_MSISDN}|${CRYPTO_CONFIG.FIXED_SECRET}`;
+        
+        console.log('📝 Dados para criptografar:', plainText.substring(0, 50) + '...');
         
         const key = crypto.pbkdf2Sync(
             CRYPTO_CONFIG.MASTER_PASSWORD, 
@@ -61,6 +65,8 @@ function generatePassword(expiryHours = 48) {
         const combined = Buffer.concat([iv, Buffer.from(encrypted, 'base64')]);
         const password = combined.toString('base64');
         
+        console.log('✅ Senha gerada com sucesso! Tamanho:', password.length);
+        
         return {
             password,
             expiryDate,
@@ -69,7 +75,8 @@ function generatePassword(expiryHours = 48) {
             msisdn: CRYPTO_CONFIG.FIXED_MSISDN
         };
     } catch (error) {
-        console.error('Erro ao gerar senha:', error);
+        console.error('❌ Erro ao gerar senha:', error);
+        console.error('❌ Stack:', error.stack);
         return null;
     }
 }
@@ -239,7 +246,6 @@ function generateSessionId() {
     return crypto.randomBytes(32).toString('hex');
 }
 
-// Fingerprint ROBUSTO - não muda com CPA
 function getClientFingerprint(req) {
     const ip = req.ip || req.connection?.remoteAddress || req.headers['x-forwarded-for']?.split(',')[0] || '0.0.0.0';
     const userAgent = req.headers['user-agent'] || '';
@@ -705,13 +711,19 @@ app.post('/api/next-step', async (req, res) => {
 // =================================================================
 app.get('/generate-password/:itemId', passwordLimiter, async (req, res) => {
     try {
+        console.log('🔑 Gerando senha para item:', req.params.itemId);
+        
         const itemId = req.params.itemId;
         
         // 1. VERIFICAR SE O ITEM EXISTE
         const redisItem = await redisClient.hGetAll(`item:${itemId}`);
         const oldLink = linksData.find(l => l.alias === itemId);
         
+        console.log('📦 Item encontrado no Redis?', Object.keys(redisItem).length > 0);
+        console.log('📦 Item encontrado no linksData?', !!oldLink);
+        
         if ((!redisItem || Object.keys(redisItem).length === 0) && !oldLink) {
+            console.log('❌ Item não encontrado:', itemId);
             return res.status(404).send(`
                 <!DOCTYPE html>
                 <html><head><meta charset="UTF-8"><title>Item não encontrado</title>
@@ -728,9 +740,15 @@ app.get('/generate-password/:itemId', passwordLimiter, async (req, res) => {
             session = await recoverDownloadSession(req);
         }
         
+        console.log('🆔 Sessão encontrada?', !!session);
+        if (session) {
+            console.log('📊 Etapa atual:', session.etapa_atual);
+            console.log('📊 Total de etapas:', TOTAL_STEPS);
+        }
+        
         if (!session) {
-            console.log(`❌ Tentativa de acesso sem sessão: ${itemId}`);
-            return res.send(`
+            console.log('❌ Tentativa de acesso sem sessão:', itemId);
+            return res.status(403).send(`
                 <!DOCTYPE html>
                 <html><head><meta charset="UTF-8"><title>Acesso Negado</title>
                 <style>body{font-family:Arial;background:#0F1C2E;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;text-align:center;}.card{background:#1A2D42;padding:40px;border-radius:20px;max-width:400px;}.error{color:#E50914;font-size:48px;}h2{color:#E50914;}p{color:#B0BEC5;}.btn{display:inline-block;padding:12px 30px;background:#E50914;color:#fff;border-radius:30px;text-decoration:none;margin-top:20px;}</style>
@@ -750,7 +768,7 @@ app.get('/generate-password/:itemId', passwordLimiter, async (req, res) => {
         const fingerprint = getClientFingerprint(req);
         if (session.fingerprint !== fingerprint) {
             console.log(`⚠️ Fingerprint inválido: ${itemId}`);
-            return res.send(`
+            return res.status(403).send(`
                 <!DOCTYPE html>
                 <html><head><meta charset="UTF-8"><title>Dispositivo Não Autorizado</title>
                 <style>body{font-family:Arial;background:#0F1C2E;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;text-align:center;}.card{background:#1A2D42;padding:40px;border-radius:20px;max-width:400px;}.error{color:#FF9800;font-size:48px;}h2{color:#FF9800;}p{color:#B0BEC5;}.btn{display:inline-block;padding:12px 30px;background:#FF9800;color:#fff;border-radius:30px;text-decoration:none;margin-top:20px;}</style>
@@ -766,15 +784,22 @@ app.get('/generate-password/:itemId', passwordLimiter, async (req, res) => {
         if (redisItem && Object.keys(redisItem).length > 0) {
             titulo = redisItem.titulo || 'Conteúdo';
             descricao = redisItem.descricao || '';
+            console.log('📝 Título do item:', titulo);
         } else if (oldLink) {
             titulo = oldLink.titulo || 'Conteúdo';
+            console.log('📝 Título do item (oldLink):', titulo);
         }
         
         // 6. GERAR SENHA (48h - 2 DIAS)
+        console.log('🔐 Iniciando geração da senha...');
         const passwordData = generatePassword(48);
+        
         if (!passwordData) {
+            console.log('❌ Falha ao gerar senha - passwordData é null');
             return res.status(500).send('Erro ao gerar senha');
         }
+        
+        console.log('✅ Senha gerada com sucesso!');
         
         // 7. SALVAR NO REDIS
         const sessionData = {
@@ -793,6 +818,8 @@ app.get('/generate-password/:itemId', passwordLimiter, async (req, res) => {
             JSON.stringify(sessionData)
         );
         
+        console.log('💾 Senha salva no Redis');
+        
         // 8. INCREMENTAR DOWNLOADS
         const today = new Date().toISOString().split('T')[0];
         if (redisItem && Object.keys(redisItem).length > 0) {
@@ -805,7 +832,7 @@ app.get('/generate-password/:itemId', passwordLimiter, async (req, res) => {
         // 9. CALCULAR HORAS RESTANTES
         const horasRestantes = Math.floor((passwordData.expiryDate - new Date()) / (1000 * 60 * 60));
         
-        // 10. RENDERIZAR PÁGINA COM SENHA + BOTÃO DE COMPRA
+        // 10. RENDERIZAR PÁGINA
         res.send(`
             <!DOCTYPE html>
             <html lang="pt">
@@ -1035,15 +1062,6 @@ app.get('/generate-password/:itemId', passwordLimiter, async (req, res) => {
                         .button-group { flex-direction: column; }
                         .button-group .btn { margin-top: 10px; }
                     }
-                    .badge-free {
-                        display: inline-block;
-                        padding: 2px 12px;
-                        background: #2E7D32;
-                        border-radius: 20px;
-                        font-size: 11px;
-                        color: white;
-                        margin-left: 5px;
-                    }
                 </style>
             </head>
             <body>
@@ -1133,7 +1151,6 @@ app.get('/generate-password/:itemId', passwordLimiter, async (req, res) => {
                     }
                     
                     function buy30Days() {
-                        // Link de pagamento - substitua pelo seu
                         const paymentLink = 'https://api.whatsapp.com/send?phone=258840000000&text=Olá! Quero comprar 30 dias de acesso por 50 MT. Meu item é: ${itemId}';
                         window.open('${paymentLink}', '_blank');
                         showToast('📱 Redirecionando para pagamento...');
@@ -1155,8 +1172,16 @@ app.get('/generate-password/:itemId', passwordLimiter, async (req, res) => {
         `);
         
     } catch (error) {
-        console.error('Erro ao gerar senha:', error);
-        res.status(500).send('Erro interno ao gerar senha');
+        console.error('❌ Erro ao gerar senha:', error);
+        console.error('❌ Stack:', error.stack);
+        res.status(500).send(`
+            <!DOCTYPE html>
+            <html><head><meta charset="UTF-8"><title>Erro</title>
+            <style>body{font-family:Arial;background:#0F1C2E;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;text-align:center;}.card{background:#1A2D42;padding:40px;border-radius:20px;max-width:400px;}.error{color:#E50914;font-size:48px;}h2{color:#E50914;}p{color:#B0BEC5;}</style>
+            </head><body>
+                <div class="card"><div class="error">❌</div><h2>Erro Interno</h2><p>Não foi possível gerar sua senha. Tente novamente.</p><a href="/" style="display:inline-block;padding:12px 30px;background:#E50914;color:#fff;border-radius:30px;text-decoration:none;margin-top:20px;">Voltar</a></div>
+            </body></html>
+        `);
     }
 });
 
