@@ -24,6 +24,57 @@ const CONFIG = {
 const PORT = process.env.PORT || 3000;
 
 // =================================================================
+// MÓDULO DE CRIPTOGRAFIA (DENTRO DO SERVER)
+// =================================================================
+const CRYPTO_CONFIG = {
+    FIXED_USERNAME: 'MrDoso',
+    FIXED_MSISDN: '865446574',
+    FIXED_SECRET: 'mCotB+*f>SYyO@8Em',
+    MASTER_PASSWORD: 'MovTV@2026#SecureKey!',
+    SALT: Buffer.from([0x4A, 0x8F, 0x2C, 0x11, 0x7E, 0x3B, 0x9D, 0x5A, 0x1F, 0x6C, 0x8E, 0x2D, 0x4B, 0x7A, 0x3F, 0x9C]),
+    ITERATIONS: 10000,
+    KEY_SIZE: 32
+};
+
+function generatePassword(expiryHours = 48) {
+    try {
+        const expiryDate = new Date();
+        expiryDate.setHours(expiryDate.getHours() + expiryHours);
+        
+        // MESMO FORMATO do frontend para compatibilidade
+        const plainText = `${CRYPTO_CONFIG.FIXED_USERNAME}|${expiryDate.getTime()}|${CRYPTO_CONFIG.FIXED_MSISDN}|${CRYPTO_CONFIG.FIXED_SECRET}`;
+        
+        const key = crypto.pbkdf2Sync(
+            CRYPTO_CONFIG.MASTER_PASSWORD, 
+            CRYPTO_CONFIG.SALT, 
+            CRYPTO_CONFIG.ITERATIONS, 
+            CRYPTO_CONFIG.KEY_SIZE, 
+            'sha256'
+        );
+        
+        const iv = crypto.randomBytes(16);
+        
+        const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
+        let encrypted = cipher.update(plainText, 'utf8', 'base64');
+        encrypted += cipher.final('base64');
+        
+        const combined = Buffer.concat([iv, Buffer.from(encrypted, 'base64')]);
+        const password = combined.toString('base64');
+        
+        return {
+            password,
+            expiryDate,
+            expiryHours,
+            username: CRYPTO_CONFIG.FIXED_USERNAME,
+            msisdn: CRYPTO_CONFIG.FIXED_MSISDN
+        };
+    } catch (error) {
+        console.error('Erro ao gerar senha:', error);
+        return null;
+    }
+}
+
+// =================================================================
 // CONFIGURAÇÃO DO REDIS
 // =================================================================
 const redisClient = redis.createClient({
@@ -121,6 +172,13 @@ const adminLimiter = rateLimit({
     message: { error: 'Muitas tentativas' }
 });
 
+// Rate limit específico para geração de senha
+const passwordLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 5,
+    message: { error: 'Muitas tentativas de gerar senha' }
+});
+
 // =================================================================
 // CONFIGURAÇÕES DO SISTEMA
 // =================================================================
@@ -131,7 +189,6 @@ const CPA_LINKS = [
     'https://omg10.com/4/10420694',
     'https://app.sscashout.online/?pid=5905&bid=1712',
     'https://eminentpercentvandalism.com/ub1ha7zr?key=d8d02483a91be089cb0ea712c656ca8a'
-    
 ];
 
 const STEP_CONFIGS = {
@@ -229,7 +286,6 @@ async function getDownloadSession(sessionId) {
         if (!data) return null;
         const session = JSON.parse(data);
         session.ultima_acao = Date.now();
-        // Renovar TTL
         await redisClient.expire(`dsess:${sessionId}`, SESSION_EXPIRATION);
         return session;
     } catch (e) {
@@ -237,29 +293,23 @@ async function getDownloadSession(sessionId) {
     }
 }
 
-// Recuperar sessão - FINGERPRINT COMO FONTE PRINCIPAL
 async function recoverDownloadSession(req) {
     const fingerprint = getClientFingerprint(req);
     
-    // 1. Tentar via fingerprint (MAIS CONFIÁVEL - SOBREVIVE A TUDO)
     let sessionId = await redisClient.get(`fp:${fingerprint}`);
     
-    // 2. Se não achou, tentar cookie
     if (!sessionId) {
         sessionId = req.cookies?.dsessId;
     }
     
-    // 3. Tentar header
     if (!sessionId) {
         sessionId = req.headers['x-session-id'];
     }
     
-    // 4. Tentar query param
     if (!sessionId && req.query.sid) {
         sessionId = req.query.sid;
     }
     
-    // 5. Tentar body
     if (!sessionId && req.body?.sessionId) {
         sessionId = req.body.sessionId;
     }
@@ -268,7 +318,6 @@ async function recoverDownloadSession(req) {
     
     const session = await getDownloadSession(sessionId);
     
-    // Se achou sessão, atualizar fingerprint e renovar TTL
     if (session) {
         await redisClient.setEx(`fp:${fingerprint}`, SESSION_EXPIRATION, sessionId);
     }
@@ -295,7 +344,7 @@ function requireAdmin(req, res, next) {
 const publicPaths = [
     '/admin-login', '/admin-panel', '/item', '/api/items', '/api/item', 
     '/api/start-download', '/api/step-config', '/api/next-step',
-    '/page1', '/page2', '/page3'
+    '/page1', '/page2', '/page3', '/generate-password'
 ];
 
 app.use(async (req, res, next) => {
@@ -364,7 +413,6 @@ app.get('/page:step', async (req, res) => {
         }
     }
     
-    // Se ainda não tem sessão, tentar recuperar via fingerprint
     if (!session) {
         session = await recoverDownloadSession(req);
     }
@@ -390,7 +438,6 @@ app.get('/page:step', async (req, res) => {
 // API PÚBLICA
 // =================================================================
 
-// Listar itens
 app.get('/api/items', async (req, res) => {
     try {
         const categoria = req.query.categoria || 'todos';
@@ -429,7 +476,6 @@ app.get('/api/items', async (req, res) => {
     }
 });
 
-// Detalhes do item
 app.get('/api/item/:id', async (req, res) => {
     try {
         const item = await redisClient.hGetAll(`item:${req.params.id}`);
@@ -454,7 +500,6 @@ app.get('/api/item/:id', async (req, res) => {
     }
 });
 
-// Iniciar download
 app.post('/api/start-download/:id', async (req, res) => {
     try {
         const itemId = req.params.id;
@@ -489,12 +534,10 @@ app.post('/api/start-download/:id', async (req, res) => {
     }
 });
 
-// Configuração da etapa
 app.get('/api/step-config', async (req, res) => {
     try {
         let session = req.downloadSession;
         
-        // Se não tem sessão, tentar recuperar via fingerprint
         if (!session) {
             session = await recoverDownloadSession(req);
         }
@@ -522,13 +565,11 @@ app.get('/api/step-config', async (req, res) => {
         const config = STEP_CONFIGS[session.etapa_atual];
         const cpaLink = config.temCPA ? getRandomCpaLink() : null;
         
-        // CALCULAR TEMPO RESTANTE DO TIMER
         let timerRestante = config.timer;
         if (session.timer_iniciado_em) {
             const decorrido = Math.floor((Date.now() - session.timer_iniciado_em) / 1000);
             timerRestante = Math.max(0, config.timer - decorrido);
             
-            // Se o timer já acabou, resetar
             if (timerRestante <= 0) {
                 timerRestante = 0;
                 session.timer_iniciado_em = null;
@@ -536,13 +577,11 @@ app.get('/api/step-config', async (req, res) => {
             }
         }
         
-        // CPA já aberto nesta etapa?
         let cpaJaAberto = false;
         if (session.etapa_atual === 1) cpaJaAberto = session.cpa_aberto_etapa1 || false;
         if (session.etapa_atual === 2) cpaJaAberto = session.cpa_aberto_etapa2 || false;
         if (session.etapa_atual === 3) cpaJaAberto = session.cpa_aberto_etapa3 || false;
         
-        // Reenviar cookie
         res.cookie('dsessId', session.id, {
             maxAge: SESSION_EXPIRATION * 1000,
             httpOnly: true,
@@ -555,7 +594,7 @@ app.get('/api/step-config', async (req, res) => {
             etapa: session.etapa_atual,
             totalSteps: TOTAL_STEPS,
             ...config,
-            timer: timerRestante,  // Tempo restante, não o original
+            timer: timerRestante,
             cpaLink,
             cpaJaAberto: cpaJaAberto,
             urlOriginal,
@@ -567,14 +606,12 @@ app.get('/api/step-config', async (req, res) => {
     }
 });
 
-// Próxima etapa
 app.post('/api/next-step', async (req, res) => {
     try {
         const { currentStep, cpaOpened, sessionId: bodySessionId, timerIniciadoEm } = req.body;
         
         let session = req.downloadSession;
         
-        // Se não tem sessão, tentar recuperar via fingerprint
         if (!session) {
             session = await recoverDownloadSession(req);
         }
@@ -591,12 +628,10 @@ app.post('/api/next-step', async (req, res) => {
             return res.status(400).json({ error: 'Sequência inválida' });
         }
         
-        // SALVAR estado do timer
         if (timerIniciadoEm && !session.timer_iniciado_em) {
             session.timer_iniciado_em = timerIniciadoEm;
         }
         
-        // Marcar CPA como aberto na etapa correta
         if (cpaOpened) {
             if (session.etapa_atual === 1) session.cpa_aberto_etapa1 = true;
             if (session.etapa_atual === 2) session.cpa_aberto_etapa2 = true;
@@ -640,13 +675,10 @@ app.post('/api/next-step', async (req, res) => {
         
         const novaEtapa = clientStep + 1;
         session.etapa_atual = novaEtapa;
-        
-        // Resetar timer ao avançar etapa
         session.timer_iniciado_em = null;
         
         await redisClient.setEx(`dsess:${session.id}`, SESSION_EXPIRATION, JSON.stringify(session));
         
-        // Reenviar cookie - ESSENCIAL
         res.cookie('dsessId', session.id, {
             maxAge: SESSION_EXPIRATION * 1000,
             httpOnly: true,
@@ -665,6 +697,466 @@ app.post('/api/next-step', async (req, res) => {
     } catch (error) {
         console.error('Erro next-step:', error);
         res.status(500).json({ error: 'Erro interno' });
+    }
+});
+
+// =================================================================
+// ROTA DE SENHA (USAR COMO URL FINAL NO PAINEL ADMIN)
+// =================================================================
+app.get('/generate-password/:itemId', passwordLimiter, async (req, res) => {
+    try {
+        const itemId = req.params.itemId;
+        
+        // 1. VERIFICAR SE O ITEM EXISTE
+        const redisItem = await redisClient.hGetAll(`item:${itemId}`);
+        const oldLink = linksData.find(l => l.alias === itemId);
+        
+        if ((!redisItem || Object.keys(redisItem).length === 0) && !oldLink) {
+            return res.status(404).send(`
+                <!DOCTYPE html>
+                <html><head><meta charset="UTF-8"><title>Item não encontrado</title>
+                <style>body{font-family:Arial;background:#0F1C2E;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;text-align:center;}.card{background:#1A2D42;padding:40px;border-radius:20px;max-width:400px;}.error{color:#E50914;font-size:48px;}h2{color:#E50914;}p{color:#B0BEC5;}.btn{display:inline-block;padding:12px 30px;background:#E50914;color:#fff;border-radius:30px;text-decoration:none;margin-top:20px;}</style>
+                </head><body>
+                    <div class="card"><div class="error">❌</div><h2>Item não encontrado</h2><p>Este conteúdo não está disponível.</p><a href="/" class="btn">Voltar</a></div>
+                </body></html>
+            `);
+        }
+        
+        // 2. VERIFICAR SESSÃO DO USUÁRIO
+        let session = req.downloadSession;
+        if (!session) {
+            session = await recoverDownloadSession(req);
+        }
+        
+        if (!session) {
+            console.log(`❌ Tentativa de acesso sem sessão: ${itemId}`);
+            return res.send(`
+                <!DOCTYPE html>
+                <html><head><meta charset="UTF-8"><title>Acesso Negado</title>
+                <style>body{font-family:Arial;background:#0F1C2E;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;text-align:center;}.card{background:#1A2D42;padding:40px;border-radius:20px;max-width:400px;}.error{color:#E50914;font-size:48px;}h2{color:#E50914;}p{color:#B0BEC5;}.btn{display:inline-block;padding:12px 30px;background:#E50914;color:#fff;border-radius:30px;text-decoration:none;margin-top:20px;}</style>
+                </head><body>
+                    <div class="card"><div class="error">🔒</div><h2>Acesso Negado</h2><p>Você precisa acessar este conteúdo através do sistema.</p><a href="/" class="btn">Voltar ao Início</a></div>
+                </body></html>
+            `);
+        }
+        
+        // 3. VERIFICAR SE COMPLETOU AS ETAPAS
+        if (session.etapa_atual < TOTAL_STEPS) {
+            console.log(`⚠️ Etapas incompletas: ${session.etapa_atual}/${TOTAL_STEPS} - Item: ${itemId}`);
+            return res.redirect(`/page${session.etapa_atual}?sid=${session.id}`);
+        }
+        
+        // 4. VERIFICAR FINGERPRINT
+        const fingerprint = getClientFingerprint(req);
+        if (session.fingerprint !== fingerprint) {
+            console.log(`⚠️ Fingerprint inválido: ${itemId}`);
+            return res.send(`
+                <!DOCTYPE html>
+                <html><head><meta charset="UTF-8"><title>Dispositivo Não Autorizado</title>
+                <style>body{font-family:Arial;background:#0F1C2E;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;text-align:center;}.card{background:#1A2D42;padding:40px;border-radius:20px;max-width:400px;}.error{color:#FF9800;font-size:48px;}h2{color:#FF9800;}p{color:#B0BEC5;}.btn{display:inline-block;padding:12px 30px;background:#FF9800;color:#fff;border-radius:30px;text-decoration:none;margin-top:20px;}</style>
+                </head><body>
+                    <div class="card"><div class="error">⚠️</div><h2>Dispositivo Não Autorizado</h2><p>Esta sessão está vinculada a outro dispositivo.</p><a href="/" class="btn">Voltar ao Início</a></div>
+                </body></html>
+            `);
+        }
+        
+        // 5. BUSCAR INFORMAÇÕES DO ITEM
+        let titulo = 'Conteúdo';
+        let descricao = '';
+        if (redisItem && Object.keys(redisItem).length > 0) {
+            titulo = redisItem.titulo || 'Conteúdo';
+            descricao = redisItem.descricao || '';
+        } else if (oldLink) {
+            titulo = oldLink.titulo || 'Conteúdo';
+        }
+        
+        // 6. GERAR SENHA (48h - 2 DIAS)
+        const passwordData = generatePassword(48);
+        if (!passwordData) {
+            return res.status(500).send('Erro ao gerar senha');
+        }
+        
+        // 7. SALVAR NO REDIS
+        const sessionData = {
+            password: passwordData.password,
+            itemId: itemId,
+            expiryDate: passwordData.expiryDate.toISOString(),
+            titulo: titulo,
+            gerado_em: new Date().toISOString(),
+            fingerprint: session.fingerprint,
+            ip: req.ip || req.connection?.remoteAddress
+        };
+        
+        await redisClient.setEx(
+            `pass:${session.id}`, 
+            48 * 60 * 60,
+            JSON.stringify(sessionData)
+        );
+        
+        // 8. INCREMENTAR DOWNLOADS
+        const today = new Date().toISOString().split('T')[0];
+        if (redisItem && Object.keys(redisItem).length > 0) {
+            await redisClient.hIncrBy(`item:${itemId}`, 'downloads', 1);
+            await redisClient.hIncrBy(`stats:daily:${today}`, 'downloads_total', 1);
+        }
+        
+        console.log(`✅ Senha gerada: ${itemId} - Sessão: ${session.id.substring(0, 8)}`);
+        
+        // 9. CALCULAR HORAS RESTANTES
+        const horasRestantes = Math.floor((passwordData.expiryDate - new Date()) / (1000 * 60 * 60));
+        
+        // 10. RENDERIZAR PÁGINA COM SENHA + BOTÃO DE COMPRA
+        res.send(`
+            <!DOCTYPE html>
+            <html lang="pt">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>${titulo} - Acesso Liberado</title>
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+                <style>
+                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                    body {
+                        font-family: 'Segoe UI', sans-serif;
+                        background: linear-gradient(135deg, #0F1C2E 0%, #1A2D42 100%);
+                        min-height: 100vh;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        padding: 20px;
+                    }
+                    .container { max-width: 520px; width: 100%; }
+                    .card {
+                        background: #1A2D42;
+                        border-radius: 32px;
+                        padding: 35px 28px;
+                        box-shadow: 0 25px 45px rgba(0,0,0,0.4);
+                        border: 1px solid rgba(100,181,246,0.2);
+                    }
+                    .header {
+                        text-align: center;
+                        margin-bottom: 25px;
+                    }
+                    .header .icon {
+                        font-size: 48px;
+                        display: block;
+                        margin-bottom: 8px;
+                    }
+                    .header h1 {
+                        color: #4CAF50;
+                        font-size: 22px;
+                    }
+                    .header p {
+                        color: #64B5F6;
+                        font-size: 14px;
+                        margin-top: 5px;
+                    }
+                    .password-box {
+                        background: #0F1C2E;
+                        border-radius: 16px;
+                        padding: 18px;
+                        margin: 20px 0;
+                        border: 2px solid #4CAF50;
+                    }
+                    .password-box .label {
+                        color: #78909C;
+                        font-size: 11px;
+                        display: block;
+                        margin-bottom: 10px;
+                        text-align: center;
+                        letter-spacing: 1px;
+                    }
+                    .password-box .password {
+                        font-family: 'Courier New', monospace;
+                        font-size: 13px;
+                        color: #4CAF50;
+                        line-height: 1.8;
+                        text-align: center;
+                        word-break: break-all;
+                        user-select: all;
+                    }
+                    .info-grid {
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 10px;
+                        margin: 20px 0;
+                    }
+                    .info-item {
+                        background: rgba(100,181,246,0.05);
+                        border-radius: 12px;
+                        padding: 12px;
+                        text-align: center;
+                    }
+                    .info-item .label {
+                        color: #78909C;
+                        font-size: 10px;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                    }
+                    .info-item .value {
+                        color: #B0BEC5;
+                        font-size: 13px;
+                        font-weight: bold;
+                        margin-top: 4px;
+                    }
+                    .info-item .value.success { color: #4CAF50; }
+                    .info-item .value.warning { color: #FF9800; }
+                    .btn {
+                        display: inline-block;
+                        padding: 14px 30px;
+                        border: none;
+                        border-radius: 40px;
+                        color: white;
+                        font-weight: bold;
+                        cursor: pointer;
+                        font-size: 15px;
+                        transition: all 0.2s;
+                        text-decoration: none;
+                        width: 100%;
+                        text-align: center;
+                        margin-top: 10px;
+                    }
+                    .btn-copy {
+                        background: #2E7D32;
+                    }
+                    .btn-copy:hover {
+                        background: #388E3C;
+                        transform: translateY(-2px);
+                    }
+                    .btn-buy {
+                        background: linear-gradient(135deg, #F57C00, #E65100);
+                        position: relative;
+                        overflow: hidden;
+                    }
+                    .btn-buy:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 5px 20px rgba(245,124,0,0.4);
+                    }
+                    .btn-buy .price-tag {
+                        display: inline-block;
+                        background: rgba(255,255,255,0.2);
+                        padding: 2px 12px;
+                        border-radius: 20px;
+                        margin-left: 8px;
+                        font-size: 13px;
+                    }
+                    .btn-secondary {
+                        background: #2A3D5F;
+                    }
+                    .btn-secondary:hover {
+                        background: #3A5D7F;
+                        transform: translateY(-2px);
+                    }
+                    .toast {
+                        position: fixed;
+                        bottom: 30px;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        background: #4CAF50;
+                        color: white;
+                        padding: 12px 24px;
+                        border-radius: 30px;
+                        animation: fade 2.5s ease;
+                        z-index: 1000;
+                        font-weight: bold;
+                        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+                    }
+                    @keyframes fade {
+                        0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+                        15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                        85% { opacity: 1; }
+                        100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+                    }
+                    .tips {
+                        background: rgba(255,152,0,0.05);
+                        border-radius: 12px;
+                        padding: 15px;
+                        margin-top: 20px;
+                        border-left: 3px solid #FF9800;
+                    }
+                    .tips h3 {
+                        color: #FFB74D;
+                        font-size: 13px;
+                        margin-bottom: 8px;
+                    }
+                    .tips ul {
+                        list-style: none;
+                        padding: 0;
+                    }
+                    .tips ul li {
+                        color: #B0BEC5;
+                        font-size: 12px;
+                        padding: 4px 0;
+                        padding-left: 20px;
+                        position: relative;
+                    }
+                    .tips ul li::before {
+                        content: "•";
+                        position: absolute;
+                        left: 0;
+                        color: #FF9800;
+                    }
+                    .expiry {
+                        text-align: center;
+                        margin-top: 15px;
+                        padding: 10px;
+                        background: rgba(255,152,0,0.05);
+                        border-radius: 12px;
+                    }
+                    .expiry span {
+                        color: #FFB74D;
+                        font-size: 13px;
+                    }
+                    .button-group {
+                        display: flex;
+                        gap: 10px;
+                        margin-top: 15px;
+                    }
+                    .button-group .btn {
+                        flex: 1;
+                        margin-top: 0;
+                    }
+                    .divider {
+                        display: flex;
+                        align-items: center;
+                        margin: 20px 0;
+                        color: #546E7A;
+                        font-size: 12px;
+                    }
+                    .divider::before, .divider::after {
+                        content: "";
+                        flex: 1;
+                        border-bottom: 1px solid rgba(255,255,255,0.1);
+                    }
+                    .divider::before { margin-right: 15px; }
+                    .divider::after { margin-left: 15px; }
+                    @media (max-width: 480px) {
+                        .info-grid { grid-template-columns: 1fr; }
+                        .button-group { flex-direction: column; }
+                        .button-group .btn { margin-top: 10px; }
+                    }
+                    .badge-free {
+                        display: inline-block;
+                        padding: 2px 12px;
+                        background: #2E7D32;
+                        border-radius: 20px;
+                        font-size: 11px;
+                        color: white;
+                        margin-left: 5px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="card">
+                        <div class="header">
+                            <span class="icon">✅</span>
+                            <h1>${titulo}</h1>
+                            <p>Sua chave de acesso foi gerada com sucesso!</p>
+                        </div>
+                        
+                        <div class="password-box">
+                            <span class="label">🔑 SENHA DE ACESSO (48h de validade)</span>
+                            <div class="password" id="passwordText">${passwordData.password}</div>
+                        </div>
+                        
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="label">⏱️ Expira em</div>
+                                <div class="value">${passwordData.expiryDate.toLocaleString('pt-BR')}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="label">⏳ Restam</div>
+                                <div class="value success">${horasRestantes} horas</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="label">🔒 Criptografia</div>
+                                <div class="value success">AES-256-CBC</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="label">📱 Item</div>
+                                <div class="value">${itemId.substring(0, 12)}...</div>
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-copy" onclick="copyPassword()">
+                            <i class="fas fa-copy"></i> COPIAR SENHA
+                        </button>
+                        
+                        <div class="button-group">
+                            <button class="btn btn-secondary" onclick="window.location.href='/'">
+                                <i class="fas fa-home"></i> Voltar
+                            </button>
+                        </div>
+                        
+                        <div class="divider">🔹 EXTENDAR VALIDADE 🔹</div>
+                        
+                        <button class="btn btn-buy" onclick="buy30Days()">
+                            <i class="fas fa-gem"></i> COMPRAR 30 DIAS 
+                            <span class="price-tag">50 MT</span>
+                        </button>
+                        <p style="color:#78909C;font-size:11px;text-align:center;margin-top:8px;">
+                            <i class="fas fa-credit-card"></i> Pagamento via M-Pesa / E-Mola
+                        </p>
+                        
+                        <div class="tips">
+                            <h3>💡 Como usar sua senha</h3>
+                            <ul>
+                                <li>Copie a senha acima e guarde em local seguro</li>
+                                <li>Use a senha no sistema de verificação para acessar o conteúdo</li>
+                                <li>A senha é <strong>válida por 48 horas</strong> em qualquer dispositivo</li>
+                                <li>Não compartilhe esta senha com outras pessoas</li>
+                                <li>Para mais tempo, clique em "Comprar 30 Dias"</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="expiry">
+                            <span>⏰ Expira em ${passwordData.expiryDate.toLocaleString('pt-BR')}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <script>
+                    function copyPassword() {
+                        const password = document.getElementById('passwordText').innerText;
+                        navigator.clipboard.writeText(password).then(function() {
+                            showToast('✅ Senha copiada com sucesso!');
+                        }).catch(function() {
+                            const textarea = document.createElement('textarea');
+                            textarea.value = password;
+                            document.body.appendChild(textarea);
+                            textarea.select();
+                            document.execCommand('copy');
+                            document.body.removeChild(textarea);
+                            showToast('✅ Senha copiada com sucesso!');
+                        });
+                    }
+                    
+                    function buy30Days() {
+                        // Link de pagamento - substitua pelo seu
+                        const paymentLink = 'https://api.whatsapp.com/send?phone=258840000000&text=Olá! Quero comprar 30 dias de acesso por 50 MT. Meu item é: ${itemId}';
+                        window.open('${paymentLink}', '_blank');
+                        showToast('📱 Redirecionando para pagamento...');
+                    }
+                    
+                    function showToast(msg) {
+                        const existingToast = document.querySelector('.toast');
+                        if (existingToast) existingToast.remove();
+                        
+                        const toast = document.createElement('div');
+                        toast.className = 'toast';
+                        toast.textContent = msg;
+                        document.body.appendChild(toast);
+                        setTimeout(function() { toast.remove(); }, 2500);
+                    }
+                </script>
+            </body>
+            </html>
+        `);
+        
+    } catch (error) {
+        console.error('Erro ao gerar senha:', error);
+        res.status(500).send('Erro interno ao gerar senha');
     }
 });
 
@@ -848,7 +1340,7 @@ app.post('/admin/api/change-password', requireAdmin, async (req, res) => {
 app.get('/:alias', async (req, res) => {
     const alias = req.params.alias;
     
-    const reservedRoutes = ['page1', 'page2', 'page3', 'admin', 'admin-login', 'admin-panel', 'item', 'api', 'css', 'js', 'favicon.ico'];
+    const reservedRoutes = ['page1', 'page2', 'page3', 'admin', 'admin-login', 'admin-panel', 'item', 'api', 'css', 'js', 'favicon.ico', 'generate-password'];
     if (reservedRoutes.includes(alias) || alias.includes('.')) {
         return res.status(404).send('Not found');
     }
@@ -886,6 +1378,7 @@ app.listen(PORT, () => {
     ✅ LINKS ANTIGOS: ${linksData.length} carregados
     ✅ SESSÃO VIA FINGERPRINT (À PROVA DE CPA)
     ✅ TIMER PERSISTENTE (NÃO REINICIA APÓS CPA)
+    ✅ SENHA DE 48H COM BOTÃO DE COMPRA
     `);
 });
 
