@@ -38,15 +38,10 @@ const CRYPTO_CONFIG = {
 
 function generatePassword(expiryHours = 48) {
     try {
-        console.log('🔐 Gerando senha com validade de', expiryHours, 'horas');
-        
         const expiryDate = new Date();
         expiryDate.setHours(expiryDate.getHours() + expiryHours);
         
-        // MESMO FORMATO do frontend para compatibilidade
         const plainText = `${CRYPTO_CONFIG.FIXED_USERNAME}|${expiryDate.getTime()}|${CRYPTO_CONFIG.FIXED_MSISDN}|${CRYPTO_CONFIG.FIXED_SECRET}`;
-        
-        console.log('📝 Dados para criptografar:', plainText.substring(0, 50) + '...');
         
         const key = crypto.pbkdf2Sync(
             CRYPTO_CONFIG.MASTER_PASSWORD, 
@@ -65,8 +60,6 @@ function generatePassword(expiryHours = 48) {
         const combined = Buffer.concat([iv, Buffer.from(encrypted, 'base64')]);
         const password = combined.toString('base64');
         
-        console.log('✅ Senha gerada com sucesso! Tamanho:', password.length);
-        
         return {
             password,
             expiryDate,
@@ -76,7 +69,6 @@ function generatePassword(expiryHours = 48) {
         };
     } catch (error) {
         console.error('❌ Erro ao gerar senha:', error);
-        console.error('❌ Stack:', error.stack);
         return null;
     }
 }
@@ -179,7 +171,6 @@ const adminLimiter = rateLimit({
     message: { error: 'Muitas tentativas' }
 });
 
-// Rate limit específico para geração de senha
 const passwordLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 5,
@@ -612,6 +603,9 @@ app.get('/api/step-config', async (req, res) => {
     }
 });
 
+// =================================================================
+// PRÓXIMA ETAPA (VERSÃO CORRIGIDA COM GERAÇÃO DE SENHA)
+// =================================================================
 app.post('/api/next-step', async (req, res) => {
     try {
         const { currentStep, cpaOpened, sessionId: bodySessionId, timerIniciadoEm } = req.body;
@@ -645,28 +639,56 @@ app.post('/api/next-step', async (req, res) => {
         }
         
         let urlOriginal;
+        let titulo = 'Conteúdo';
         
         const redisItem = await redisClient.hGetAll(`item:${session.itemId}`);
         if (redisItem && Object.keys(redisItem).length > 0) {
             urlOriginal = redisItem.url_original;
+            titulo = redisItem.titulo || 'Conteúdo';
         } else {
             const oldLink = linksData.find(l => l.alias === session.itemId);
             if (oldLink) {
                 urlOriginal = oldLink.original_url;
+                titulo = oldLink.titulo || 'Conteúdo';
             } else {
                 return res.status(404).json({ error: 'Item não encontrado' });
             }
         }
         
+        // 🔥 ETAPA FINAL - GERAR SENHA AUTOMATICAMENTE
         if (clientStep >= TOTAL_STEPS) {
             const today = new Date().toISOString().split('T')[0];
             
+            // GERAR SENHA (48h)
+            const passwordData = generatePassword(48);
+            if (!passwordData) {
+                return res.status(500).json({ error: 'Erro ao gerar senha' });
+            }
+            
+            // SALVAR NO REDIS
+            const sessionData = {
+                password: passwordData.password,
+                itemId: session.itemId,
+                expiryDate: passwordData.expiryDate.toISOString(),
+                titulo: titulo,
+                gerado_em: new Date().toISOString(),
+                fingerprint: session.fingerprint,
+                ip: req.ip || req.connection?.remoteAddress
+            };
+            
+            await redisClient.setEx(
+                `pass:${session.id}`, 
+                48 * 60 * 60,
+                JSON.stringify(sessionData)
+            );
+            
+            // INCREMENTAR DOWNLOADS
             if (redisItem && Object.keys(redisItem).length > 0) {
                 await redisClient.hIncrBy(`item:${session.itemId}`, 'downloads', 1);
                 await redisClient.hIncrBy(`stats:daily:${today}`, 'downloads_total', 1);
             }
             
-            console.log(`✅ Download finalizado: ${urlOriginal}`);
+            console.log(`✅ Senha gerada: ${session.itemId} - Sessão: ${session.id.substring(0, 8)}`);
             
             res.cookie('dsessId', session.id, {
                 maxAge: SESSION_EXPIRATION * 1000,
@@ -676,9 +698,39 @@ app.post('/api/next-step', async (req, res) => {
                 path: '/'
             });
             
-            return res.json({ redirect: urlOriginal, final: true, sessionId: session.id });
+            // 🔥 REDIRECIONAR PARA A PÁGINA DE SENHA COM SID
+            // VERIFICA SE A URL É A NOVA ROTA OU UMA URL EXTERNA
+            let redirectUrl = urlOriginal;
+            
+            // Se a URL for a nova rota /generate-password/, adiciona o SID
+            if (urlOriginal && urlOriginal.startsWith('/generate-password/')) {
+                const separator = urlOriginal.includes('?') ? '&' : '?';
+                redirectUrl = `${urlOriginal}${separator}sid=${session.id}`;
+            } 
+            // Se for uma URL externa (http, https, etc.), mantém como está
+            else if (urlOriginal && (urlOriginal.startsWith('http://') || urlOriginal.startsWith('https://'))) {
+                // URL externa - mantém como está (sistema antigo)
+                redirectUrl = urlOriginal;
+            }
+            // Se for uma URL relativa que não é /generate-password/
+            else if (urlOriginal && !urlOriginal.startsWith('/generate-password/')) {
+                // Outras URLs relativas - mantém como está
+                redirectUrl = urlOriginal;
+            }
+            // Fallback: se não tiver URL, vai para a página de senha
+            else {
+                redirectUrl = `/generate-password/${session.itemId}?sid=${session.id}`;
+            }
+            
+            return res.json({ 
+                redirect: redirectUrl, 
+                final: true, 
+                sessionId: session.id,
+                generated: true
+            });
         }
         
+        // AVANÇAR PARA PRÓXIMA ETAPA
         const novaEtapa = clientStep + 1;
         session.etapa_atual = novaEtapa;
         session.timer_iniciado_em = null;
@@ -711,19 +763,13 @@ app.post('/api/next-step', async (req, res) => {
 // =================================================================
 app.get('/generate-password/:itemId', passwordLimiter, async (req, res) => {
     try {
-        console.log('🔑 Gerando senha para item:', req.params.itemId);
-        
         const itemId = req.params.itemId;
         
         // 1. VERIFICAR SE O ITEM EXISTE
         const redisItem = await redisClient.hGetAll(`item:${itemId}`);
         const oldLink = linksData.find(l => l.alias === itemId);
         
-        console.log('📦 Item encontrado no Redis?', Object.keys(redisItem).length > 0);
-        console.log('📦 Item encontrado no linksData?', !!oldLink);
-        
         if ((!redisItem || Object.keys(redisItem).length === 0) && !oldLink) {
-            console.log('❌ Item não encontrado:', itemId);
             return res.status(404).send(`
                 <!DOCTYPE html>
                 <html><head><meta charset="UTF-8"><title>Item não encontrado</title>
@@ -740,14 +786,8 @@ app.get('/generate-password/:itemId', passwordLimiter, async (req, res) => {
             session = await recoverDownloadSession(req);
         }
         
-        console.log('🆔 Sessão encontrada?', !!session);
-        if (session) {
-            console.log('📊 Etapa atual:', session.etapa_atual);
-            console.log('📊 Total de etapas:', TOTAL_STEPS);
-        }
-        
         if (!session) {
-            console.log('❌ Tentativa de acesso sem sessão:', itemId);
+            console.log(`❌ Tentativa de acesso sem sessão: ${itemId}`);
             return res.status(403).send(`
                 <!DOCTYPE html>
                 <html><head><meta charset="UTF-8"><title>Acesso Negado</title>
@@ -784,55 +824,73 @@ app.get('/generate-password/:itemId', passwordLimiter, async (req, res) => {
         if (redisItem && Object.keys(redisItem).length > 0) {
             titulo = redisItem.titulo || 'Conteúdo';
             descricao = redisItem.descricao || '';
-            console.log('📝 Título do item:', titulo);
         } else if (oldLink) {
             titulo = oldLink.titulo || 'Conteúdo';
-            console.log('📝 Título do item (oldLink):', titulo);
         }
         
-        // 6. GERAR SENHA (48h - 2 DIAS)
-        console.log('🔐 Iniciando geração da senha...');
-        const passwordData = generatePassword(48);
+        // 6. VERIFICAR SE A SENHA JÁ FOI GERADA PARA ESTA SESSÃO
+        let passwordData = null;
+        const existingPassword = await redisClient.get(`pass:${session.id}`);
         
+        if (existingPassword) {
+            const parsed = JSON.parse(existingPassword);
+            const expiryDate = new Date(parsed.expiryDate);
+            
+            // Se a senha ainda não expirou, reutiliza
+            if (expiryDate > new Date()) {
+                passwordData = {
+                    password: parsed.password,
+                    expiryDate: expiryDate,
+                    expiryHours: 48,
+                    username: CRYPTO_CONFIG.FIXED_USERNAME,
+                    msisdn: CRYPTO_CONFIG.FIXED_MSISDN
+                };
+                console.log(`♻️ Reutilizando senha existente para: ${itemId}`);
+            } else {
+                // Senha expirada, deleta e gera nova
+                await redisClient.del(`pass:${session.id}`);
+                console.log(`🗑️ Senha expirada removida: ${itemId}`);
+            }
+        }
+        
+        // Se não tinha senha ou expirou, gera nova
         if (!passwordData) {
-            console.log('❌ Falha ao gerar senha - passwordData é null');
-            return res.status(500).send('Erro ao gerar senha');
+            passwordData = generatePassword(48);
+            if (!passwordData) {
+                return res.status(500).send('Erro ao gerar senha');
+            }
+            
+            // SALVAR NO REDIS
+            const sessionData = {
+                password: passwordData.password,
+                itemId: itemId,
+                expiryDate: passwordData.expiryDate.toISOString(),
+                titulo: titulo,
+                gerado_em: new Date().toISOString(),
+                fingerprint: session.fingerprint,
+                ip: req.ip || req.connection?.remoteAddress
+            };
+            
+            await redisClient.setEx(
+                `pass:${session.id}`, 
+                48 * 60 * 60,
+                JSON.stringify(sessionData)
+            );
+            
+            // INCREMENTAR DOWNLOADS (só se for nova geração)
+            const today = new Date().toISOString().split('T')[0];
+            if (redisItem && Object.keys(redisItem).length > 0) {
+                await redisClient.hIncrBy(`item:${itemId}`, 'downloads', 1);
+                await redisClient.hIncrBy(`stats:daily:${today}`, 'downloads_total', 1);
+            }
+            
+            console.log(`✅ Nova senha gerada: ${itemId} - Sessão: ${session.id.substring(0, 8)}`);
         }
         
-        console.log('✅ Senha gerada com sucesso!');
-        
-        // 7. SALVAR NO REDIS
-        const sessionData = {
-            password: passwordData.password,
-            itemId: itemId,
-            expiryDate: passwordData.expiryDate.toISOString(),
-            titulo: titulo,
-            gerado_em: new Date().toISOString(),
-            fingerprint: session.fingerprint,
-            ip: req.ip || req.connection?.remoteAddress
-        };
-        
-        await redisClient.setEx(
-            `pass:${session.id}`, 
-            48 * 60 * 60,
-            JSON.stringify(sessionData)
-        );
-        
-        console.log('💾 Senha salva no Redis');
-        
-        // 8. INCREMENTAR DOWNLOADS
-        const today = new Date().toISOString().split('T')[0];
-        if (redisItem && Object.keys(redisItem).length > 0) {
-            await redisClient.hIncrBy(`item:${itemId}`, 'downloads', 1);
-            await redisClient.hIncrBy(`stats:daily:${today}`, 'downloads_total', 1);
-        }
-        
-        console.log(`✅ Senha gerada: ${itemId} - Sessão: ${session.id.substring(0, 8)}`);
-        
-        // 9. CALCULAR HORAS RESTANTES
+        // 7. CALCULAR HORAS RESTANTES
         const horasRestantes = Math.floor((passwordData.expiryDate - new Date()) / (1000 * 60 * 60));
         
-        // 10. RENDERIZAR PÁGINA
+        // 8. RENDERIZAR PÁGINA
         res.send(`
             <!DOCTYPE html>
             <html lang="pt">
@@ -1173,7 +1231,6 @@ app.get('/generate-password/:itemId', passwordLimiter, async (req, res) => {
         
     } catch (error) {
         console.error('❌ Erro ao gerar senha:', error);
-        console.error('❌ Stack:', error.stack);
         res.status(500).send(`
             <!DOCTYPE html>
             <html><head><meta charset="UTF-8"><title>Erro</title>
@@ -1404,6 +1461,7 @@ app.listen(PORT, () => {
     ✅ SESSÃO VIA FINGERPRINT (À PROVA DE CPA)
     ✅ TIMER PERSISTENTE (NÃO REINICIA APÓS CPA)
     ✅ SENHA DE 48H COM BOTÃO DE COMPRA
+    ✅ COMPATIBILIDADE TOTAL COM SISTEMA ANTIGO
     `);
 });
 
