@@ -1209,10 +1209,12 @@ app.get('/generate-password/:itemId', passwordLimiter, async (req, res) => {
                     }
                     
                     function buy30Days() {
-                        const paymentLink = 'https://api.whatsapp.com/send?phone=258840000000&text=Olá! Quero comprar 30 dias de acesso por 50 MT. Meu item é: ${itemId}';
-                        window.open('${paymentLink}', '_blank');
-                        showToast('📱 Redirecionando para pagamento...');
-                    }
+    const phoneNumber = '258840000000'; // ← Substitua pelo seu número
+    const message = encodeURIComponent('Olá! Quero comprar 30 dias de acesso por 50 MT. Meu item é: ${itemId}');
+    const paymentLink = 'https://api.whatsapp.com/send?phone=' + phoneNumber + '&text=' + message;
+    window.open(paymentLink, '_blank');
+    showToast('📱 Redirecionando para pagamento...');
+}
                     
                     function showToast(msg) {
                         const existingToast = document.querySelector('.toast');
