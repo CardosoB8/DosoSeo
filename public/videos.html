@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSO Vídeos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ============================================================
+           RESET E BASE
+           ============================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0f1a;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        /* ============================================================
+           HEADER
+           ============================================================ */
+        .header {
+            background: linear-gradient(135deg, #0f1a2e, #1a2d4a);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            border-bottom: 1px solid rgba(100, 181, 246, 0.15);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 22px;
+            font-weight: 700;
+            color: #e50914;
+            text-decoration: none;
+        }
+
+        .header .logo i {
+            font-size: 28px;
+        }
+
+        .header .logo span {
+            color: #64b5f6;
+        }
+
+        .header .search-box {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 30px;
+            padding: 6px 16px;
+            border: 1px solid rgba(100, 181, 246, 0.2);
+            transition: all 0.3s;
+            flex: 1;
+            max-width: 500px;
+            min-width: 200px;
+        }
+
+        .header .search-box:focus-within {
+            border-color: #e50914;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 20px rgba(229, 9, 20, 0.15);
+        }
+
+        .header .search-box input {
+            background: transparent;
+            border: none;
+            padding: 10px 12px;
+            color: #fff;
+            font-size: 14px;
+            width: 100%;
+            outline: none;
+        }
+
+        .header .search-box input::placeholder {
+            color: #78909c;
+        }
+
+        .header .search-box button {
+            background: transparent;
+            border: none;
+            color: #64b5f6;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 8px;
+            transition: color 0.3s;
+        }
+
+        .header .search-box button:hover {
+            color: #e50914;
+        }
+
+        .header .back-home {
+            color: #64b5f6;
+            text-decoration: none;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.3s;
+            white-space: nowrap;
+        }
+
+        .header .back-home:hover {
+            color: #e50914;
+        }
+
+        /* ============================================================
+           CONTEÚDO PRINCIPAL
+           ============================================================ */
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 20px 24px 60px;
+        }
+
+        /* ============================================================
+           RECOMENDADOS (DESTAQUE)
+           ============================================================ */
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #e0e0e0;
+        }
+
+        .section-title i {
+            color: #e50914;
+            font-size: 22px;
+        }
+
+        .section-title .badge-count {
+            font-size: 13px;
+            font-weight: 400;
+            color: #78909c;
+            margin-left: auto;
+        }
+
+        .recomendados-scroll {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            padding: 4px 0 20px 0;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .recomendados-scroll::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .recomendados-scroll::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .recomendados-scroll::-webkit-scrollbar-thumb {
+            background: #e50914;
+            border-radius: 4px;
+        }
+
+        .recomendado-card {
+            flex: 0 0 220px;
+            background: #14233a;
+            border-radius: 14px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            scroll-snap-align: start;
+            border: 1px solid rgba(100, 181, 246, 0.06);
+        }
+
+        .recomendado-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+            border-color: rgba(229, 9, 20, 0.3);
+        }
+
+        .recomendado-card .thumb {
+            position: relative;
+            padding-top: 56.25%;
+            background: #0a0f1a;
+        }
+
+        .recomendado-card .thumb img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .recomendado-card .thumb .play-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(229, 9, 20, 0.85);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .recomendado-card .thumb .play-icon i {
+            color: #fff;
+            font-size: 18px;
+            margin-left: 3px;
+        }
+
+        .recomendado-card:hover .thumb .play-icon {
+            opacity: 1;
+        }
+
+        .recomendado-card .info {
+            padding: 12px 14px 14px;
+        }
+
+        .recomendado-card .info h3 {
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            color: #e0e0e0;
+            margin-bottom: 6px;
+        }
+
+        .recomendado-card .info .views {
+            font-size: 12px;
+            color: #78909c;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .recomendado-card .info .views i {
+            font-size: 13px;
+        }
+
+        /* ============================================================
+           GRADE DE VÍDEOS
+           ============================================================ */
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+            margin-top: 8px;
+        }
+
+        .video-card {
+            background: #14233a;
+            border-radius: 14px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid rgba(100, 181, 246, 0.06);
+        }
+
+        .video-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+            border-color: rgba(229, 9, 20, 0.2);
+        }
+
+        .video-card .thumb {
+            position: relative;
+            padding-top: 56.25%;
+            background: #0a0f1a;
+        }
+
+        .video-card .thumb img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-card .thumb .duration {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .video-card .thumb .play-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(229, 9, 20, 0.85);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .video-card .thumb .play-icon i {
+            color: #fff;
+            font-size: 18px;
+            margin-left: 3px;
+        }
+
+        .video-card:hover .thumb .play-icon {
+            opacity: 1;
+        }
+
+        .video-card .info {
+            padding: 12px 14px 14px;
+        }
+
+        .video-card .info h3 {
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            color: #e0e0e0;
+            margin-bottom: 6px;
+        }
+
+        .video-card .info .views {
+            font-size: 12px;
+            color: #78909c;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .video-card .info .views i {
+            font-size: 13px;
+        }
+
+        /* ============================================================
+           ESTADO VAZIO / CARREGANDO
+           ============================================================ */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 60px 20px;
+            gap: 16px;
+            color: #78909c;
+            font-size: 16px;
+        }
+
+        .loading i {
+            font-size: 28px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #78909c;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            color: #2a3d5f;
+        }
+
+        .empty-state h3 {
+            font-size: 20px;
+            color: #b0bec5;
+            margin-bottom: 8px;
+        }
+
+        /* ============================================================
+           CARREGAR MAIS
+           ============================================================ */
+        .load-more {
+            text-align: center;
+            margin-top: 32px;
+        }
+
+        .load-more button {
+            background: transparent;
+            border: 1px solid rgba(100, 181, 246, 0.2);
+            color: #64b5f6;
+            padding: 12px 40px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .load-more button:hover {
+            background: rgba(229, 9, 20, 0.15);
+            border-color: #e50914;
+            color: #e50914;
+        }
+
+        .load-more button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* ============================================================
+           TOAST
+           ============================================================ */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a2d42;
+            color: #e0e0e0;
+            padding: 12px 28px;
+            border-radius: 30px;
+            border: 1px solid rgba(100, 181, 246, 0.15);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            animation: toastFade 2.8s ease forwards;
+            z-index: 999;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toast i {
+            color: #4caf50;
+            font-size: 18px;
+        }
+
+        @keyframes toastFade {
+            0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            12% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            85% { opacity: 1; }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        }
+
+        /* ============================================================
+           RESPONSIVIDADE
+           ============================================================ */
+        @media (max-width: 768px) {
+            .header {
+                padding: 12px 16px;
+                flex-wrap: wrap;
+            }
+
+            .header .logo {
+                font-size: 18px;
+            }
+
+            .header .search-box {
+                order: 3;
+                flex-basis: 100%;
+                max-width: 100%;
+                margin-top: 4px;
+            }
+
+            .header .back-home {
+                font-size: 13px;
+            }
+
+            .container {
+                padding: 12px 12px 40px;
+            }
+
+            .video-grid {
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+                gap: 12px;
+            }
+
+            .recomendado-card {
+                flex: 0 0 160px;
+            }
+
+            .section-title {
+                font-size: 17px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .video-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 10px;
+            }
+
+            .recomendado-card {
+                flex: 0 0 140px;
+            }
+
+            .header .logo {
+                font-size: 16px;
+            }
+
+            .header .logo i {
+                font-size: 22px;
+            }
+
+            .video-card .info h3,
+            .recomendado-card .info h3 {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================================
+    HEADER
+    ============================================================ -->
+    <header class="header">
+        <a href="/" class="logo">
+            <i class="fas fa-film"></i>
+            DSO <span>Vídeos</span>
+        </a>
+
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Pesquisar vídeos..." autocomplete="off">
+            <button id="searchBtn"><i class="fas fa-search"></i></button>
+        </div>
+
+        <a href="/" class="back-home">
+            <i class="fas fa-home"></i> Início
+        </a>
+    </header>
+
+    <!-- ============================================================
+    CONTEÚDO PRINCIPAL
+    ============================================================ -->
+    <div class="container">
+
+        <!-- ============================================================
+        RECOMENDADOS (DESTAQUE)
+        ============================================================ -->
+        <div id="recomendadosSection">
+            <div class="section-title">
+                <i class="fas fa-fire"></i> Recomendados
+                <span class="badge-count" id="recomendadosCount">—</span>
+            </div>
+            <div class="recomendados-scroll" id="recomendadosContainer">
+                <!-- Preenchido via JS -->
+            </div>
+        </div>
+
+        <!-- ============================================================
+        TODOS OS VÍDEOS
+        ============================================================ -->
+        <div class="section-title" style="margin-top: 8px;">
+            <i class="fas fa-th-large"></i> Todos os Vídeos
+            <span class="badge-count" id="totalCount">—</span>
+        </div>
+
+        <div id="videoGridContainer">
+            <div class="loading" id="loadingIndicator">
+                <i class="fas fa-spinner"></i> Carregando vídeos...
+            </div>
+            <div class="video-grid" id="videoGrid"></div>
+        </div>
+
+        <div class="load-more" id="loadMoreContainer" style="display:none;">
+            <button id="loadMoreBtn">Carregar mais <i class="fas fa-chevron-down"></i></button>
+        </div>
+
+        <div class="empty-state" id="emptyState" style="display:none;">
+            <i class="fas fa-video-slash"></i>
+            <h3>Nenhum vídeo encontrado</h3>
+            <p>Tente ajustar sua pesquisa ou volte mais tarde.</p>
+        </div>
+
+    </div>
+
+    <!-- ============================================================
+    TOAST (feedback visual)
+    ============================================================ -->
+    <div id="toastContainer"></div>
+
+    <!-- ============================================================
+    JAVASCRIPT
+    ============================================================ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================================
+            // CONFIGURAÇÕES
+            // ============================================================
+            const CONFIG = {
+                videosPerPage: 20,
+                popularLimit: 8,
+                debounceDelay: 400,
+                apiBase: '/api'
+            };
+
+            // ============================================================
+            // ESTADO
+            // ============================================================
+            let state = {
+                videos: [],
+                page: 1,
+                hasMore: true,
+                isLoading: false,
+                searchTerm: '',
+                isSearching: false
+            };
+
+            // ============================================================
+            // DOM REFS
+            // ============================================================
+            const $ = (sel) => document.querySelector(sel);
+            const $$ = (sel) => document.querySelectorAll(sel);
+
+            const dom = {
+                grid: $('#videoGrid'),
+                loading: $('#loadingIndicator'),
+                empty: $('#emptyState'),
+                loadMoreContainer: $('#loadMoreContainer'),
+                loadMoreBtn: $('#loadMoreBtn'),
+                searchInput: $('#searchInput'),
+                searchBtn: $('#searchBtn'),
+                recomendadosContainer: $('#recomendadosContainer'),
+                recomendadosCount: $('#recomendadosCount'),
+                totalCount: $('#totalCount'),
+                toastContainer: $('#toastContainer')
+            };
+
+            // ============================================================
+            // TOAST
+            // ============================================================
+            function showToast(message, icon = 'fa-check-circle') {
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                toast.innerHTML = `<i class="fas ${icon}"></i> ${message}`;
+                dom.toastContainer.appendChild(toast);
+                setTimeout(() => {
+                    if (toast.parentNode) toast.remove();
+                }, 2800);
+            }
+
+            // ============================================================
+            // FORMATADORES
+            // ============================================================
+            function formatViews(num) {
+                if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+                if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
+                return num.toString();
+            }
+
+            function formatDate(iso) {
+                if (!iso) return '';
+                const d = new Date(iso);
+                return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+            }
+
+            // ============================================================
+            // RENDERIZAÇÃO
+            // ============================================================
+            function renderVideoCard(video, isPopular = false) {
+                const card = document.createElement('div');
+                card.className = isPopular ? 'recomendado-card' : 'video-card';
+                card.dataset.id = video.id;
+
+                card.innerHTML = `
+                    <div class="thumb">
+                        <img src="${video.thumbnail || 'https://via.placeholder.com/320x180/1a2d42/64b5f6?text=DSO'}" 
+                             alt="${video.titulo || 'Vídeo'}"
+                             loading="lazy"
+                             onerror="this.src='https://via.placeholder.com/320x180/1a2d42/64b5f6?text=DSO'">
+                        <div class="play-icon"><i class="fas fa-play"></i></div>
+                    </div>
+                    <div class="info">
+                        <h3>${video.titulo || 'Sem título'}</h3>
+                        <div class="views">
+                            <i class="fas fa-eye"></i> ${formatViews(video.views || 0)}
+                            ${!isPopular ? `<span style="margin-left:auto;font-size:11px;color:#546e7a;">${formatDate(video.criado_em)}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+
+                card.addEventListener('click', () => {
+                    window.location.href = `/video/${video.id}`;
+                });
+
+                return card;
+            }
+
+            function renderVideos(videos, isPopular = false, append = false) {
+                const container = isPopular ? dom.recomendadosContainer : dom.grid;
+
+                if (!append) {
+                    container.innerHTML = '';
+                }
+
+                if (videos.length === 0) return;
+
+                const fragment = document.createDocumentFragment();
+                videos.forEach(v => {
+                    fragment.appendChild(renderVideoCard(v, isPopular));
+                });
+                container.appendChild(fragment);
+
+                // Atualizar contadores
+                if (!isPopular) {
+                    dom.totalCount.textContent = state.videos.length;
+                }
+            }
+
+            function updateRecomendadosCount(count) {
+                dom.recomendadosCount.textContent = count > 0 ? `${count} vídeos` : '—';
+            }
+
+            function setLoading(show) {
+                dom.loading.style.display = show ? 'flex' : 'none';
+            }
+
+            function setEmpty(show) {
+                dom.empty.style.display = show ? 'block' : 'none';
+            }
+
+            function setLoadMore(show) {
+                dom.loadMoreContainer.style.display = show ? 'block' : 'none';
+            }
+
+            // ============================================================
+            // CARREGAR VÍDEOS
+            // ============================================================
+            async function loadVideos(page = 1, search = '', append = false) {
+                if (state.isLoading) return;
+                state.isLoading = true;
+
+                if (!append) {
+                    setLoading(true);
+                    setEmpty(false);
+                    setLoadMore(false);
+                }
+
+                try {
+                    const params = new URLSearchParams({
+                        page: page,
+                        limit: CONFIG.videosPerPage
+                    });
+                    if (search) params.append('search', search);
+
+                    const resp = await fetch(`${CONFIG.apiBase}/videos?${params}`);
+                    if (!resp.ok) throw new Error('Erro ao carregar vídeos');
+
+                    const data = await resp.json();
+
+                    if (!append) {
+                        state.videos = data.videos || [];
+                        state.page = 1;
+                    } else {
+                        state.videos = [...state.videos, ...(data.videos || [])];
+                    }
+
+                    state.hasMore = data.hasMore || false;
+                    state.total = data.total || 0;
+
+                    // Renderizar
+                    renderVideos(state.videos, false, false);
+
+                    // Atualizar estado
+                    if (!state.isSearching) {
+                        dom.totalCount.textContent = state.total || 0;
+                    }
+
+                    if (state.videos.length === 0) {
+                        setEmpty(true);
+                        setLoadMore(false);
+                    } else if (state.hasMore) {
+                        setLoadMore(true);
+                    } else {
+                        setLoadMore(false);
+                    }
+
+                    setLoading(false);
+
+                } catch (err) {
+                    console.error('Erro loadVideos:', err);
+                    showToast('Erro ao carregar vídeos', 'fa-exclamation-circle');
+                    setLoading(false);
+                    if (!append && state.videos.length === 0) {
+                        setEmpty(true);
+                    }
+                } finally {
+                    state.isLoading = false;
+                }
+            }
+
+            // ============================================================
+            // CARREGAR RECOMENDADOS (POPULARES)
+            // ============================================================
+            async function loadRecomendados() {
+                try {
+                    const resp = await fetch(`${CONFIG.apiBase}/videos/popular?limit=${CONFIG.popularLimit}`);
+                    if (!resp.ok) throw new Error('Erro ao carregar recomendados');
+
+                    const data = await resp.json();
+                    const videos = data.videos || [];
+
+                    if (videos.length > 0) {
+                        renderVideos(videos, true, false);
+                        updateRecomendadosCount(videos.length);
+                    } else {
+                        dom.recomendadosContainer.innerHTML = `
+                            <div style="padding:20px;color:#78909c;font-size:14px;text-align:center;min-width:200px;">
+                                <i class="fas fa-info-circle"></i> Nenhum vídeo popular ainda
+                            </div>
+                        `;
+                        updateRecomendadosCount(0);
+                    }
+                } catch (err) {
+                    console.error('Erro loadRecomendados:', err);
+                    dom.recomendadosContainer.innerHTML = `
+                        <div style="padding:20px;color:#78909c;font-size:14px;text-align:center;min-width:200px;">
+                            <i class="fas fa-exclamation-triangle"></i> Erro ao carregar
+                        </div>
+                    `;
+                    updateRecomendadosCount(0);
+                }
+            }
+
+            // ============================================================
+            // BUSCA
+            // ============================================================
+            let searchTimeout = null;
+
+            function performSearch() {
+                const term = dom.searchInput.value.trim();
+
+                if (term === state.searchTerm && state.isSearching) return;
+
+                state.searchTerm = term;
+                state.isSearching = term.length > 0;
+                state.page = 1;
+
+                // Resetar grid
+                dom.grid.innerHTML = '';
+                dom.totalCount.textContent = '...';
+
+                if (term.length === 0) {
+                    // Voltar para lista normal
+                    loadVideos(1, '', false);
+                    return;
+                }
+
+                // Busca com debounce
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    loadVideos(1, term, false);
+                }, CONFIG.debounceDelay);
+            }
+
+            // ============================================================
+            // CARREGAR MAIS
+            // ============================================================
+            function loadMore() {
+                if (state.isLoading || !state.hasMore) return;
+                const nextPage = state.page + 1;
+                state.page = nextPage;
+                loadVideos(nextPage, state.searchTerm, true);
+            }
+
+            // ============================================================
+            // EVENTOS
+            // ============================================================
+            // Busca ao digitar
+            dom.searchInput.addEventListener('input', performSearch);
+
+            // Busca ao clicar no botão
+            dom.searchBtn.addEventListener('click', performSearch);
+
+            // Busca ao pressionar Enter
+            dom.searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    performSearch();
+                }
+            });
+
+            // Carregar mais
+            dom.loadMoreBtn.addEventListener('click', loadMore);
+
+            // ============================================================
+            // INICIALIZAÇÃO
+            // ============================================================
+            async function init() {
+                // Carregar recomendados
+                await loadRecomendados();
+
+                // Carregar lista principal
+                await loadVideos(1, '', false);
+
+                // Se não tiver vídeos, mostrar mensagem
+                if (state.videos.length === 0 && !state.isSearching) {
+                    setEmpty(true);
+                }
+            }
+
+            // Iniciar
+            init();
+
+            // Expor para debug (opcional)
+            window.__videoHub = { state, loadVideos, loadRecomendados, performSearch };
+
+        })();
+    </script>
+
+</body>
+</html>

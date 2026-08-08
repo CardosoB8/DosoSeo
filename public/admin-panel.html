@@ -144,6 +144,60 @@
             padding: 20px;
         }
 
+        /* Navegação por abas */
+        .admin-tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 4px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+            overflow-x: auto;
+        }
+
+        .admin-tab {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            white-space: nowrap;
+            min-width: 80px;
+        }
+
+        .admin-tab i {
+            font-size: 1rem;
+        }
+
+        .admin-tab.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 5px 15px rgba(124, 58, 237, 0.3);
+        }
+
+        .admin-tab:hover:not(.active) {
+            background: var(--bg-secondary);
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
         /* Cards de estatísticas */
         .stats-grid {
             display: grid;
@@ -238,6 +292,8 @@
             align-items: center;
             justify-content: space-between;
             margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 8px;
         }
 
         .section-header h2 {
@@ -275,7 +331,7 @@
         }
 
         /* Tabela de itens */
-        .items-table-wrapper {
+        .table-wrapper {
             background: var(--bg-card);
             border-radius: 16px;
             padding: 4px 0;
@@ -285,13 +341,13 @@
             margin-bottom: 24px;
         }
 
-        .items-table {
+        .table-wrapper table {
             width: 100%;
             border-collapse: collapse;
             min-width: 700px;
         }
 
-        .items-table th {
+        .table-wrapper th {
             text-align: left;
             padding: 16px 12px;
             color: var(--text-muted);
@@ -302,14 +358,14 @@
             border-bottom: 1px solid var(--border-color);
         }
 
-        .items-table td {
+        .table-wrapper td {
             padding: 14px 12px;
             color: var(--text-primary);
             font-size: 0.9rem;
             border-bottom: 1px solid var(--border-color);
         }
 
-        .items-table tr:last-child td {
+        .table-wrapper tr:last-child td {
             border-bottom: none;
         }
 
@@ -405,6 +461,48 @@
             font-weight: 700;
             font-size: 1.1rem;
             color: var(--text-primary);
+        }
+
+        /* Busca */
+        .search-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .search-bar input {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            font-family: 'Quicksand', sans-serif;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-bar input:focus {
+            border-color: var(--primary);
+        }
+
+        .search-bar .count {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+
+        /* Thumbnail na tabela */
+        .thumb-preview {
+            width: 50px;
+            height: 28px;
+            object-fit: cover;
+            border-radius: 4px;
+            background: var(--bg-secondary);
         }
 
         /* Modal */
@@ -627,7 +725,6 @@
             font-size: 0.9rem;
         }
 
-        /* Preview do placeholder */
         .placeholder-preview {
             display: flex;
             justify-content: center;
@@ -712,7 +809,7 @@
             color: var(--text-muted);
         }
 
-        /* Toast de notificação */
+        /* Toast */
         .toast {
             position: fixed;
             bottom: 20px;
@@ -783,6 +880,16 @@
                 flex-direction: column;
                 gap: 8px;
             }
+
+            .admin-tab {
+                font-size: 0.75rem;
+                padding: 10px 12px;
+                min-width: 60px;
+            }
+
+            .admin-tab span {
+                display: none;
+            }
         }
     </style>
 </head>
@@ -815,100 +922,190 @@
     </header>
     
     <div class="dashboard-container">
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-header">
-                    <i class="fas fa-box"></i>
-                    <span>Total Itens</span>
-                </div>
-                <div class="stat-value" id="totalItems">-</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-header">
-                    <i class="fas fa-eye"></i>
-                    <span>Views Hoje</span>
-                </div>
-                <div class="stat-value" id="todayViews">-</div>
-                <div class="stat-change" id="viewsChange"></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-header">
-                    <i class="fas fa-download"></i>
-                    <span>Downloads Hoje</span>
-                </div>
-                <div class="stat-value" id="todayDownloads">-</div>
-                <div class="stat-change" id="downloadsChange"></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-header">
-                    <i class="fas fa-percent"></i>
-                    <span>Conversão</span>
-                </div>
-                <div class="stat-value" id="conversionRate">-</div>
-            </div>
-        </div>
-        
-        <div class="chart-card">
-            <div class="chart-header">
-                <i class="fas fa-chart-line"></i>
-                <h2>Últimos 7 dias</h2>
-            </div>
-            <div class="chart-container">
-                <canvas id="statsChart"></canvas>
-            </div>
-        </div>
-        
-        <div class="section-header">
-            <h2>
-                <i class="fas fa-list"></i>
-                Itens Cadastrados
-            </h2>
-            <button class="add-btn" id="newItemBtn">
-                <i class="fas fa-plus"></i>
-                <span>Novo Item</span>
+        <!-- Abas de navegação -->
+        <div class="admin-tabs">
+            <button class="admin-tab active" data-tab="items" onclick="switchTab('items')">
+                <i class="fas fa-box"></i>
+                <span>Itens</span>
+            </button>
+            <button class="admin-tab" data-tab="videos" onclick="switchTab('videos')">
+                <i class="fas fa-film"></i>
+                <span>Vídeos</span>
             </button>
         </div>
-        
-        <div class="items-table-wrapper">
-            <table class="items-table">
-                <thead>
-                    <tr>
-                        <th>Título</th>
-                        <th>Categoria</th>
-                        <th>Views</th>
-                        <th>Downloads</th>
-                        <th>Taxa</th>
-                        <th>Status</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody id="itemsTableBody">
-                    <tr><td colspan="7" class="loading-row"><i class="fas fa-spinner fa-pulse"></i> Carregando...</td></tr>
-                </tbody>
-            </table>
+
+        <!-- ============================================================
+        SEÇÃO ITENS
+        ============================================================ -->
+        <div class="section active" id="itemsSection">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <i class="fas fa-box"></i>
+                        <span>Total Itens</span>
+                    </div>
+                    <div class="stat-value" id="totalItems">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <i class="fas fa-eye"></i>
+                        <span>Views Hoje</span>
+                    </div>
+                    <div class="stat-value" id="todayViews">-</div>
+                    <div class="stat-change" id="viewsChange"></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <i class="fas fa-download"></i>
+                        <span>Downloads Hoje</span>
+                    </div>
+                    <div class="stat-value" id="todayDownloads">-</div>
+                    <div class="stat-change" id="downloadsChange"></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <i class="fas fa-percent"></i>
+                        <span>Conversão</span>
+                    </div>
+                    <div class="stat-value" id="conversionRate">-</div>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <div class="chart-header">
+                    <i class="fas fa-chart-line"></i>
+                    <h2>Últimos 7 dias</h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="statsChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="section-header">
+                <h2>
+                    <i class="fas fa-list"></i>
+                    Itens Cadastrados
+                </h2>
+                <button class="add-btn" id="newItemBtn">
+                    <i class="fas fa-plus"></i>
+                    <span>Novo Item</span>
+                </button>
+            </div>
+            
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Categoria</th>
+                            <th>Views</th>
+                            <th>Downloads</th>
+                            <th>Taxa</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemsTableBody">
+                        <tr><td colspan="7" class="loading-row"><i class="fas fa-spinner fa-pulse"></i> Carregando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="summary-card">
+                <div class="summary-item">
+                    <span class="summary-label"><i class="fas fa-eye"></i> Total Visualizações</span>
+                    <span class="summary-value" id="totalViews">-</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label"><i class="fas fa-download"></i> Total Downloads</span>
+                    <span class="summary-value" id="totalDownloads">-</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label"><i class="fas fa-check-circle"></i> Itens Ativos</span>
+                    <span class="summary-value" id="activeItems">-</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label"><i class="fas fa-chart-bar"></i> Média Downloads/Item</span>
+                    <span class="summary-value" id="avgDownloads">-</span>
+                </div>
+            </div>
         </div>
-        
-        <div class="summary-card">
-            <div class="summary-item">
-                <span class="summary-label"><i class="fas fa-eye"></i> Total Visualizações</span>
-                <span class="summary-value" id="totalViews">-</span>
+
+        <!-- ============================================================
+        SEÇÃO VÍDEOS
+        ============================================================ -->
+        <div class="section" id="videosSection">
+            <!-- Estatísticas de Vídeos -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <i class="fas fa-film" style="color:#e50914;"></i>
+                        <span>Total Vídeos</span>
+                    </div>
+                    <div class="stat-value" id="totalVideos">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <i class="fas fa-eye" style="color:#64b5f6;"></i>
+                        <span>Views Totais</span>
+                    </div>
+                    <div class="stat-value" id="totalVideoViews">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <i class="fas fa-fire" style="color:#f59e0b;"></i>
+                        <span>Mais Visto</span>
+                    </div>
+                    <div class="stat-value" id="popularVideo" style="font-size:1.2rem;">—</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <i class="fas fa-check-circle" style="color:#10b981;"></i>
+                        <span>Ativos</span>
+                    </div>
+                    <div class="stat-value" id="activeVideos">0</div>
+                </div>
             </div>
-            <div class="summary-item">
-                <span class="summary-label"><i class="fas fa-download"></i> Total Downloads</span>
-                <span class="summary-value" id="totalDownloads">-</span>
+
+            <div class="section-header">
+                <h2>
+                    <i class="fas fa-list" style="color:#e50914;"></i>
+                    Vídeos Cadastrados
+                </h2>
+                <button class="add-btn" id="newVideoBtn" style="background:linear-gradient(135deg,#e50914,#ff6b6b);">
+                    <i class="fas fa-plus"></i>
+                    <span>Adicionar Vídeo</span>
+                </button>
             </div>
-            <div class="summary-item">
-                <span class="summary-label"><i class="fas fa-check-circle"></i> Itens Ativos</span>
-                <span class="summary-value" id="activeItems">-</span>
+
+            <div class="search-bar">
+                <input type="text" id="videoSearchInput" placeholder="Pesquisar vídeos..." oninput="filterVideos()">
+                <span class="count" id="videosCount">0 vídeos</span>
             </div>
-            <div class="summary-item">
-                <span class="summary-label"><i class="fas fa-chart-bar"></i> Média Downloads/Item</span>
-                <span class="summary-value" id="avgDownloads">-</span>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:50px;">#</th>
+                            <th style="width:70px;">Thumb</th>
+                            <th>Título</th>
+                            <th>Views</th>
+                            <th>Status</th>
+                            <th style="width:100px;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="videosTableBody">
+                        <tr><td colspan="6" class="loading-row"><i class="fas fa-spinner fa-pulse"></i> Carregando...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-    
-    <!-- Modal de Item -->
+
+    <!-- ============================================================
+    MODAL DE ITEM
+    ============================================================ -->
     <div class="modal-overlay" id="itemModal">
         <div class="modal">
             <div class="modal-header">
@@ -916,7 +1113,6 @@
                 <button class="modal-close" onclick="closeItemModal()">&times;</button>
             </div>
             <div class="modal-body">
-                <!-- Área de clonagem -->
                 <div class="clone-area" id="cloneArea">
                     <label><i class="fas fa-clone"></i> Copiar dados de um item existente</label>
                     <div class="clone-select-wrapper">
@@ -940,7 +1136,6 @@
                         <textarea id="itemDescricao" placeholder="Descreva o conteúdo..."></textarea>
                     </div>
                     
-                    <!-- Tabs para escolher tipo de imagem -->
                     <div class="image-tabs">
                         <button type="button" class="image-tab active" data-tab="url">
                             <i class="fas fa-link"></i> URL
@@ -950,13 +1145,11 @@
                         </button>
                     </div>
                     
-                    <!-- Campo URL -->
                     <div class="form-group" id="urlField">
                         <label><i class="fas fa-image"></i> URL da Imagem</label>
                         <input type="url" id="itemImagem" placeholder="https://... (opcional)">
                     </div>
                     
-                    <!-- Campos do Placeholder -->
                     <div id="placeholderFields" style="display: none;">
                         <div class="form-group">
                             <label><i class="fas fa-font"></i> Texto do Placeholder</label>
@@ -973,7 +1166,6 @@
                             </div>
                         </div>
                         
-                        <!-- Preview -->
                         <div class="placeholder-preview">
                             <div class="preview-box" id="placeholderPreview" style="background: #7c3aed; color: #ffffff;">
                                 BREVE
@@ -1019,8 +1211,57 @@
             </div>
         </div>
     </div>
-    
-    <!-- Modal de Senha -->
+
+    <!-- ============================================================
+    MODAL DE VÍDEO
+    ============================================================ -->
+    <div class="modal-overlay" id="videoModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="videoModalTitle">Adicionar Vídeo</h3>
+                <button class="modal-close" onclick="closeVideoModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="videoForm">
+                    <input type="hidden" id="videoId">
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-heading"></i> Título do Vídeo *</label>
+                        <input type="text" id="videoTitulo" placeholder="Ex: Filme Ação 2024" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-align-left"></i> Descrição</label>
+                        <textarea id="videoDescricao" rows="3" placeholder="Descrição do vídeo..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fab fa-youtube" style="color:#ff0000;"></i> URL do YouTube *</label>
+                        <input type="url" id="videoUrl" placeholder="https://www.youtube.com/watch?v=xxxxx" required>
+                        <small style="color:var(--text-muted);font-size:11px;display:block;margin-top:4px;">
+                            <i class="fas fa-info-circle"></i> Ex: https://www.youtube.com/watch?v=abcd1234
+                        </small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-toggle-on"></i> Status</label>
+                        <select id="videoAtivo">
+                            <option value="true">Ativo</option>
+                            <option value="false">Inativo</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" onclick="closeVideoModal()">Cancelar</button>
+                <button class="modal-btn save" onclick="saveVideo()">Salvar Vídeo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+    MODAL DE SENHA
+    ============================================================ -->
     <div class="modal-overlay" id="passwordModal">
         <div class="modal">
             <div class="modal-header">
@@ -1049,47 +1290,76 @@
             </div>
         </div>
     </div>
-    
+
     <script>
         let chart = null;
         let currentItems = [];
+        let currentVideos = [];
+        let filteredVideos = [];
         let currentImageMode = 'url';
         let isEditing = false;
-        
-        // Toast notification
+        let isVideoEditing = false;
+
+        // ============================================================
+        // TOAST
+        // ============================================================
         function showToast(message, type = 'info') {
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
             toast.textContent = message;
             document.body.appendChild(toast);
-            setTimeout(() => {
-                toast.remove();
-            }, 3000);
+            setTimeout(() => toast.remove(), 3000);
         }
-        
-        // Tema
+
+        // ============================================================
+        // TEMA
+        // ============================================================
         function initTheme() {
             const theme = localStorage.getItem('theme') || 'dark';
             document.body.setAttribute('data-theme', theme);
             updateThemeIcon(theme);
         }
-        
+
         function updateThemeIcon(theme) {
             const icon = document.querySelector('#themeToggle i');
             if (icon) icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
         }
-        
-        // Formatação
+
+        // ============================================================
+        // FORMATADORES
+        // ============================================================
         function formatNumber(num) {
             if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
             if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
             return num.toString();
         }
-        
-        // Parsear cores de URL do placeholder
+
+        function formatViews(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
+            return num.toString();
+        }
+
+        // ============================================================
+        // TABS
+        // ============================================================
+        function switchTab(tab) {
+            document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.admin-tab').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(tab + 'Section').classList.add('active');
+            document.querySelector(`.admin-tab[data-tab="${tab}"]`).classList.add('active');
+            
+            if (tab === 'videos') {
+                loadVideos();
+            }
+        }
+
+        // ============================================================
+        // PLACEHOLDER
+        // ============================================================
         function parsePlaceholderUrl(url) {
             if (!url || !url.includes('placehold.co')) return null;
-            
             try {
                 const match = url.match(/placehold\.co\/400x400\/([^/]+)\/([^/]+)\?text=(.+)/);
                 if (match) {
@@ -1102,16 +1372,14 @@
             } catch (e) {}
             return null;
         }
-        
-        // Gerar URL do placeholder
+
         function generatePlaceholderUrl() {
             const text = document.getElementById('placeholderText').value || 'BREVE';
             const bgColor = document.getElementById('placeholderBg').value.replace('#', '');
             const textColor = document.getElementById('placeholderTextColor').value.replace('#', '');
             return `https://placehold.co/400x400/${bgColor}/${textColor}?text=${encodeURIComponent(text)}`;
         }
-        
-        // Atualizar preview
+
         function updatePlaceholderPreview() {
             const preview = document.getElementById('placeholderPreview');
             const text = document.getElementById('placeholderText').value || 'BREVE';
@@ -1122,12 +1390,26 @@
             preview.style.color = textColor;
             preview.textContent = text.substring(0, 3).toUpperCase();
         }
-        
-        // Preencher dropdown de clone
+
+        function switchImageMode(mode) {
+            currentImageMode = mode;
+            
+            document.querySelectorAll('.image-tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.dataset.tab === mode) tab.classList.add('active');
+            });
+            
+            document.getElementById('urlField').style.display = mode === 'url' ? 'block' : 'none';
+            document.getElementById('placeholderFields').style.display = mode === 'placeholder' ? 'block' : 'none';
+            if (mode === 'placeholder') updatePlaceholderPreview();
+        }
+
+        // ============================================================
+        // CLONE
+        // ============================================================
         function populateCloneDropdown() {
             const select = document.getElementById('cloneSource');
             select.innerHTML = '<option value="">-- Nenhum (começar vazio) --</option>';
-            
             currentItems.forEach(item => {
                 const option = document.createElement('option');
                 option.value = item.id;
@@ -1135,13 +1417,10 @@
                 select.appendChild(option);
             });
         }
-        
-        // Clonar dados do item selecionado
+
         function cloneFromSource() {
             const sourceId = document.getElementById('cloneSource').value;
-            
             if (!sourceId) {
-                // Limpar todos os campos
                 document.getElementById('itemForm').reset();
                 document.getElementById('itemId').value = '';
                 document.getElementById('placeholderText').value = 'BREVE';
@@ -1157,7 +1436,6 @@
             const sourceItem = currentItems.find(i => i.id === sourceId);
             if (!sourceItem) return;
             
-            // Preencher campos básicos
             document.getElementById('itemTitulo').value = sourceItem.titulo + ' (Cópia)';
             document.getElementById('itemDescricao').value = sourceItem.descricao || '';
             document.getElementById('itemUrl').value = sourceItem.url_original || '';
@@ -1165,26 +1443,24 @@
             document.getElementById('itemAtivo').value = sourceItem.ativo || 'true';
             document.getElementById('itemExpira').value = sourceItem.expira_em ? sourceItem.expira_em.slice(0, 16) : '';
             
-            // Verificar se a imagem é placeholder
             const placeholderData = parsePlaceholderUrl(sourceItem.imagem);
-            
             if (placeholderData) {
-                // É placeholder - preencher campos do placeholder
                 switchImageMode('placeholder');
                 document.getElementById('placeholderText').value = placeholderData.text;
                 document.getElementById('placeholderBg').value = placeholderData.bg;
                 document.getElementById('placeholderTextColor').value = placeholderData.textColor;
                 updatePlaceholderPreview();
             } else {
-                // É URL normal
                 switchImageMode('url');
                 document.getElementById('itemImagem').value = sourceItem.imagem || '';
             }
             
             showToast(`Dados copiados de: ${sourceItem.titulo}`, 'success');
         }
-        
-        // Carregar estatísticas
+
+        // ============================================================
+        // ITEMS
+        // ============================================================
         async function loadStats() {
             try {
                 const res = await fetch('/admin/api/stats');
@@ -1271,8 +1547,7 @@
                 console.error('Erro stats:', e);
             }
         }
-        
-        // Carregar itens
+
         async function loadItems() {
             try {
                 const res = await fetch('/admin/api/items');
@@ -1280,7 +1555,6 @@
                 currentItems = data.items;
                 
                 const tbody = document.getElementById('itemsTableBody');
-                
                 if (!data.items.length) {
                     tbody.innerHTML = '<tr><td colspan="7" class="empty-row"><i class="fas fa-box-open"></i> Nenhum item cadastrado</td></tr>';
                     return;
@@ -1321,7 +1595,6 @@
                     `;
                 });
                 
-                // Atualizar dropdown de clone se o modal estiver aberto
                 if (document.getElementById('itemModal').classList.contains('active')) {
                     populateCloneDropdown();
                 }
@@ -1329,49 +1602,31 @@
                 console.error('Erro itens:', e);
             }
         }
-        
-        // Modal de item
+
         function openItemModal(itemId = null, isDuplicating = false) {
             const modal = document.getElementById('itemModal');
             const title = document.getElementById('modalTitle');
             const cloneArea = document.getElementById('cloneArea');
             
             isEditing = itemId && !isDuplicating;
-            
-            // Mostrar/esconder área de clone
-            if (itemId && !isDuplicating) {
-                // Editando - esconder área de clone
-                cloneArea.style.display = 'none';
-            } else {
-                // Novo item ou duplicando - mostrar área de clone
-                cloneArea.style.display = 'block';
-                populateCloneDropdown();
-            }
+            cloneArea.style.display = (itemId && !isDuplicating) ? 'none' : 'block';
+            if (!itemId || isDuplicating) populateCloneDropdown();
             
             switchImageMode('url');
             
             if (itemId) {
                 const item = currentItems.find(i => i.id === itemId);
                 if (item) {
-                    if (isDuplicating) {
-                        title.textContent = 'Duplicar Item';
-                        document.getElementById('itemId').value = '';
-                        document.getElementById('itemTitulo').value = item.titulo + ' (Cópia)';
-                    } else {
-                        title.textContent = 'Editar Item';
-                        document.getElementById('itemId').value = item.id;
-                        document.getElementById('itemTitulo').value = item.titulo;
-                    }
-                    
+                    title.textContent = isDuplicating ? 'Duplicar Item' : 'Editar Item';
+                    document.getElementById('itemId').value = isDuplicating ? '' : item.id;
+                    document.getElementById('itemTitulo').value = isDuplicating ? item.titulo + ' (Cópia)' : item.titulo;
                     document.getElementById('itemDescricao').value = item.descricao || '';
                     document.getElementById('itemUrl').value = item.url_original || '';
                     document.getElementById('itemCategoria').value = item.categoria || 'outros';
                     document.getElementById('itemAtivo').value = item.ativo || 'true';
                     document.getElementById('itemExpira').value = item.expira_em ? item.expira_em.slice(0, 16) : '';
                     
-                    // Verificar placeholder
                     const placeholderData = parsePlaceholderUrl(item.imagem);
-                    
                     if (placeholderData) {
                         switchImageMode('placeholder');
                         document.getElementById('placeholderText').value = placeholderData.text;
@@ -1382,10 +1637,7 @@
                         document.getElementById('itemImagem').value = item.imagem || '';
                     }
                     
-                    // Se está duplicando, selecionar o item no dropdown
-                    if (isDuplicating) {
-                        document.getElementById('cloneSource').value = item.id;
-                    }
+                    if (isDuplicating) document.getElementById('cloneSource').value = item.id;
                 }
             } else {
                 title.textContent = 'Novo Item';
@@ -1396,55 +1648,23 @@
                 document.getElementById('placeholderTextColor').value = '#ffffff';
                 document.getElementById('itemAtivo').value = 'true';
                 updatePlaceholderPreview();
-                
-                // Resetar dropdown
-                const cloneSelect = document.getElementById('cloneSource');
-                if (cloneSelect) cloneSelect.value = '';
+                document.getElementById('cloneSource').value = '';
             }
             
             modal.classList.add('active');
         }
-        
-        function switchImageMode(mode) {
-            currentImageMode = mode;
-            
-            document.querySelectorAll('.image-tab').forEach(tab => {
-                tab.classList.remove('active');
-                if (tab.dataset.tab === mode) {
-                    tab.classList.add('active');
-                }
-            });
-            
-            if (mode === 'url') {
-                document.getElementById('urlField').style.display = 'block';
-                document.getElementById('placeholderFields').style.display = 'none';
-            } else {
-                document.getElementById('urlField').style.display = 'none';
-                document.getElementById('placeholderFields').style.display = 'block';
-                updatePlaceholderPreview();
-            }
-        }
-        
+
         function closeItemModal() {
             document.getElementById('itemModal').classList.remove('active');
         }
-        
-        function editItem(itemId) {
-            openItemModal(itemId, false);
-        }
-        
-        function duplicateItem(itemId) {
-            openItemModal(itemId, true);
-        }
-        
+
+        function editItem(itemId) { openItemModal(itemId, false); }
+        function duplicateItem(itemId) { openItemModal(itemId, true); }
+
         async function saveItem() {
-            let imagemUrl;
-            
-            if (currentImageMode === 'url') {
-                imagemUrl = document.getElementById('itemImagem').value;
-            } else {
-                imagemUrl = generatePlaceholderUrl();
-            }
+            const imagemUrl = currentImageMode === 'url' 
+                ? document.getElementById('itemImagem').value 
+                : generatePlaceholderUrl();
             
             const formData = {
                 id: document.getElementById('itemId').value || null,
@@ -1468,7 +1688,6 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(formData)
                 });
-                
                 const data = await res.json();
                 if (data.success) {
                     closeItemModal();
@@ -1482,10 +1701,9 @@
                 showToast('Erro de conexão', 'error');
             }
         }
-        
+
         async function deleteItem(itemId) {
-            if (!confirm('Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.')) return;
-            
+            if (!confirm('Tem certeza que deseja excluir este item?')) return;
             try {
                 const res = await fetch('/admin/api/item/' + itemId, { method: 'DELETE' });
                 const data = await res.json();
@@ -1500,16 +1718,217 @@
                 showToast('Erro de conexão', 'error');
             }
         }
-        
+
+        // ============================================================
+        // VÍDEOS
+        // ============================================================
+        async function loadVideos() {
+            try {
+                const res = await fetch('/admin/api/videos');
+                const data = await res.json();
+                currentVideos = data.videos || [];
+                filteredVideos = [...currentVideos];
+                renderVideos();
+                updateVideoStats();
+            } catch (e) {
+                console.error('Erro vídeos:', e);
+                document.getElementById('videosTableBody').innerHTML = 
+                    '<tr><td colspan="6" class="empty-row"><i class="fas fa-exclamation-circle"></i> Erro ao carregar vídeos</td></tr>';
+            }
+        }
+
+        function renderVideos() {
+            const tbody = document.getElementById('videosTableBody');
+            
+            if (filteredVideos.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-row"><i class="fas fa-video-slash"></i> Nenhum vídeo cadastrado</td></tr>';
+                document.getElementById('videosCount').textContent = '0 vídeos';
+                return;
+            }
+            
+            let html = '';
+            filteredVideos.forEach((video, index) => {
+                const thumb = video.thumbnail || `https://img.youtube.com/vi/${video.youtube_id}/hqdefault.jpg`;
+                const isActive = video.ativo === 'true';
+                
+                html += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>
+                            <img src="${thumb}" alt="${video.titulo}" 
+                                 class="thumb-preview"
+                                 onerror="this.src='https://via.placeholder.com/50x28/1a2d42/64b5f6?text=?'">
+                        </td>
+                        <td>
+                            <strong style="display:block;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                                ${video.titulo || 'Sem título'}
+                            </strong>
+                            <small style="color:var(--text-muted);font-size:11px;">${video.youtube_id || ''}</small>
+                        </td>
+                        <td>${formatViews(video.views || 0)}</td>
+                        <td>
+                            <span class="item-status ${isActive ? 'active' : 'inactive'}">
+                                <i class="fas fa-${isActive ? 'check' : 'times'}-circle"></i>
+                                ${isActive ? 'Ativo' : 'Inativo'}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="item-actions">
+                                <button class="action-btn" onclick="editVideo('${video.id}')" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="action-btn delete" onclick="deleteVideo('${video.id}')" title="Excluir">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+            document.getElementById('videosCount').textContent = `${filteredVideos.length} vídeos`;
+        }
+
+        function updateVideoStats() {
+            const active = currentVideos.filter(v => v.ativo === 'true').length;
+            document.getElementById('totalVideos').textContent = currentVideos.length;
+            document.getElementById('activeVideos').textContent = active;
+            
+            const totalViews = currentVideos.reduce((sum, v) => sum + (parseInt(v.views) || 0), 0);
+            document.getElementById('totalVideoViews').textContent = formatViews(totalViews);
+            
+            if (currentVideos.length > 0) {
+                const sorted = [...currentVideos].sort((a, b) => (parseInt(b.views) || 0) - (parseInt(a.views) || 0));
+                const top = sorted[0];
+                document.getElementById('popularVideo').textContent = top.titulo ? top.titulo.substring(0, 20) + (top.titulo.length > 20 ? '...' : '') : '—';
+            } else {
+                document.getElementById('popularVideo').textContent = '—';
+            }
+        }
+
+        function filterVideos() {
+            const search = document.getElementById('videoSearchInput').value.toLowerCase().trim();
+            if (!search) {
+                filteredVideos = [...currentVideos];
+            } else {
+                filteredVideos = currentVideos.filter(v => 
+                    (v.titulo || '').toLowerCase().includes(search) ||
+                    (v.descricao || '').toLowerCase().includes(search) ||
+                    (v.youtube_id || '').toLowerCase().includes(search)
+                );
+            }
+            renderVideos();
+        }
+
+        function openVideoModal(videoId = null) {
+            const modal = document.getElementById('videoModal');
+            const title = document.getElementById('videoModalTitle');
+            const form = document.getElementById('videoForm');
+            
+            isVideoEditing = !!videoId;
+            
+            if (videoId) {
+                const video = currentVideos.find(v => v.id === videoId);
+                if (video) {
+                    title.textContent = 'Editar Vídeo';
+                    document.getElementById('videoId').value = video.id;
+                    document.getElementById('videoTitulo').value = video.titulo || '';
+                    document.getElementById('videoDescricao').value = video.descricao || '';
+                    document.getElementById('videoUrl').value = video.youtube_url || `https://www.youtube.com/watch?v=${video.youtube_id}`;
+                    document.getElementById('videoAtivo').value = video.ativo || 'true';
+                }
+            } else {
+                title.textContent = 'Adicionar Vídeo';
+                form.reset();
+                document.getElementById('videoId').value = '';
+                document.getElementById('videoAtivo').value = 'true';
+            }
+            
+            modal.classList.add('active');
+        }
+
+        function closeVideoModal() {
+            document.getElementById('videoModal').classList.remove('active');
+        }
+
+        function editVideo(videoId) { openVideoModal(videoId); }
+
+        async function deleteVideo(videoId) {
+            if (!confirm('Tem certeza que deseja excluir este vídeo?')) return;
+            try {
+                const res = await fetch(`/admin/api/video/${videoId}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('Vídeo excluído!', 'success');
+                    loadVideos();
+                } else {
+                    showToast(data.error || 'Erro ao excluir', 'error');
+                }
+            } catch (e) {
+                showToast('Erro de conexão', 'error');
+            }
+        }
+
+        async function saveVideo() {
+            const videoId = document.getElementById('videoId').value;
+            const titulo = document.getElementById('videoTitulo').value.trim();
+            const descricao = document.getElementById('videoDescricao').value.trim();
+            const youtube_url = document.getElementById('videoUrl').value.trim();
+            const ativo = document.getElementById('videoAtivo').value;
+            
+            if (!titulo) {
+                showToast('O título é obrigatório', 'error');
+                return;
+            }
+            
+            if (!youtube_url) {
+                showToast('A URL do YouTube é obrigatória', 'error');
+                return;
+            }
+            
+            // Validar URL do YouTube
+            const youtubePattern = /(?:youtube\.com\/watch\?v=)([\w-]+)|(?:youtu\.be\/)([\w-]+)/;
+            if (!youtubePattern.test(youtube_url)) {
+                showToast('URL do YouTube inválida', 'error');
+                return;
+            }
+            
+            try {
+                const url = videoId ? `/admin/api/video/${videoId}` : '/admin/api/video';
+                const method = videoId ? 'PUT' : 'POST';
+                
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ titulo, descricao, youtube_url, ativo })
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    closeVideoModal();
+                    showToast(videoId ? 'Vídeo atualizado!' : 'Vídeo adicionado!', 'success');
+                    loadVideos();
+                } else {
+                    showToast(data.error || 'Erro ao salvar', 'error');
+                }
+            } catch (e) {
+                showToast('Erro de conexão', 'error');
+            }
+        }
+
+        // ============================================================
+        // SENHA
+        // ============================================================
         function openPasswordModal() {
             document.getElementById('passwordModal').classList.add('active');
         }
-        
+
         function closePasswordModal() {
             document.getElementById('passwordModal').classList.remove('active');
             document.getElementById('passwordForm').reset();
         }
-        
+
         async function changePassword() {
             const current = document.getElementById('currentPassword').value;
             const newPass = document.getElementById('newPassword').value;
@@ -1519,12 +1938,10 @@
                 showToast('Preencha todos os campos', 'error');
                 return;
             }
-            
             if (newPass !== confirm) {
                 showToast('As senhas não coincidem', 'error');
                 return;
             }
-            
             if (newPass.length < 6) {
                 showToast('A senha deve ter no mínimo 6 caracteres', 'error');
                 return;
@@ -1536,7 +1953,6 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ currentPassword: current, newPassword: newPass })
                 });
-                
                 const data = await res.json();
                 if (data.success) {
                     showToast('Senha alterada com sucesso!', 'success');
@@ -1548,19 +1964,22 @@
                 showToast('Erro de conexão', 'error');
             }
         }
-        
+
         async function logout() {
             try {
                 await fetch('/admin/api/logout', { method: 'POST' });
             } catch (e) {}
             window.location.href = '/admin-login';
         }
-        
-        // Inicialização
+
+        // ============================================================
+        // INICIALIZAÇÃO
+        // ============================================================
         document.addEventListener('DOMContentLoaded', () => {
             initTheme();
             loadStats();
             loadItems();
+            loadVideos();
             
             document.getElementById('themeToggle').addEventListener('click', () => {
                 const current = document.body.getAttribute('data-theme');
@@ -1572,29 +1991,31 @@
             });
             
             document.getElementById('newItemBtn').addEventListener('click', () => openItemModal());
+            document.getElementById('newVideoBtn').addEventListener('click', () => openVideoModal());
             document.getElementById('changePasswordBtn').addEventListener('click', openPasswordModal);
             document.getElementById('logoutBtn').addEventListener('click', logout);
             
+            // Eventos do modal de item
             document.querySelectorAll('.image-tab').forEach(tab => {
-                tab.addEventListener('click', () => {
-                    switchImageMode(tab.dataset.tab);
-                });
+                tab.addEventListener('click', () => switchImageMode(tab.dataset.tab));
             });
             
             document.getElementById('placeholderText').addEventListener('input', updatePlaceholderPreview);
             document.getElementById('placeholderBg').addEventListener('input', updatePlaceholderPreview);
             document.getElementById('placeholderTextColor').addEventListener('input', updatePlaceholderPreview);
             
-            // Fechar modais clicando fora
+            // Fechar modais
             document.getElementById('itemModal').addEventListener('click', function(e) {
                 if (e.target === this) closeItemModal();
             });
-            
+            document.getElementById('videoModal').addEventListener('click', function(e) {
+                if (e.target === this) closeVideoModal();
+            });
             document.getElementById('passwordModal').addEventListener('click', function(e) {
                 if (e.target === this) closePasswordModal();
             });
             
-            // Atualizar estatísticas a cada 30 segundos
+            // Atualizar stats a cada 30s
             setInterval(loadStats, 30000);
         });
     </script>

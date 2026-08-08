@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSO Vídeos - Player</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ============================================================
+           RESET E BASE
+           ============================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0f1a;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        /* ============================================================
+           HEADER
+           ============================================================ */
+        .header {
+            background: linear-gradient(135deg, #0f1a2e, #1a2d4a);
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            border-bottom: 1px solid rgba(100, 181, 246, 0.15);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+            font-weight: 700;
+            color: #e50914;
+            text-decoration: none;
+        }
+
+        .header .logo i {
+            font-size: 26px;
+        }
+
+        .header .logo span {
+            color: #64b5f6;
+        }
+
+        .header .back-link {
+            color: #64b5f6;
+            text-decoration: none;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.3s;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: rgba(100, 181, 246, 0.08);
+        }
+
+        .header .back-link:hover {
+            color: #e50914;
+            background: rgba(229, 9, 20, 0.1);
+        }
+
+        /* ============================================================
+           CONTEÚDO PRINCIPAL
+           ============================================================ */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px 24px 60px;
+        }
+
+        /* ============================================================
+           PLAYER
+           ============================================================ */
+        .player-wrapper {
+            background: #0a0f1a;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(100, 181, 246, 0.08);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            margin-bottom: 24px;
+        }
+
+        .player-wrapper .player-container {
+            position: relative;
+            padding-top: 56.25%;
+            background: #000;
+        }
+
+        .player-wrapper .player-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .player-wrapper .player-loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #0a0f1a;
+            color: #78909c;
+            gap: 16px;
+            z-index: 5;
+            transition: opacity 0.5s;
+        }
+
+        .player-wrapper .player-loading.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .player-wrapper .player-loading i {
+            font-size: 48px;
+            animation: spin 1s linear infinite;
+            color: #64b5f6;
+        }
+
+        .player-wrapper .player-loading span {
+            font-size: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ============================================================
+           INFO DO VÍDEO
+           ============================================================ */
+        .video-info {
+            padding: 20px 24px 24px;
+            background: #14233a;
+            border-top: 1px solid rgba(100, 181, 246, 0.06);
+        }
+
+        .video-info .title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+
+        .video-info .meta {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px 24px;
+            margin-bottom: 14px;
+            font-size: 14px;
+            color: #78909c;
+        }
+
+        .video-info .meta .views i {
+            color: #64b5f6;
+            margin-right: 6px;
+        }
+
+        .video-info .meta .date i {
+            color: #64b5f6;
+            margin-right: 6px;
+        }
+
+        .video-info .meta .badge-views {
+            background: rgba(229, 9, 14, 0.12);
+            color: #e50914;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .video-info .description {
+            color: #b0bec5;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-top: 4px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        /* ============================================================
+           RECOMENDADOS (RELACIONADOS)
+           ============================================================ */
+        .related-section {
+            margin-top: 32px;
+        }
+
+        .related-section .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #e0e0e0;
+        }
+
+        .related-section .section-title i {
+            color: #e50914;
+            font-size: 20px;
+        }
+
+        .related-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        .related-card {
+            background: #14233a;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid rgba(100, 181, 246, 0.06);
+        }
+
+        .related-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+            border-color: rgba(229, 9, 20, 0.2);
+        }
+
+        .related-card .thumb {
+            position: relative;
+            padding-top: 56.25%;
+            background: #0a0f1a;
+        }
+
+        .related-card .thumb img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .related-card .thumb .play-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(229, 9, 20, 0.85);
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .related-card .thumb .play-icon i {
+            color: #fff;
+            font-size: 15px;
+            margin-left: 2px;
+        }
+
+        .related-card:hover .thumb .play-icon {
+            opacity: 1;
+        }
+
+        .related-card .info {
+            padding: 10px 12px 12px;
+        }
+
+        .related-card .info h4 {
+            font-size: 13px;
+            font-weight: 600;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            color: #e0e0e0;
+            margin-bottom: 4px;
+        }
+
+        .related-card .info .views {
+            font-size: 11px;
+            color: #78909c;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .related-card .info .views i {
+            font-size: 12px;
+        }
+
+        /* ============================================================
+           ESTADO VAZIO / CARREGANDO
+           ============================================================ */
+        .loading-state {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+            gap: 16px;
+            color: #78909c;
+            font-size: 15px;
+        }
+
+        .loading-state i {
+            font-size: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #78909c;
+        }
+
+        .empty-state i {
+            font-size: 40px;
+            margin-bottom: 12px;
+            color: #2a3d5f;
+        }
+
+        .empty-state h4 {
+            font-size: 17px;
+            color: #b0bec5;
+            margin-bottom: 4px;
+        }
+
+        .error-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #e50914;
+        }
+
+        .error-state i {
+            font-size: 40px;
+            margin-bottom: 12px;
+        }
+
+        .error-state h4 {
+            font-size: 18px;
+            margin-bottom: 4px;
+        }
+
+        .error-state p {
+            color: #78909c;
+            font-size: 14px;
+        }
+
+        .error-state .btn-retry {
+            margin-top: 16px;
+            background: transparent;
+            border: 1px solid rgba(229, 9, 20, 0.3);
+            color: #e50914;
+            padding: 10px 30px;
+            border-radius: 30px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .error-state .btn-retry:hover {
+            background: rgba(229, 9, 20, 0.1);
+            border-color: #e50914;
+        }
+
+        /* ============================================================
+           TOAST
+           ============================================================ */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a2d42;
+            color: #e0e0e0;
+            padding: 12px 28px;
+            border-radius: 30px;
+            border: 1px solid rgba(100, 181, 246, 0.15);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            animation: toastFade 2.8s ease forwards;
+            z-index: 999;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toast i {
+            color: #4caf50;
+            font-size: 18px;
+        }
+
+        .toast.error i {
+            color: #e50914;
+        }
+
+        @keyframes toastFade {
+            0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            12% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            85% { opacity: 1; }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        }
+
+        /* ============================================================
+           RESPONSIVIDADE
+           ============================================================ */
+        @media (max-width: 768px) {
+            .header {
+                padding: 12px 16px;
+            }
+
+            .header .logo {
+                font-size: 17px;
+            }
+
+            .header .logo i {
+                font-size: 22px;
+            }
+
+            .header .back-link {
+                font-size: 13px;
+                padding: 4px 10px;
+            }
+
+            .container {
+                padding: 12px 12px 40px;
+            }
+
+            .video-info {
+                padding: 16px 16px 20px;
+            }
+
+            .video-info .title {
+                font-size: 18px;
+            }
+
+            .video-info .meta {
+                font-size: 13px;
+                gap: 12px 16px;
+            }
+
+            .related-grid {
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+                gap: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header .logo {
+                font-size: 15px;
+            }
+
+            .header .back-link span {
+                display: none;
+            }
+
+            .video-info .title {
+                font-size: 16px;
+            }
+
+            .related-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 10px;
+            }
+
+            .related-card .info h4 {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================================
+    HEADER
+    ============================================================ -->
+    <header class="header">
+        <a href="/videos" class="logo">
+            <i class="fas fa-film"></i>
+            DSO <span>Vídeos</span>
+        </a>
+
+        <a href="/videos" class="back-link">
+            <i class="fas fa-arrow-left"></i>
+            <span>Voltar para vídeos</span>
+        </a>
+    </header>
+
+    <!-- ============================================================
+    CONTEÚDO PRINCIPAL
+    ============================================================ -->
+    <div class="container">
+
+        <!-- PLAYER -->
+        <div class="player-wrapper" id="playerWrapper">
+            <div class="player-container">
+                <div class="player-loading" id="playerLoading">
+                    <i class="fas fa-spinner"></i>
+                    <span>Carregando vídeo...</span>
+                </div>
+                <iframe id="playerIframe"
+                        src="about:blank"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen>
+                </iframe>
+            </div>
+
+            <!-- INFO DO VÍDEO -->
+            <div class="video-info" id="videoInfo">
+                <div class="title" id="videoTitle">Carregando...</div>
+                <div class="meta">
+                    <span class="views" id="videoViews"><i class="fas fa-eye"></i> 0 visualizações</span>
+                    <span class="date" id="videoDate"><i class="far fa-calendar-alt"></i> —</span>
+                    <span class="badge-views" id="videoBadge">Carregando...</span>
+                </div>
+                <div class="description" id="videoDescription"></div>
+            </div>
+        </div>
+
+        <!-- RECOMENDADOS (RELACIONADOS) -->
+        <div class="related-section">
+            <div class="section-title">
+                <i class="fas fa-list-ul"></i> Recomendados para você
+            </div>
+            <div class="related-grid" id="relatedGrid">
+                <div class="loading-state">
+                    <i class="fas fa-spinner"></i> Carregando recomendados...
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ============================================================
+    TOAST
+    ============================================================ -->
+    <div id="toastContainer"></div>
+
+    <!-- ============================================================
+    JAVASCRIPT
+    ============================================================ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================================
+            // CONFIG
+            // ============================================================
+            const CONFIG = {
+                relatedLimit: 8,
+                apiBase: '/api'
+            };
+
+            // ============================================================
+            // DOM REFS
+            // ============================================================
+            const $ = (sel) => document.querySelector(sel);
+            const $$ = (sel) => document.querySelectorAll(sel);
+
+            const dom = {
+                playerIframe: $('#playerIframe'),
+                playerLoading: $('#playerLoading'),
+                videoTitle: $('#videoTitle'),
+                videoViews: $('#videoViews'),
+                videoDate: $('#videoDate'),
+                videoBadge: $('#videoBadge'),
+                videoDescription: $('#videoDescription'),
+                relatedGrid: $('#relatedGrid'),
+                toastContainer: $('#toastContainer')
+            };
+
+            // ============================================================
+            // TOAST
+            // ============================================================
+            function showToast(message, isError = false) {
+                const toast = document.createElement('div');
+                toast.className = `toast ${isError ? 'error' : ''}`;
+                toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${message}`;
+                dom.toastContainer.appendChild(toast);
+                setTimeout(() => {
+                    if (toast.parentNode) toast.remove();
+                }, 2800);
+            }
+
+            // ============================================================
+            // FORMATADORES
+            // ============================================================
+            function formatViews(num) {
+                if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+                if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
+                return num.toString();
+            }
+
+            function formatDate(iso) {
+                if (!iso) return '—';
+                const d = new Date(iso);
+                return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+            }
+
+            function getVideoIdFromUrl() {
+                const path = window.location.pathname;
+                const parts = path.split('/');
+                return parts[parts.length - 1] || null;
+            }
+
+            // ============================================================
+            // EXTRAIR ID DO YOUTUBE
+            // ============================================================
+            function extractYoutubeId(url) {
+                if (!url) return null;
+                const patterns = [
+                    /(?:youtube\.com\/watch\?v=)([\w-]+)/,
+                    /(?:youtu\.be\/)([\w-]+)/,
+                    /(?:youtube\.com\/embed\/)([\w-]+)/
+                ];
+                for (const pattern of patterns) {
+                    const match = url.match(pattern);
+                    if (match) return match[1];
+                }
+                return null;
+            }
+
+            // ============================================================
+            // CARREGAR VÍDEO
+            // ============================================================
+            async function loadVideo(videoId) {
+                try {
+                    const resp = await fetch(`${CONFIG.apiBase}/video/${videoId}`);
+                    if (!resp.ok) {
+                        if (resp.status === 404) {
+                            throw new Error('Vídeo não encontrado');
+                        }
+                        throw new Error('Erro ao carregar vídeo');
+                    }
+
+                    const video = await resp.json();
+
+                    // Preencher informações
+                    dom.videoTitle.textContent = video.titulo || 'Sem título';
+                    dom.videoViews.innerHTML = `<i class="fas fa-eye"></i> ${formatViews(video.views || 0)} visualizações`;
+                    dom.videoDate.innerHTML = `<i class="far fa-calendar-alt"></i> ${formatDate(video.criado_em)}`;
+                    dom.videoBadge.textContent = `${formatViews(video.views || 0)} views`;
+                    dom.videoDescription.textContent = video.descricao || '';
+
+                    // Carregar player
+                    if (video.youtube_id) {
+                        const embedUrl = `https://www.youtube.com/embed/${video.youtube_id}?autoplay=1&rel=0&modestbranding=1`;
+                        dom.playerIframe.src = embedUrl;
+                        dom.playerIframe.onload = () => {
+                            dom.playerLoading.classList.add('hidden');
+                        };
+                        // Fallback: esconder loading após 5s mesmo se não carregar
+                        setTimeout(() => {
+                            dom.playerLoading.classList.add('hidden');
+                        }, 5000);
+                    } else {
+                        dom.playerLoading.innerHTML = `
+                            <i class="fas fa-exclamation-triangle" style="color:#ff9800;"></i>
+                            <span>ID do YouTube não encontrado</span>
+                        `;
+                    }
+
+                    // Registrar view
+                    await registerView(videoId);
+
+                    // Carregar recomendados
+                    await loadRelated(videoId);
+
+                    return video;
+
+                } catch (err) {
+                    console.error('Erro loadVideo:', err);
+                    dom.videoTitle.textContent = 'Erro ao carregar vídeo';
+                    dom.videoDescription.textContent = err.message || 'Tente novamente mais tarde.';
+                    dom.playerLoading.innerHTML = `
+                        <i class="fas fa-exclamation-triangle" style="color:#e50914;"></i>
+                        <span>${err.message || 'Erro ao carregar'}</span>
+                    `;
+                    setTimeout(() => {
+                        dom.playerLoading.classList.add('hidden');
+                    }, 3000);
+                    showToast('Erro ao carregar vídeo', true);
+                    return null;
+                }
+            }
+
+            // ============================================================
+            // REGISTRAR VIEW
+            // ============================================================
+            async function registerView(videoId) {
+                try {
+                    const resp = await fetch(`${CONFIG.apiBase}/video/${videoId}/view`, {
+                        method: 'POST'
+                    });
+                    if (!resp.ok) throw new Error('Erro ao registrar view');
+
+                    const data = await resp.json();
+
+                    // Atualizar contador se houver mudança
+                    if (data.views) {
+                        dom.videoViews.innerHTML = `<i class="fas fa-eye"></i> ${formatViews(data.views)} visualizações`;
+                        dom.videoBadge.textContent = `${formatViews(data.views)} views`;
+                    }
+
+                    if (data.alreadyViewed) {
+                        console.log('👁️ View já registrada para este usuário');
+                    } else {
+                        console.log('👁️ View registrada com sucesso');
+                    }
+
+                } catch (err) {
+                    console.warn('Erro ao registrar view:', err);
+                    // Não mostrar erro ao usuário, apenas log
+                }
+            }
+
+            // ============================================================
+            // CARREGAR RECOMENDADOS (RELACIONADOS)
+            // ============================================================
+            async function loadRelated(videoId) {
+                dom.relatedGrid.innerHTML = `
+                    <div class="loading-state">
+                        <i class="fas fa-spinner"></i> Carregando recomendados...
+                    </div>
+                `;
+
+                try {
+                    // Buscar vídeos populares (recomendados)
+                    const resp = await fetch(`${CONFIG.apiBase}/videos/popular?limit=${CONFIG.relatedLimit}`);
+                    if (!resp.ok) throw new Error('Erro ao carregar recomendados');
+
+                    const data = await resp.json();
+                    const videos = data.videos || [];
+
+                    // Filtrar o vídeo atual da lista
+                    const filtered = videos.filter(v => v.id !== videoId);
+
+                    if (filtered.length === 0) {
+                        dom.relatedGrid.innerHTML = `
+                            <div class="empty-state" style="grid-column:1/-1;">
+                                <i class="fas fa-info-circle"></i>
+                                <h4>Sem recomendações</h4>
+                                <p>Volte mais tarde para mais vídeos.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    // Renderizar
+                    const fragment = document.createDocumentFragment();
+                    filtered.forEach(v => {
+                        const card = document.createElement('div');
+                        card.className = 'related-card';
+                        card.dataset.id = v.id;
+                        card.innerHTML = `
+                            <div class="thumb">
+                                <img src="${v.thumbnail || 'https://via.placeholder.com/320x180/1a2d42/64b5f6?text=DSO'}" 
+                                     alt="${v.titulo || 'Vídeo'}"
+                                     loading="lazy"
+                                     onerror="this.src='https://via.placeholder.com/320x180/1a2d42/64b5f6?text=DSO'">
+                                <div class="play-icon"><i class="fas fa-play"></i></div>
+                            </div>
+                            <div class="info">
+                                <h4>${v.titulo || 'Sem título'}</h4>
+                                <div class="views">
+                                    <i class="fas fa-eye"></i> ${formatViews(v.views || 0)}
+                                </div>
+                            </div>
+                        `;
+                        card.addEventListener('click', () => {
+                            window.location.href = `/video/${v.id}`;
+                        });
+                        fragment.appendChild(card);
+                    });
+
+                    dom.relatedGrid.innerHTML = '';
+                    dom.relatedGrid.appendChild(fragment);
+
+                } catch (err) {
+                    console.error('Erro loadRelated:', err);
+                    dom.relatedGrid.innerHTML = `
+                        <div class="empty-state" style="grid-column:1/-1;">
+                            <i class="fas fa-exclamation-triangle" style="color:#ff9800;"></i>
+                            <h4>Erro ao carregar recomendações</h4>
+                            <p>Tente novamente mais tarde.</p>
+                        </div>
+                    `;
+                }
+            }
+
+            // ============================================================
+            // INICIALIZAÇÃO
+            // ============================================================
+            async function init() {
+                const videoId = getVideoIdFromUrl();
+
+                if (!videoId) {
+                    dom.videoTitle.textContent = 'ID do vídeo não encontrado';
+                    dom.videoDescription.textContent = 'URL inválida. Volte para a lista de vídeos.';
+                    dom.playerLoading.innerHTML = `
+                        <i class="fas fa-exclamation-triangle" style="color:#ff9800;"></i>
+                        <span>ID do vídeo não encontrado</span>
+                    `;
+                    setTimeout(() => {
+                        dom.playerLoading.classList.add('hidden');
+                    }, 2000);
+                    dom.relatedGrid.innerHTML = `
+                        <div class="empty-state" style="grid-column:1/-1;">
+                            <i class="fas fa-info-circle"></i>
+                            <h4>Nenhum vídeo selecionado</h4>
+                            <p><a href="/videos" style="color:#64b5f6;text-decoration:none;">Voltar para a lista</a></p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Carregar vídeo
+                await loadVideo(videoId);
+            }
+
+            // Iniciar
+            init();
+
+            // Expor para debug
+            window.__videoPlayer = { loadVideo, loadRelated, registerView };
+
+        })();
+    </script>
+
+</body>
+</html>
