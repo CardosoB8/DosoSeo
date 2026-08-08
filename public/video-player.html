@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DSO Vídeos - Player</title>
+    <!-- 🔥 IMPORTANTE: Meta tag para forçar a política de referenciador -->
+    <meta name="referrer" content="strict-origin-when-cross-origin">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* ============================================================
@@ -524,9 +526,11 @@
                     <i class="fas fa-spinner"></i>
                     <span>Carregando vídeo...</span>
                 </div>
+                <!-- 🔥 IFRAME CORRIGIDO COM TODAS AS CONFIGURAÇÕES -->
                 <iframe id="playerIframe"
                         src="about:blank"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        referrerpolicy="strict-origin-when-cross-origin"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                         allowfullscreen>
                 </iframe>
             </div>
@@ -630,20 +634,46 @@
             }
 
             // ============================================================
-            // EXTRAIR ID DO YOUTUBE
+            // EXTRAIR ID DO YOUTUBE (CORRIGIDO)
             // ============================================================
             function extractYoutubeId(url) {
                 if (!url) return null;
+                
+                // 🔥 REMOVER ?si= e outros parâmetros de rastreamento
+                let cleanUrl = url;
+                
+                // Remover ?si=... (parâmetro de compartilhamento do YouTube)
+                cleanUrl = cleanUrl.replace(/\?si=[\w-]+/, '');
+                cleanUrl = cleanUrl.replace(/&si=[\w-]+/, '');
+                
+                // Remover qualquer outro ? ou & que possa atrapalhar
+                cleanUrl = cleanUrl.split('?')[0];
+                cleanUrl = cleanUrl.split('&')[0];
+                
                 const patterns = [
                     /(?:youtube\.com\/watch\?v=)([\w-]+)/,
                     /(?:youtu\.be\/)([\w-]+)/,
                     /(?:youtube\.com\/embed\/)([\w-]+)/
                 ];
+                
                 for (const pattern of patterns) {
-                    const match = url.match(pattern);
+                    const match = cleanUrl.match(pattern);
                     if (match) return match[1];
                 }
+                
+                // Se for apenas o ID (11 caracteres)
+                if (/^[\w-]{11}$/.test(url)) return url;
+                
                 return null;
+            }
+
+            // ============================================================
+            // GERAR URL DE EMBED (CORRIGIDO)
+            // ============================================================
+            function getEmbedUrl(videoId) {
+                if (!videoId) return null;
+                // 🔥 USAR youtube-nocookie.com para evitar problemas de privacidade
+                return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3`;
             }
 
             // ============================================================
@@ -668,22 +698,51 @@
                     dom.videoBadge.textContent = `${formatViews(video.views || 0)} views`;
                     dom.videoDescription.textContent = video.descricao || '';
 
-                    // Carregar player
+                    // 🔥 CARREGAR PLAYER COM CONFIGURAÇÕES CORRETAS
                     if (video.youtube_id) {
-                        const embedUrl = `https://www.youtube.com/embed/${video.youtube_id}?autoplay=1&rel=0&modestbranding=1`;
-                        dom.playerIframe.src = embedUrl;
-                        dom.playerIframe.onload = () => {
-                            dom.playerLoading.classList.add('hidden');
-                        };
-                        // Fallback: esconder loading após 5s mesmo se não carregar
+                        // Extrair ID limpo (sem ?si=)
+                        const cleanId = extractYoutubeId(video.youtube_id) || video.youtube_id;
+                        const embedUrl = getEmbedUrl(cleanId);
+                        
+                        console.log('🎬 Carregando embed:', embedUrl);
+                        console.log('🔑 ID limpo:', cleanId);
+                        
+                        // 🔥 RECARREGAR IFRAME PARA APLICAR CONFIGURAÇÕES
+                        const iframe = dom.playerIframe;
+                        
+                        // Resetar o iframe para aplicar as configurações
+                        iframe.src = 'about:blank';
+                        
+                        // Forçar recarga com as configurações corretas
                         setTimeout(() => {
-                            dom.playerLoading.classList.add('hidden');
-                        }, 5000);
+                            iframe.src = embedUrl;
+                            iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+                            
+                            // Adicionar atributos de segurança
+                            iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
+                            iframe.setAttribute('allowfullscreen', '');
+                            iframe.setAttribute('frameborder', '0');
+                            
+                            // Esconder loading após carregar
+                            iframe.onload = () => {
+                                dom.playerLoading.classList.add('hidden');
+                                console.log('✅ Player carregado com sucesso!');
+                            };
+                            
+                            // Fallback: esconder loading após 8s
+                            setTimeout(() => {
+                                dom.playerLoading.classList.add('hidden');
+                            }, 8000);
+                        }, 100);
+                        
                     } else {
                         dom.playerLoading.innerHTML = `
                             <i class="fas fa-exclamation-triangle" style="color:#ff9800;"></i>
                             <span>ID do YouTube não encontrado</span>
                         `;
+                        setTimeout(() => {
+                            dom.playerLoading.classList.add('hidden');
+                        }, 3000);
                     }
 
                     // Registrar view
@@ -722,7 +781,6 @@
 
                     const data = await resp.json();
 
-                    // Atualizar contador se houver mudança
                     if (data.views) {
                         dom.videoViews.innerHTML = `<i class="fas fa-eye"></i> ${formatViews(data.views)} visualizações`;
                         dom.videoBadge.textContent = `${formatViews(data.views)} views`;
@@ -736,7 +794,6 @@
 
                 } catch (err) {
                     console.warn('Erro ao registrar view:', err);
-                    // Não mostrar erro ao usuário, apenas log
                 }
             }
 
@@ -751,14 +808,12 @@
                 `;
 
                 try {
-                    // Buscar vídeos populares (recomendados)
                     const resp = await fetch(`${CONFIG.apiBase}/videos/popular?limit=${CONFIG.relatedLimit}`);
                     if (!resp.ok) throw new Error('Erro ao carregar recomendados');
 
                     const data = await resp.json();
                     const videos = data.videos || [];
 
-                    // Filtrar o vídeo atual da lista
                     const filtered = videos.filter(v => v.id !== videoId);
 
                     if (filtered.length === 0) {
@@ -772,7 +827,6 @@
                         return;
                     }
 
-                    // Renderizar
                     const fragment = document.createDocumentFragment();
                     filtered.forEach(v => {
                         const card = document.createElement('div');
