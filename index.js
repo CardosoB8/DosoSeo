@@ -170,8 +170,14 @@ const adminLimiter = rateLimit({
 
 const passwordLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 20, // Aumentado para 20 tentativas
+    max: 20,
     message: { error: 'Muitas tentativas de gerar senha' }
+});
+
+const viewLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 50,
+    message: { error: 'Muitas visualizações' }
 });
 
 // =================================================================
@@ -243,6 +249,24 @@ function getClientFingerprint(req) {
 
 function getRandomCpaLink() {
     return CPA_LINKS[Math.floor(Math.random() * CPA_LINKS.length)];
+}
+
+function extractYoutubeId(url) {
+    if (!url) return null;
+    const patterns = [
+        /(?:youtube\.com\/watch\?v=)([\w-]+)/,
+        /(?:youtu\.be\/)([\w-]+)/,
+        /(?:youtube\.com\/embed\/)([\w-]+)/
+    ];
+    for (const pattern of patterns) {
+        const match = url.match(pattern);
+        if (match) return match[1];
+    }
+    return null;
+}
+
+function generateVideoId() {
+    return 'vid_' + crypto.randomBytes(8).toString('hex');
 }
 
 // =================================================================
@@ -338,7 +362,8 @@ function requireAdmin(req, res, next) {
 const publicPaths = [
     '/admin-login', '/admin-panel', '/item', '/api/items', '/api/item', 
     '/api/start-download', '/api/step-config', '/api/next-step',
-    '/page1', '/page2', '/page3', '/generate-password'
+    '/page1', '/page2', '/page3', '/generate-password',
+    '/videos', '/video', '/api/videos', '/api/video'
 ];
 
 app.use(async (req, res, next) => {
@@ -346,7 +371,9 @@ app.use(async (req, res, next) => {
                      req.path === '/' ||
                      req.path.startsWith('/css') || 
                      req.path.startsWith('/js') ||
-                     req.path.startsWith('/admin');
+                     req.path.startsWith('/admin') ||
+                     req.path.startsWith('/videos') ||
+                     req.path.startsWith('/video');
     
     if (isPublic) {
         return next();
@@ -429,7 +456,333 @@ app.get('/page:step', async (req, res) => {
 });
 
 // =================================================================
-// API PÚBLICA
+// ROTAS DO HUB DE VÍDEOS
+// =================================================================
+app.get('/videos', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'videos.html'));
+});
+
+app.get('/video/:id', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'video-player.html'));
+});
+
+// =================================================================
+// API DE VÍDEOS (PÚBLICA)
+// =================================================================
+
+// Listar todos os vídeos
+app.get('/api/videos', async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const search = req.query.search || '';
+        const start = (page - 1) * limit;
+        
+        let videoIds = await redisClient.zRange('videos:ativos', 0, -1, { REV: true });
+        
+        if (search) {
+            const searchLower = search.toLowerCase();
+            const filtered = [];
+            for (const id of videoIds) {
+                const video = await redisClient.hGetAll(`video:${id}`);
+                if (video && video.titulo && video.titulo.toLowerCase().includes(searchLower)) {
+                    filtered.push(id);
+                }
+            }
+            videoIds = filtered;
+        }
+        
+        const total = videoIds.length;
+        const paginated = videoIds.slice(start, start + limit);
+        
+        const videos = [];
+        for (const id of paginated) {
+            const video = await redisClient.hGetAll(`video:${id}`);
+            if (video && video.ativo === 'true') {
+                videos.push({
+                    id,
+                    titulo: video.titulo,
+                    descricao: video.descricao || '',
+                    youtube_id: video.youtube_id,
+                    thumbnail: video.thumbnail || `https://img.youtube.com/vi/${video.youtube_id}/hqdefault.jpg`,
+                    views: parseInt(video.views) || 0,
+                    criado_em: video.criado_em
+                });
+            }
+        }
+        
+        res.json({
+            videos,
+            total,
+            page,
+            limit,
+            hasMore: start + limit < total
+        });
+    } catch (error) {
+        console.error('Erro /api/videos:', error);
+        res.status(500).json({ error: 'Erro ao buscar vídeos' });
+    }
+});
+
+// Vídeos populares (recomendados)
+app.get('/api/videos/popular', async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 8;
+        const videoIds = await redisClient.zRange('videos:views', 0, limit - 1, { REV: true });
+        
+        const videos = [];
+        for (const id of videoIds) {
+            const video = await redisClient.hGetAll(`video:${id}`);
+            if (video && video.ativo === 'true') {
+                videos.push({
+                    id,
+                    titulo: video.titulo,
+                    youtube_id: video.youtube_id,
+                    thumbnail: video.thumbnail || `https://img.youtube.com/vi/${video.youtube_id}/hqdefault.jpg`,
+                    views: parseInt(video.views) || 0
+                });
+            }
+        }
+        
+        res.json({ videos });
+    } catch (error) {
+        console.error('Erro /api/videos/popular:', error);
+        res.status(500).json({ error: 'Erro ao buscar vídeos populares' });
+    }
+});
+
+// Detalhes de um vídeo
+app.get('/api/video/:id', async (req, res) => {
+    try {
+        const videoId = req.params.id;
+        const video = await redisClient.hGetAll(`video:${videoId}`);
+        
+        if (!video || Object.keys(video).length === 0 || video.ativo !== 'true') {
+            return res.status(404).json({ error: 'Vídeo não encontrado' });
+        }
+        
+        res.json({
+            id: videoId,
+            titulo: video.titulo,
+            descricao: video.descricao || '',
+            youtube_id: video.youtube_id,
+            thumbnail: video.thumbnail || `https://img.youtube.com/vi/${video.youtube_id}/hqdefault.jpg`,
+            views: parseInt(video.views) || 0,
+            criado_em: video.criado_em
+        });
+    } catch (error) {
+        console.error('Erro /api/video/:id:', error);
+        res.status(500).json({ error: 'Erro ao buscar vídeo' });
+    }
+});
+
+// Incrementar visualização
+app.post('/api/video/:id/view', viewLimiter, async (req, res) => {
+    try {
+        const videoId = req.params.id;
+        const fingerprint = getClientFingerprint(req);
+        const key = `view:${videoId}:${fingerprint}`;
+        
+        const alreadyViewed = await redisClient.get(key);
+        if (alreadyViewed) {
+            return res.json({ success: true, alreadyViewed: true });
+        }
+        
+        const views = await redisClient.hIncrBy(`video:${videoId}`, 'views', 1);
+        await redisClient.zIncrBy('videos:views', 1, videoId);
+        await redisClient.setEx(key, 86400, '1');
+        
+        console.log(`👁️ View registrada: ${videoId} - Total: ${views}`);
+        
+        res.json({ success: true, views: parseInt(views) });
+    } catch (error) {
+        console.error('Erro /api/video/:id/view:', error);
+        res.status(500).json({ error: 'Erro ao registrar visualização' });
+    }
+});
+
+// Buscar vídeos
+app.get('/api/videos/search', async (req, res) => {
+    try {
+        const q = req.query.q || '';
+        const limit = parseInt(req.query.limit) || 20;
+        
+        if (!q || q.length < 2) {
+            return res.json({ videos: [] });
+        }
+        
+        const videoIds = await redisClient.zRange('videos:ativos', 0, -1);
+        const searchLower = q.toLowerCase();
+        const results = [];
+        
+        for (const id of videoIds) {
+            const video = await redisClient.hGetAll(`video:${id}`);
+            if (video && video.ativo === 'true') {
+                const titulo = video.titulo || '';
+                const descricao = video.descricao || '';
+                if (titulo.toLowerCase().includes(searchLower) || 
+                    descricao.toLowerCase().includes(searchLower)) {
+                    results.push({
+                        id,
+                        titulo: video.titulo,
+                        youtube_id: video.youtube_id,
+                        thumbnail: video.thumbnail || `https://img.youtube.com/vi/${video.youtube_id}/hqdefault.jpg`,
+                        views: parseInt(video.views) || 0
+                    });
+                }
+            }
+            if (results.length >= limit) break;
+        }
+        
+        res.json({ videos: results });
+    } catch (error) {
+        console.error('Erro /api/videos/search:', error);
+        res.status(500).json({ error: 'Erro ao buscar vídeos' });
+    }
+});
+
+// =================================================================
+// API ADMIN DE VÍDEOS
+// =================================================================
+
+// Listar todos os vídeos (admin)
+app.get('/admin/api/videos', requireAdmin, async (req, res) => {
+    try {
+        const videoIds = await redisClient.zRange('videos:ativos', 0, -1, { REV: true });
+        const videos = [];
+        
+        for (const id of videoIds) {
+            const video = await redisClient.hGetAll(`video:${id}`);
+            videos.push({
+                id,
+                ...video,
+                views: parseInt(video.views) || 0
+            });
+        }
+        
+        res.json({ videos });
+    } catch (error) {
+        console.error('Erro /admin/api/videos:', error);
+        res.status(500).json({ error: 'Erro ao buscar vídeos' });
+    }
+});
+
+// Adicionar vídeo
+app.post('/admin/api/video', requireAdmin, async (req, res) => {
+    try {
+        const { titulo, descricao, youtube_url, ativo } = req.body;
+        
+        if (!titulo || !youtube_url) {
+            return res.status(400).json({ error: 'Título e URL são obrigatórios' });
+        }
+        
+        const youtubeId = extractYoutubeId(youtube_url);
+        if (!youtubeId) {
+            return res.status(400).json({ error: 'URL do YouTube inválida' });
+        }
+        
+        const videoId = generateVideoId();
+        const now = new Date().toISOString();
+        
+        const videoData = {
+            titulo,
+            descricao: descricao || '',
+            youtube_id: youtubeId,
+            youtube_url,
+            thumbnail: `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`,
+            views: '0',
+            criado_em: now,
+            ativo: ativo === 'true' ? 'true' : 'false'
+        };
+        
+        await redisClient.hSet(`video:${videoId}`, videoData);
+        
+        if (ativo === 'true') {
+            await redisClient.zAdd('videos:ativos', { score: Date.now(), value: videoId });
+            await redisClient.zAdd('videos:views', { score: 0, value: videoId });
+        }
+        
+        console.log(`✅ Vídeo adicionado: ${titulo} (${videoId})`);
+        
+        res.json({ success: true, id: videoId });
+    } catch (error) {
+        console.error('Erro /admin/api/video:', error);
+        res.status(500).json({ error: 'Erro ao adicionar vídeo' });
+    }
+});
+
+// Editar vídeo
+app.put('/admin/api/video/:id', requireAdmin, async (req, res) => {
+    try {
+        const videoId = req.params.id;
+        const { titulo, descricao, youtube_url, ativo } = req.body;
+        
+        const exists = await redisClient.exists(`video:${videoId}`);
+        if (!exists) {
+            return res.status(404).json({ error: 'Vídeo não encontrado' });
+        }
+        
+        let youtubeId = null;
+        if (youtube_url) {
+            youtubeId = extractYoutubeId(youtube_url);
+            if (!youtubeId) {
+                return res.status(400).json({ error: 'URL do YouTube inválida' });
+            }
+        }
+        
+        const updates = {};
+        if (titulo) updates.titulo = titulo;
+        if (descricao !== undefined) updates.descricao = descricao;
+        if (youtubeId) {
+            updates.youtube_id = youtubeId;
+            updates.youtube_url = youtube_url;
+            updates.thumbnail = `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
+        }
+        if (ativo !== undefined) {
+            updates.ativo = ativo === 'true' ? 'true' : 'false';
+        }
+        
+        await redisClient.hSet(`video:${videoId}`, updates);
+        
+        if (ativo !== undefined) {
+            if (ativo === 'true') {
+                await redisClient.zAdd('videos:ativos', { score: Date.now(), value: videoId });
+                await redisClient.zAdd('videos:views', { score: 0, value: videoId });
+            } else {
+                await redisClient.zRem('videos:ativos', videoId);
+                await redisClient.zRem('videos:views', videoId);
+            }
+        }
+        
+        console.log(`✅ Vídeo atualizado: ${videoId}`);
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Erro /admin/api/video:', error);
+        res.status(500).json({ error: 'Erro ao editar vídeo' });
+    }
+});
+
+// Deletar vídeo
+app.delete('/admin/api/video/:id', requireAdmin, async (req, res) => {
+    try {
+        const videoId = req.params.id;
+        
+        await redisClient.del(`video:${videoId}`);
+        await redisClient.zRem('videos:ativos', videoId);
+        await redisClient.zRem('videos:views', videoId);
+        
+        console.log(`🗑️ Vídeo deletado: ${videoId}`);
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Erro /admin/api/video:', error);
+        res.status(500).json({ error: 'Erro ao deletar vídeo' });
+    }
+});
+
+// =================================================================
+// API PÚBLICA (ITENS)
 // =================================================================
 
 app.get('/api/items', async (req, res) => {
@@ -458,7 +811,8 @@ app.get('/api/items', async (req, res) => {
                     imagem: item.imagem,
                     categoria: item.categoria,
                     downloads: parseInt(item.downloads) || 0,
-                    criado_em: item.criado_em
+                    criado_em: item.criado_em,
+                    tipo: item.url_original && item.url_original.startsWith('/videos') ? 'video' : 'link'
                 });
             }
         }
@@ -601,7 +955,7 @@ app.get('/api/step-config', async (req, res) => {
 });
 
 // =================================================================
-// PRÓXIMA ETAPA - VERIFICA TIPO DE ITEM
+// PRÓXIMA ETAPA
 // =================================================================
 app.post('/api/next-step', async (req, res) => {
     try {
@@ -652,25 +1006,40 @@ app.post('/api/next-step', async (req, res) => {
             }
         }
         
-        // 🔥 ETAPA FINAL - VERIFICAR TIPO DE URL
         if (clientStep >= TOTAL_STEPS) {
             const today = new Date().toISOString().split('T')[0];
             
-            // 🔥 VERIFICA SE É ITEM DE SENHA (URL começa com /generate-password/)
+            const isVideoItem = urlOriginal && urlOriginal.startsWith('/videos');
             const isPasswordItem = urlOriginal && urlOriginal.startsWith('/generate-password/');
             
-            if (isPasswordItem) {
-                // =============================================
-                // ITEM DE SENHA - GERAR SENHA AUTOMATICAMENTE
-                // =============================================
+            if (isVideoItem) {
+                if (redisItem && Object.keys(redisItem).length > 0) {
+                    await redisClient.hIncrBy(`item:${session.itemId}`, 'downloads', 1);
+                    await redisClient.hIncrBy(`stats:daily:${today}`, 'downloads_total', 1);
+                }
                 
-                // GERAR SENHA (48h)
+                console.log(`🎬 Video hub acessado: ${session.itemId}`);
+                
+                res.cookie('dsessId', session.id, {
+                    maxAge: SESSION_EXPIRATION * 1000,
+                    httpOnly: true,
+                    secure: false,
+                    sameSite: 'lax',
+                    path: '/'
+                });
+                
+                return res.json({ 
+                    redirect: '/videos', 
+                    final: true, 
+                    sessionId: session.id 
+                });
+                
+            } else if (isPasswordItem) {
                 const passwordData = generatePassword(48);
                 if (!passwordData) {
                     return res.status(500).json({ error: 'Erro ao gerar senha' });
                 }
                 
-                // SALVAR NO REDIS
                 const sessionData = {
                     password: passwordData.password,
                     itemId: session.itemId,
@@ -687,13 +1056,12 @@ app.post('/api/next-step', async (req, res) => {
                     JSON.stringify(sessionData)
                 );
                 
-                // INCREMENTAR DOWNLOADS
                 if (redisItem && Object.keys(redisItem).length > 0) {
                     await redisClient.hIncrBy(`item:${session.itemId}`, 'downloads', 1);
                     await redisClient.hIncrBy(`stats:daily:${today}`, 'downloads_total', 1);
                 }
                 
-                console.log(`✅ Senha gerada: ${session.itemId} - Sessão: ${session.id.substring(0, 8)}`);
+                console.log(`✅ Senha gerada: ${session.itemId}`);
                 
                 res.cookie('dsessId', session.id, {
                     maxAge: SESSION_EXPIRATION * 1000,
@@ -703,21 +1071,14 @@ app.post('/api/next-step', async (req, res) => {
                     path: '/'
                 });
                 
-                // REDIRECIONAR PARA A PÁGINA DE SENHA
-                let redirectUrl = `/generate-password/${session.itemId}?sid=${session.id}`;
-                
                 return res.json({ 
-                    redirect: redirectUrl, 
+                    redirect: `/generate-password/${session.itemId}?sid=${session.id}`, 
                     final: true, 
                     sessionId: session.id,
                     generated: true
                 });
                 
             } else {
-                // =============================================
-                // ITEM NORMAL - REDIRECIONAR PARA URL ORIGINAL
-                // =============================================
-                
                 if (redisItem && Object.keys(redisItem).length > 0) {
                     await redisClient.hIncrBy(`item:${session.itemId}`, 'downloads', 1);
                     await redisClient.hIncrBy(`stats:daily:${today}`, 'downloads_total', 1);
@@ -741,7 +1102,6 @@ app.post('/api/next-step', async (req, res) => {
             }
         }
         
-        // AVANÇAR PARA PRÓXIMA ETAPA
         const novaEtapa = clientStep + 1;
         session.etapa_atual = novaEtapa;
         session.timer_iniciado_em = null;
@@ -776,7 +1136,6 @@ app.get('/generate-password/:itemId', passwordLimiter, async (req, res) => {
     try {
         const itemId = req.params.itemId;
         
-        // 1. VERIFICAR SE O ITEM EXISTE
         const redisItem = await redisClient.hGetAll(`item:${itemId}`);
         const oldLink = linksData.find(l => l.alias === itemId);
         
@@ -791,7 +1150,6 @@ app.get('/generate-password/:itemId', passwordLimiter, async (req, res) => {
             `);
         }
         
-        // 2. VERIFICAR SESSÃO DO USUÁRIO
         let session = req.downloadSession;
         if (!session) {
             session = await recoverDownloadSession(req);
@@ -802,13 +1160,11 @@ app.get('/generate-password/:itemId', passwordLimiter, async (req, res) => {
             return res.redirect(`/item/${itemId}`);
         }
         
-        // 3. VERIFICAR SE COMPLETOU AS ETAPAS
         if (session.etapa_atual < TOTAL_STEPS) {
             console.log(`⚠️ Etapas incompletas: ${session.etapa_atual}/${TOTAL_STEPS} - Item: ${itemId}`);
             return res.redirect(`/page${session.etapa_atual}?sid=${session.id}`);
         }
         
-        // 4. VERIFICAR FINGERPRINT
         const fingerprint = getClientFingerprint(req);
         if (session.fingerprint !== fingerprint) {
             console.log(`⚠️ Fingerprint inválido: ${itemId}`);
@@ -822,7 +1178,6 @@ app.get('/generate-password/:itemId', passwordLimiter, async (req, res) => {
             `);
         }
         
-        // 5. BUSCAR INFORMAÇÕES DO ITEM
         let titulo = 'Conteudo';
         if (redisItem && Object.keys(redisItem).length > 0) {
             titulo = redisItem.titulo || 'Conteudo';
@@ -830,7 +1185,6 @@ app.get('/generate-password/:itemId', passwordLimiter, async (req, res) => {
             titulo = oldLink.titulo || 'Conteudo';
         }
         
-        // 6. BUSCAR SENHA SALVA
         let passwordData = null;
         const existingPassword = await redisClient.get(`pass:${session.id}`);
         
@@ -853,7 +1207,6 @@ app.get('/generate-password/:itemId', passwordLimiter, async (req, res) => {
             }
         }
         
-        // Se não tinha senha ou expirou, gera nova
         if (!passwordData) {
             passwordData = generatePassword(48);
             if (!passwordData) {
@@ -876,7 +1229,6 @@ app.get('/generate-password/:itemId', passwordLimiter, async (req, res) => {
                 JSON.stringify(sessionData)
             );
             
-            // INCREMENTAR DOWNLOADS (se ainda não foi incrementado)
             const today = new Date().toISOString().split('T')[0];
             if (redisItem && Object.keys(redisItem).length > 0) {
                 const jaIncrementado = await redisClient.get(`dl:${session.id}`);
@@ -893,7 +1245,6 @@ app.get('/generate-password/:itemId', passwordLimiter, async (req, res) => {
         const horasRestantes = Math.floor((passwordData.expiryDate - new Date()) / (1000 * 60 * 60));
         const phoneNumber = '258858861745';
         
-        // 7. RENDERIZAR PÁGINA
         res.send(`
             <!DOCTYPE html>
             <html lang="pt">
@@ -1246,7 +1597,7 @@ app.get('/generate-password/:itemId', passwordLimiter, async (req, res) => {
 });
 
 // =================================================================
-// API ADMIN
+// API ADMIN (ITENS)
 // =================================================================
 
 app.post('/admin/api/login', adminLimiter, async (req, res) => {
@@ -1425,7 +1776,7 @@ app.post('/admin/api/change-password', requireAdmin, async (req, res) => {
 app.get('/:alias', async (req, res) => {
     const alias = req.params.alias;
     
-    const reservedRoutes = ['page1', 'page2', 'page3', 'admin', 'admin-login', 'admin-panel', 'item', 'api', 'css', 'js', 'favicon.ico', 'generate-password'];
+    const reservedRoutes = ['page1', 'page2', 'page3', 'admin', 'admin-login', 'admin-panel', 'item', 'api', 'css', 'js', 'favicon.ico', 'generate-password', 'videos', 'video'];
     if (reservedRoutes.includes(alias) || alias.includes('.')) {
         return res.status(404).send('Not found');
     }
@@ -1464,6 +1815,8 @@ app.listen(PORT, () => {
     ✅ SESSÃO VIA FINGERPRINT (À PROVA DE CPA)
     ✅ TIMER PERSISTENTE (NÃO REINICIA APÓS CPA)
     ✅ SENHA DE 48H COM BOTÃO DE COMPRA
+    ✅ HUB DE VÍDEOS COM PLAYER
+    ✅ PAINEL ADMIN COM GERENCIAMENTO DE VÍDEOS
     `);
 });
 
