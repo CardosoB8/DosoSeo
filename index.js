@@ -170,7 +170,7 @@ const adminLimiter = rateLimit({
 
 const passwordLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 5,
+    max: 20, // Aumentado para 20 tentativas
     message: { error: 'Muitas tentativas de gerar senha' }
 });
 
@@ -601,7 +601,7 @@ app.get('/api/step-config', async (req, res) => {
 });
 
 // =================================================================
-// PRÓXIMA ETAPA - MODIFICADO APENAS PARA REDIRECIONAR PARA SENHA
+// PRÓXIMA ETAPA - VERIFICA TIPO DE ITEM
 // =================================================================
 app.post('/api/next-step', async (req, res) => {
     try {
@@ -652,58 +652,93 @@ app.post('/api/next-step', async (req, res) => {
             }
         }
         
-        // 🔥 ETAPA FINAL - GERAR SENHA E REDIRECIONAR
+        // 🔥 ETAPA FINAL - VERIFICAR TIPO DE URL
         if (clientStep >= TOTAL_STEPS) {
             const today = new Date().toISOString().split('T')[0];
             
-            // GERAR SENHA (48h)
-            const passwordData = generatePassword(48);
-            if (!passwordData) {
-                return res.status(500).json({ error: 'Erro ao gerar senha' });
+            // 🔥 VERIFICA SE É ITEM DE SENHA (URL começa com /generate-password/)
+            const isPasswordItem = urlOriginal && urlOriginal.startsWith('/generate-password/');
+            
+            if (isPasswordItem) {
+                // =============================================
+                // ITEM DE SENHA - GERAR SENHA AUTOMATICAMENTE
+                // =============================================
+                
+                // GERAR SENHA (48h)
+                const passwordData = generatePassword(48);
+                if (!passwordData) {
+                    return res.status(500).json({ error: 'Erro ao gerar senha' });
+                }
+                
+                // SALVAR NO REDIS
+                const sessionData = {
+                    password: passwordData.password,
+                    itemId: session.itemId,
+                    expiryDate: passwordData.expiryDate.toISOString(),
+                    titulo: titulo,
+                    gerado_em: new Date().toISOString(),
+                    fingerprint: session.fingerprint,
+                    ip: req.ip || req.connection?.remoteAddress
+                };
+                
+                await redisClient.setEx(
+                    `pass:${session.id}`, 
+                    48 * 60 * 60,
+                    JSON.stringify(sessionData)
+                );
+                
+                // INCREMENTAR DOWNLOADS
+                if (redisItem && Object.keys(redisItem).length > 0) {
+                    await redisClient.hIncrBy(`item:${session.itemId}`, 'downloads', 1);
+                    await redisClient.hIncrBy(`stats:daily:${today}`, 'downloads_total', 1);
+                }
+                
+                console.log(`✅ Senha gerada: ${session.itemId} - Sessão: ${session.id.substring(0, 8)}`);
+                
+                res.cookie('dsessId', session.id, {
+                    maxAge: SESSION_EXPIRATION * 1000,
+                    httpOnly: true,
+                    secure: false,
+                    sameSite: 'lax',
+                    path: '/'
+                });
+                
+                // REDIRECIONAR PARA A PÁGINA DE SENHA
+                let redirectUrl = `/generate-password/${session.itemId}?sid=${session.id}`;
+                
+                return res.json({ 
+                    redirect: redirectUrl, 
+                    final: true, 
+                    sessionId: session.id,
+                    generated: true
+                });
+                
+            } else {
+                // =============================================
+                // ITEM NORMAL - REDIRECIONAR PARA URL ORIGINAL
+                // =============================================
+                
+                if (redisItem && Object.keys(redisItem).length > 0) {
+                    await redisClient.hIncrBy(`item:${session.itemId}`, 'downloads', 1);
+                    await redisClient.hIncrBy(`stats:daily:${today}`, 'downloads_total', 1);
+                }
+                
+                console.log(`✅ Download finalizado: ${urlOriginal}`);
+                
+                res.cookie('dsessId', session.id, {
+                    maxAge: SESSION_EXPIRATION * 1000,
+                    httpOnly: true,
+                    secure: false,
+                    sameSite: 'lax',
+                    path: '/'
+                });
+                
+                return res.json({ 
+                    redirect: urlOriginal, 
+                    final: true, 
+                    sessionId: session.id 
+                });
             }
-            
-            // SALVAR NO REDIS
-            const sessionData = {
-                password: passwordData.password,
-                itemId: session.itemId,
-                expiryDate: passwordData.expiryDate.toISOString(),
-                titulo: titulo,
-                gerado_em: new Date().toISOString(),
-                fingerprint: session.fingerprint,
-                ip: req.ip || req.connection?.remoteAddress
-            };
-            
-            await redisClient.setEx(
-                `pass:${session.id}`, 
-                48 * 60 * 60,
-                JSON.stringify(sessionData)
-            );
-            
-            // INCREMENTAR DOWNLOADS
-            if (redisItem && Object.keys(redisItem).length > 0) {
-                await redisClient.hIncrBy(`item:${session.itemId}`, 'downloads', 1);
-                await redisClient.hIncrBy(`stats:daily:${today}`, 'downloads_total', 1);
-            }
-            
-            console.log(`✅ Senha gerada: ${session.itemId} - Sessão: ${session.id.substring(0, 8)}`);
-            
-            res.cookie('dsessId', session.id, {
-                maxAge: SESSION_EXPIRATION * 1000,
-                httpOnly: true,
-                secure: false,
-                sameSite: 'lax',
-                path: '/'
-            });
-            
-            // REDIRECIONAR PARA A PÁGINA DE SENHA
-            let redirectUrl = `/generate-password/${session.itemId}?sid=${session.id}`;
-            
-            return res.json({ 
-                redirect: redirectUrl, 
-                final: true, 
-                sessionId: session.id,
-                generated: true
-            });
         }
         
         // AVANÇAR PARA PRÓXIMA ETAPA
@@ -735,7 +770,7 @@ app.post('/api/next-step', async (req, res) => {
 });
 
 // =================================================================
-// ROTA DE SENHA - NOVA ROTA
+// ROTA DE SENHA
 // =================================================================
 app.get('/generate-password/:itemId', passwordLimiter, async (req, res) => {
     try {
@@ -764,14 +799,7 @@ app.get('/generate-password/:itemId', passwordLimiter, async (req, res) => {
         
         if (!session) {
             console.log(`❌ Tentativa de acesso sem sessão: ${itemId}`);
-            return res.status(403).send(`
-                <!DOCTYPE html>
-                <html><head><meta charset="UTF-8"><title>Acesso Negado</title>
-                <style>body{font-family:Arial;background:#0F1C2E;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;text-align:center;}.card{background:#1A2D42;padding:40px;border-radius:20px;max-width:400px;}.error{color:#E50914;font-size:48px;}h2{color:#E50914;}p{color:#B0BEC5;}.btn{display:inline-block;padding:12px 30px;background:#E50914;color:#fff;border-radius:30px;text-decoration:none;margin-top:20px;}</style>
-                </head><body>
-                    <div class="card"><div class="error">🔒</div><h2>Acesso Negado</h2><p>Voce precisa acessar este conteudo atraves do sistema.</p><a href="/" class="btn">Voltar ao Inicio</a></div>
-                </body></html>
-            `);
+            return res.redirect(`/item/${itemId}`);
         }
         
         // 3. VERIFICAR SE COMPLETOU AS ETAPAS
@@ -865,7 +893,7 @@ app.get('/generate-password/:itemId', passwordLimiter, async (req, res) => {
         const horasRestantes = Math.floor((passwordData.expiryDate - new Date()) / (1000 * 60 * 60));
         const phoneNumber = '258858861745';
         
-        // 7. RENDERIZAR PÁGINA SEM EMOJIS
+        // 7. RENDERIZAR PÁGINA
         res.send(`
             <!DOCTYPE html>
             <html lang="pt">
