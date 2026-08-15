@@ -251,17 +251,48 @@ function getRandomCpaLink() {
     return CPA_LINKS[Math.floor(Math.random() * CPA_LINKS.length)];
 }
 
+// 🔥 FUNÇÃO CORRIGIDA - ACEITA YOUTUBE E STREAMABLE
 function extractYoutubeId(url) {
     if (!url) return null;
+    
+    // Remover ?si= e outros parâmetros
+    let cleanUrl = url.replace(/\?si=[\w-]+/g, '');
+    cleanUrl = cleanUrl.replace(/&si=[\w-]+/g, '');
+    cleanUrl = cleanUrl.split('?')[0];
+    cleanUrl = cleanUrl.split('&')[0];
+    
+    // 🔥 VERIFICAR SE É STREAMABLE
+    if (cleanUrl.includes('streamable.com')) {
+        // Extrair ID do Streamable: https://streamable.com/e/xxxxx
+        const match = cleanUrl.match(/streamable\.com\/e\/([\w-]+)/);
+        if (match) {
+            console.log('✅ Streamable ID encontrado:', match[1]);
+            return match[1];
+        }
+        // Ou: https://streamable.com/xxxxx
+        const match2 = cleanUrl.match(/streamable\.com\/([\w-]+)/);
+        if (match2) {
+            console.log('✅ Streamable ID encontrado:', match2[1]);
+            return match2[1];
+        }
+        return null;
+    }
+    
+    // YouTube
     const patterns = [
         /(?:youtube\.com\/watch\?v=)([\w-]+)/,
         /(?:youtu\.be\/)([\w-]+)/,
         /(?:youtube\.com\/embed\/)([\w-]+)/
     ];
+    
     for (const pattern of patterns) {
-        const match = url.match(pattern);
+        const match = cleanUrl.match(pattern);
         if (match) return match[1];
     }
+    
+    // Se for apenas o ID (11 caracteres - YouTube ou Streamable)
+    if (/^[\w-]{11}$/.test(url)) return url;
+    
     return null;
 }
 
@@ -503,10 +534,13 @@ app.get('/api/videos', async (req, res) => {
                     id,
                     titulo: video.titulo,
                     descricao: video.descricao || '',
-                    youtube_id: video.youtube_id,
-                    thumbnail: video.thumbnail || `https://img.youtube.com/vi/${video.youtube_id}/hqdefault.jpg`,
+                    youtube_id: video.youtube_id || '',
+                    streamable_id: video.streamable_id || '',
+                    streamable_url: video.streamable_url || '',
+                    thumbnail: video.thumbnail || `https://img.youtube.com/vi/${video.youtube_id || 'dQw4w9WgXcQ'}/hqdefault.jpg`,
                     views: parseInt(video.views) || 0,
-                    criado_em: video.criado_em
+                    criado_em: video.criado_em,
+                    isStreamable: !!video.streamable_url
                 });
             }
         }
@@ -537,9 +571,11 @@ app.get('/api/videos/popular', async (req, res) => {
                 videos.push({
                     id,
                     titulo: video.titulo,
-                    youtube_id: video.youtube_id,
-                    thumbnail: video.thumbnail || `https://img.youtube.com/vi/${video.youtube_id}/hqdefault.jpg`,
-                    views: parseInt(video.views) || 0
+                    youtube_id: video.youtube_id || '',
+                    streamable_url: video.streamable_url || '',
+                    thumbnail: video.thumbnail || `https://img.youtube.com/vi/${video.youtube_id || 'dQw4w9WgXcQ'}/hqdefault.jpg`,
+                    views: parseInt(video.views) || 0,
+                    isStreamable: !!video.streamable_url
                 });
             }
         }
@@ -561,14 +597,40 @@ app.get('/api/video/:id', async (req, res) => {
             return res.status(404).json({ error: 'Vídeo não encontrado' });
         }
         
+        // 🔥 MONTAR URL CORRETA PARA O PLAYER
+        let videoUrl = '';
+        let embedUrl = '';
+        const isStreamable = !!video.streamable_url;
+        
+        if (isStreamable) {
+            // É Streamable
+            videoUrl = video.streamable_url;
+            embedUrl = video.streamable_url;
+        } else if (video.youtube_id) {
+            // É YouTube
+            videoUrl = `https://www.youtube.com/watch?v=${video.youtube_id}`;
+            embedUrl = `https://www.youtube-nocookie.com/embed/${video.youtube_id}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3`;
+        } else {
+            // Fallback: tentar usar o youtube_url
+            const id = extractYoutubeId(video.youtube_url);
+            if (id) {
+                videoUrl = `https://www.youtube.com/watch?v=${id}`;
+                embedUrl = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3`;
+            }
+        }
+        
         res.json({
             id: videoId,
             titulo: video.titulo,
             descricao: video.descricao || '',
-            youtube_id: video.youtube_id,
-            thumbnail: video.thumbnail || `https://img.youtube.com/vi/${video.youtube_id}/hqdefault.jpg`,
+            youtube_id: video.youtube_id || '',
+            streamable_url: video.streamable_url || '',
+            video_url: videoUrl,
+            embed_url: embedUrl,
+            thumbnail: video.thumbnail || `https://img.youtube.com/vi/${video.youtube_id || 'dQw4w9WgXcQ'}/hqdefault.jpg`,
             views: parseInt(video.views) || 0,
-            criado_em: video.criado_em
+            criado_em: video.criado_em,
+            isStreamable: isStreamable
         });
     } catch (error) {
         console.error('Erro /api/video/:id:', error);
@@ -625,9 +687,11 @@ app.get('/api/videos/search', async (req, res) => {
                     results.push({
                         id,
                         titulo: video.titulo,
-                        youtube_id: video.youtube_id,
-                        thumbnail: video.thumbnail || `https://img.youtube.com/vi/${video.youtube_id}/hqdefault.jpg`,
-                        views: parseInt(video.views) || 0
+                        youtube_id: video.youtube_id || '',
+                        streamable_url: video.streamable_url || '',
+                        thumbnail: video.thumbnail || `https://img.youtube.com/vi/${video.youtube_id || 'dQw4w9WgXcQ'}/hqdefault.jpg`,
+                        views: parseInt(video.views) || 0,
+                        isStreamable: !!video.streamable_url
                     });
                 }
             }
@@ -667,7 +731,7 @@ app.get('/admin/api/videos', requireAdmin, async (req, res) => {
     }
 });
 
-// Adicionar vídeo
+// 🔥 ADICIONAR VÍDEO (ACEITA YOUTUBE E STREAMABLE)
 app.post('/admin/api/video', requireAdmin, async (req, res) => {
     try {
         const { titulo, descricao, youtube_url, ativo } = req.body;
@@ -676,42 +740,55 @@ app.post('/admin/api/video', requireAdmin, async (req, res) => {
             return res.status(400).json({ error: 'Título e URL são obrigatórios' });
         }
         
-        const youtubeId = extractYoutubeId(youtube_url);
-        if (!youtubeId) {
-            return res.status(400).json({ error: 'URL do YouTube inválida' });
+        // 🔥 EXTRAIR ID (YouTube ou Streamable)
+        const videoIdExtracted = extractYoutubeId(youtube_url);
+        if (!videoIdExtracted) {
+            return res.status(400).json({ error: 'URL inválida. Use YouTube (watch?v=) ou Streamable (streamable.com/e/)' });
         }
         
-        const videoId = generateVideoId();
+        const id = generateVideoId();
         const now = new Date().toISOString();
         
-        const videoData = {
+        // 🔥 DETECTAR O TIPO DE URL
+        const isStreamable = youtube_url.includes('streamable.com');
+        const isYoutube = youtube_url.includes('youtube.com') || youtube_url.includes('youtu.be');
+        
+        let videoData = {
             titulo,
             descricao: descricao || '',
-            youtube_id: youtubeId,
-            youtube_url,
-            thumbnail: `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`,
+            youtube_url: youtube_url,
+            youtube_id: isYoutube ? videoIdExtracted : '',
+            streamable_id: isStreamable ? videoIdExtracted : '',
+            streamable_url: isStreamable ? youtube_url : '',
             views: '0',
             criado_em: now,
             ativo: ativo === 'true' ? 'true' : 'false'
         };
         
-        await redisClient.hSet(`video:${videoId}`, videoData);
-        
-        if (ativo === 'true') {
-            await redisClient.zAdd('videos:ativos', { score: Date.now(), value: videoId });
-            await redisClient.zAdd('videos:views', { score: 0, value: videoId });
+        // 🔥 GERAR THUMBNAIL
+        if (isYoutube) {
+            videoData.thumbnail = `https://img.youtube.com/vi/${videoIdExtracted}/hqdefault.jpg`;
+        } else {
+            videoData.thumbnail = `https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg`;
         }
         
-        console.log(`✅ Vídeo adicionado: ${titulo} (${videoId})`);
+        await redisClient.hSet(`video:${id}`, videoData);
         
-        res.json({ success: true, id: videoId });
+        if (ativo === 'true') {
+            await redisClient.zAdd('videos:ativos', { score: Date.now(), value: id });
+            await redisClient.zAdd('videos:views', { score: 0, value: id });
+        }
+        
+        console.log(`✅ Vídeo adicionado: ${titulo} (${id}) - ${isStreamable ? 'Streamable' : 'YouTube'}`);
+        
+        res.json({ success: true, id: id });
     } catch (error) {
         console.error('Erro /admin/api/video:', error);
         res.status(500).json({ error: 'Erro ao adicionar vídeo' });
     }
 });
 
-// Editar vídeo
+// 🔥 EDITAR VÍDEO (ACEITA YOUTUBE E STREAMABLE)
 app.put('/admin/api/video/:id', requireAdmin, async (req, res) => {
     try {
         const videoId = req.params.id;
@@ -722,22 +799,38 @@ app.put('/admin/api/video/:id', requireAdmin, async (req, res) => {
             return res.status(404).json({ error: 'Vídeo não encontrado' });
         }
         
-        let youtubeId = null;
+        let videoIdExtracted = null;
+        let isStreamable = false;
+        let isYoutube = false;
+        
         if (youtube_url) {
-            youtubeId = extractYoutubeId(youtube_url);
-            if (!youtubeId) {
-                return res.status(400).json({ error: 'URL do YouTube inválida' });
+            videoIdExtracted = extractYoutubeId(youtube_url);
+            if (!videoIdExtracted) {
+                return res.status(400).json({ error: 'URL inválida. Use YouTube (watch?v=) ou Streamable (streamable.com/e/)' });
             }
+            isStreamable = youtube_url.includes('streamable.com');
+            isYoutube = youtube_url.includes('youtube.com') || youtube_url.includes('youtu.be');
         }
         
         const updates = {};
         if (titulo) updates.titulo = titulo;
         if (descricao !== undefined) updates.descricao = descricao;
-        if (youtubeId) {
-            updates.youtube_id = youtubeId;
+        
+        if (youtube_url) {
             updates.youtube_url = youtube_url;
-            updates.thumbnail = `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
+            if (isYoutube) {
+                updates.youtube_id = videoIdExtracted;
+                updates.streamable_id = '';
+                updates.streamable_url = '';
+                updates.thumbnail = `https://img.youtube.com/vi/${videoIdExtracted}/hqdefault.jpg`;
+            } else if (isStreamable) {
+                updates.youtube_id = '';
+                updates.streamable_id = videoIdExtracted;
+                updates.streamable_url = youtube_url;
+                updates.thumbnail = `https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg`;
+            }
         }
+        
         if (ativo !== undefined) {
             updates.ativo = ativo === 'true' ? 'true' : 'false';
         }
@@ -755,7 +848,6 @@ app.put('/admin/api/video/:id', requireAdmin, async (req, res) => {
         }
         
         console.log(`✅ Vídeo atualizado: ${videoId}`);
-        
         res.json({ success: true });
     } catch (error) {
         console.error('Erro /admin/api/video:', error);
@@ -1817,6 +1909,7 @@ app.listen(PORT, () => {
     ✅ SENHA DE 48H COM BOTÃO DE COMPRA
     ✅ HUB DE VÍDEOS COM PLAYER
     ✅ PAINEL ADMIN COM GERENCIAMENTO DE VÍDEOS
+    ✅ SUPORTE A STREAMABLE E YOUTUBE
     `);
 });
 
