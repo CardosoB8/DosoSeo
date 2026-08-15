@@ -1213,7 +1213,7 @@
     </div>
 
     <!-- ============================================================
-    MODAL DE VÍDEO
+    MODAL DE VÍDEO - CORRIGIDO (ACEITA YOUTUBE E STREAMABLE)
     ============================================================ -->
     <div class="modal-overlay" id="videoModal">
         <div class="modal">
@@ -1235,11 +1235,14 @@
                         <textarea id="videoDescricao" rows="3" placeholder="Descrição do vídeo..."></textarea>
                     </div>
                     
+                    <!-- 🔥 CAMPO CORRIGIDO - ACEITA YOUTUBE E STREAMABLE -->
                     <div class="form-group">
-                        <label><i class="fab fa-youtube" style="color:#ff0000;"></i> URL do YouTube *</label>
-                        <input type="url" id="videoUrl" placeholder="https://www.youtube.com/watch?v=xxxxx" required>
+                        <label><i class="fas fa-link" style="color:#64b5f6;"></i> URL do Vídeo *</label>
+                        <input type="url" id="videoUrl" placeholder="https://www.youtube.com/watch?v=xxxxx ou https://streamable.com/e/xxxxx" required>
                         <small style="color:var(--text-muted);font-size:11px;display:block;margin-top:4px;">
-                            <i class="fas fa-info-circle"></i> Ex: https://www.youtube.com/watch?v=abcd1234
+                            <i class="fas fa-info-circle"></i> 
+                            <strong>YouTube:</strong> https://www.youtube.com/watch?v=abcd1234 ou https://youtu.be/abcd1234<br>
+                            <strong>Streamable:</strong> https://streamable.com/e/abcd1234 ou https://streamable.com/abcd1234
                         </small>
                     </div>
                     
@@ -1748,8 +1751,21 @@
             
             let html = '';
             filteredVideos.forEach((video, index) => {
-                const thumb = video.thumbnail || `https://img.youtube.com/vi/${video.youtube_id}/hqdefault.jpg`;
+                // 🔥 USAR thumbnail correta para Streamable ou YouTube
+                let thumb = video.thumbnail || '';
+                if (!thumb || thumb.includes('dQw4w9WgXcQ')) {
+                    if (video.streamable_url) {
+                        thumb = 'https://placehold.co/320x180/1a2d42/64b5f6?text=Streamable';
+                    } else if (video.youtube_id) {
+                        thumb = `https://img.youtube.com/vi/${video.youtube_id}/hqdefault.jpg`;
+                    } else {
+                        thumb = 'https://placehold.co/320x180/1a2d42/64b5f6?text=DSO';
+                    }
+                }
+                
                 const isActive = video.ativo === 'true';
+                const isStreamable = !!video.streamable_url;
+                const sourceLabel = isStreamable ? '📹 Streamable' : '▶️ YouTube';
                 
                 html += `
                     <tr>
@@ -1757,13 +1773,13 @@
                         <td>
                             <img src="${thumb}" alt="${video.titulo}" 
                                  class="thumb-preview"
-                                 onerror="this.src='https://via.placeholder.com/50x28/1a2d42/64b5f6?text=?'">
+                                 onerror="this.src='https://placehold.co/50x28/1a2d42/64b5f6?text=?'">
                         </td>
                         <td>
                             <strong style="display:block;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
                                 ${video.titulo || 'Sem título'}
                             </strong>
-                            <small style="color:var(--text-muted);font-size:11px;">${video.youtube_id || ''}</small>
+                            <small style="color:var(--text-muted);font-size:11px;">${sourceLabel}</small>
                         </td>
                         <td>${formatViews(video.views || 0)}</td>
                         <td>
@@ -1835,7 +1851,12 @@
                     document.getElementById('videoId').value = video.id;
                     document.getElementById('videoTitulo').value = video.titulo || '';
                     document.getElementById('videoDescricao').value = video.descricao || '';
-                    document.getElementById('videoUrl').value = video.youtube_url || `https://www.youtube.com/watch?v=${video.youtube_id}`;
+                    // 🔥 USAR A URL CORRETA (Streamable ou YouTube)
+                    if (video.streamable_url) {
+                        document.getElementById('videoUrl').value = video.streamable_url;
+                    } else {
+                        document.getElementById('videoUrl').value = video.youtube_url || `https://www.youtube.com/watch?v=${video.youtube_id}`;
+                    }
                     document.getElementById('videoAtivo').value = video.ativo || 'true';
                 }
             } else {
@@ -1870,11 +1891,12 @@
             }
         }
 
+        // 🔥 FUNÇÃO CORRIGIDA - ACEITA YOUTUBE E STREAMABLE
         async function saveVideo() {
             const videoId = document.getElementById('videoId').value;
             const titulo = document.getElementById('videoTitulo').value.trim();
             const descricao = document.getElementById('videoDescricao').value.trim();
-            const youtube_url = document.getElementById('videoUrl').value.trim();
+            const videoUrl = document.getElementById('videoUrl').value.trim();
             const ativo = document.getElementById('videoAtivo').value;
             
             if (!titulo) {
@@ -1882,15 +1904,17 @@
                 return;
             }
             
-            if (!youtube_url) {
-                showToast('A URL do YouTube é obrigatória', 'error');
+            if (!videoUrl) {
+                showToast('A URL do vídeo é obrigatória', 'error');
                 return;
             }
             
-            // Validar URL do YouTube
+            // 🔥 VALIDAR URL (YouTube OU Streamable)
             const youtubePattern = /(?:youtube\.com\/watch\?v=)([\w-]+)|(?:youtu\.be\/)([\w-]+)/;
-            if (!youtubePattern.test(youtube_url)) {
-                showToast('URL do YouTube inválida', 'error');
+            const streamablePattern = /(?:streamable\.com\/e\/)([\w-]+)|(?:streamable\.com\/)([\w-]+)/;
+            
+            if (!youtubePattern.test(videoUrl) && !streamablePattern.test(videoUrl)) {
+                showToast('URL inválida. Use YouTube (watch?v=) ou Streamable (streamable.com/e/)', 'error');
                 return;
             }
             
@@ -1901,7 +1925,12 @@
                 const res = await fetch(url, {
                     method: method,
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ titulo, descricao, youtube_url, ativo })
+                    body: JSON.stringify({ 
+                        titulo, 
+                        descricao, 
+                        youtube_url: videoUrl, 
+                        ativo 
+                    })
                 });
                 
                 const data = await res.json();
