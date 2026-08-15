@@ -127,11 +127,19 @@
             width: 100%;
             height: 100%;
             background: #0a0f1a;
-            display: flex;
+            display: none;
+            /* Inicialmente escondido */
             flex-direction: column;
             align-items: center;
             justify-content: center;
             z-index: 10;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        #adContainer.visible {
+            display: flex;
+            opacity: 1;
         }
 
         #adContainer .ad-label {
@@ -146,44 +154,6 @@
             font-weight: 600;
             z-index: 11;
             letter-spacing: 0.5px;
-        }
-
-        #adContainer .ad-skip {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            color: #fff;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 13px;
-            cursor: pointer;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s;
-            z-index: 11;
-            font-weight: 600;
-            display: none;
-        }
-
-        #adContainer .ad-skip:hover {
-            background: rgba(229, 9, 20, 0.8);
-            border-color: #e50914;
-        }
-
-        #adContainer .ad-skip.show {
-            display: block;
-        }
-
-        #adContainer .ad-timer {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            background: rgba(0, 0, 0, 0.6);
-            color: #fff;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 12px;
-            z-index: 11;
         }
 
         /* 🔥 CONTAINER DO ANÚNCIO CLICKADILLA */
@@ -203,36 +173,10 @@
             max-height: 100%;
         }
 
-        /* Loading do anúncio */
+        /* Loading - visível apenas enquanto carrega em segundo plano */
         .ad-loading {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 16px;
-            color: #78909c;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #0a0f1a;
-            z-index: 1;
-        }
-
-        .ad-loading i {
-            font-size: 40px;
-            animation: spin 1s linear infinite;
-            color: #64b5f6;
-        }
-
-        .ad-loading span {
-            font-size: 14px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            display: none;
+            /* Escondido por padrão */;
         }
 
         /* ============================================================
@@ -440,6 +384,44 @@
             100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
         }
 
+        .loading-state {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+            gap: 16px;
+            color: #78909c;
+            font-size: 15px;
+        }
+
+        .loading-state i {
+            font-size: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #78909c;
+        }
+
+        .empty-state i {
+            font-size: 40px;
+            margin-bottom: 12px;
+            color: #2a3d5f;
+        }
+
+        .empty-state h4 {
+            font-size: 17px;
+            color: #b0bec5;
+            margin-bottom: 4px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         /* ============================================================
            RESPONSIVIDADE
            ============================================================ */
@@ -520,29 +502,19 @@
         <!-- PLAYER -->
         <div class="player-wrapper" id="playerWrapper">
             <div class="player-container" id="playerContainer">
-                
-                <!-- 🔥 ANÚNCIO (CLICKADILLA) -->
+
+                <!-- 🔥 ANÚNCIO (CLICKADILLA) - INICIALMENTE ESCONDIDO -->
                 <div id="adContainer">
                     <div class="ad-label">
                         <i class="fas fa-ad"></i> Anúncio
                     </div>
-                    
-                    <!-- Loading do anúncio -->
-                    <div class="ad-loading" id="adLoading">
-                        <i class="fas fa-spinner"></i>
-                        <span>Carregando anúncio...</span>
-                    </div>
-                    
+
                     <!-- 🔥 CONTAINER DO CLICKADILLA (seletor .ad-container) -->
                     <div class="ad-container" id="clickadillaContainer"></div>
-                    
-                    <div class="ad-timer" id="adTimer">⏱️ 5s</div>
-                    <button class="ad-skip" id="adSkipBtn">⏭️ Pular</button>
                 </div>
-                
+
                 <!-- VÍDEO -->
-                <iframe id="videoIframe"
-                        src="about:blank"
+                <iframe id="videoIframe" src="about:blank"
                         allow="fullscreen; accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowfullscreen>
                 </iframe>
@@ -590,8 +562,8 @@
             const CONFIG = {
                 relatedLimit: 8,
                 apiBase: '/api',
-                adSkipTime: 5, // segundos até o botão "Pular" aparecer
-                adMaxDuration: 20 // duração máxima do anúncio em segundos
+                adMaxDuration: 30,
+                checkInterval: 300
             };
 
             // ============================================================
@@ -601,10 +573,7 @@
             const dom = {
                 videoIframe: $('#videoIframe'),
                 adContainer: $('#adContainer'),
-                adLoading: $('#adLoading'),
                 clickadillaContainer: $('#clickadillaContainer'),
-                adTimer: $('#adTimer'),
-                adSkipBtn: $('#adSkipBtn'),
                 videoTitle: $('#videoTitle'),
                 videoViews: $('#videoViews'),
                 videoDate: $('#videoDate'),
@@ -619,12 +588,12 @@
             // ============================================================
             let adSkipped = false;
             let adCompleted = false;
-            let adTimerInterval = null;
-            let adCountdown = CONFIG.adSkipTime;
+            let adLoaded = false;
+            let adShown = false;
+            let checkIntervalId = null;
             let videoUrl = '';
             let videoData = null;
-            let adLoaded = false;
-            let adStarted = false;
+            let adStartTime = 0;
 
             // ============================================================
             // TOAST
@@ -632,7 +601,8 @@
             function showToast(message, isError = false) {
                 const toast = document.createElement('div');
                 toast.className = `toast ${isError ? 'error' : ''}`;
-                toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${message}`;
+                toast.innerHTML =
+                `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${message}`;
                 dom.toastContainer.appendChild(toast);
                 setTimeout(() => {
                     if (toast.parentNode) toast.remove();
@@ -661,126 +631,270 @@
             }
 
             // ============================================================
-            // GERENCIAMENTO DE ANÚNCIOS (CLICKADILLA)
+            // SILENCIAR ANÚNCIO (remove áudio)
             // ============================================================
-            function startAdTimer() {
-                adCountdown = CONFIG.adSkipTime;
-                dom.adSkipBtn.classList.remove('show');
-                dom.adTimer.textContent = `⏱️ ${adCountdown}s`;
-                
-                clearInterval(adTimerInterval);
-                adTimerInterval = setInterval(() => {
-                    adCountdown--;
-                    if (adCountdown > 0) {
-                        dom.adTimer.textContent = `⏱️ ${adCountdown}s`;
-                    } else {
-                        dom.adTimer.textContent = '⏱️ Pular';
-                        dom.adSkipBtn.classList.add('show');
-                        clearInterval(adTimerInterval);
-                    }
-                }, 1000);
+            function muteAdAudio() {
+                console.log('🔇 Tentando silenciar anúncio...');
+
+                // Método 1: Remover elementos de áudio/vídeo dentro do container
+                const container = dom.clickadillaContainer;
+                const videos = container.querySelectorAll('video');
+                const audios = container.querySelectorAll('audio');
+                const iframes = container.querySelectorAll('iframe');
+
+                videos.forEach(v => {
+                    try {
+                        v.muted = true;
+                        v.pause();
+                        console.log('🔇 Vídeo mutado');
+                    } catch (e) {}
+                });
+
+                audios.forEach(a => {
+                    try {
+                        a.muted = true;
+                        a.pause();
+                        console.log('🔇 Áudio mutado');
+                    } catch (e) {}
+                });
+
+                // Método 2: Tentar remover o elemento do anúncio (mais drástico)
+                // Alguns anúncios usam iframes com áudio
+                iframes.forEach(iframe => {
+                    try {
+                        // Tentar acessar o conteúdo do iframe e mutar
+                        try {
+                            const doc = iframe.contentDocument || iframe.contentWindow?.document;
+                            if (doc) {
+                                const v = doc.querySelectorAll('video');
+                                v.forEach(el => { el.muted = true;
+                                    el.pause(); });
+                                const a = doc.querySelectorAll('audio');
+                                a.forEach(el => { el.muted = true;
+                                    el.pause(); });
+                            }
+                        } catch (e) {
+                            // CORS - não podemos acessar o iframe
+                            console.log('⚠️ Não foi possível acessar iframe (CORS)');
+                        }
+                    } catch (e) {}
+                });
+
+                // Método 3: Recarregar o container (remove o anúncio completamente)
+                // Isso pode ser feito se o anúncio não puder ser silenciado
+                // container.innerHTML = '';
+                // console.log('🔇 Container limpo');
             }
 
-            function skipAd() {
-                if (adSkipped || adCompleted) return;
-                adSkipped = true;
-                clearInterval(adTimerInterval);
-                console.log('⏭️ Anúncio pulado');
-                hideAdAndPlayVideo();
-            }
-
-            function completeAd() {
-                if (adCompleted) return;
-                adCompleted = true;
-                clearInterval(adTimerInterval);
-                console.log('✅ Anúncio concluído');
-                hideAdAndPlayVideo();
-            }
-
-            function hideAdAndPlayVideo() {
-                dom.adContainer.style.display = 'none';
-                dom.videoIframe.src = videoUrl;
-                dom.videoIframe.style.display = 'block';
-            }
-
-            // 🔥 INICIAR ANÚNCIO CLICKADILLA
+            // ============================================================
+            // INICIAR ANÚNCIO CLICKADILLA (EM SEGUNDO PLANO)
+            // ============================================================
             function startClickadillaAd() {
-                console.log('📢 Iniciando Clickadilla...');
-                adStarted = true;
-                
-                // Mostrar container do anúncio
-                dom.adContainer.style.display = 'flex';
+                console.log('📢 Iniciando Clickadilla em segundo plano...');
+
+                // Resetar estado
+                adSkipped = false;
+                adCompleted = false;
+                adLoaded = false;
+                adShown = false;
+                adStartTime = Date.now();
+
+                // Mostrar vídeo (por enquanto)
                 dom.videoIframe.src = 'about:blank';
-                dom.videoIframe.style.display = 'none';
-                
-                // Mostrar loading
-                dom.adLoading.style.display = 'flex';
-                
-                // Iniciar timer
-                startAdTimer();
-                
-                // 🔥 O Clickadilla vai injetar o anúncio no .ad-container
+                dom.videoIframe.style.display = 'block';
+
+                // Esconder container do anúncio inicialmente
+                dom.adContainer.classList.remove('visible');
+                dom.adContainer.style.display = 'none';
+
+                // Limpar container do anúncio
+                dom.clickadillaContainer.innerHTML = '';
+
+                // O Clickadilla vai injetar o anúncio no .ad-container
                 // O script já está carregado no <head>
-                // Ele procura pelo seletor .ad-container definido no AD Code
-                
-                // Aguardar o Clickadilla injetar o anúncio
-                // O Clickadilla injeta um iframe ou video dentro do .ad-container
-                
-                // Monitorar se o anúncio foi carregado
+
+                // 🔥 MONITORAR SE O ANÚNCIO FOI CARREGADO
                 let checkCount = 0;
-                const checkInterval = setInterval(() => {
+                const maxChecks = 40; // ~12 segundos
+
+                if (checkIntervalId) clearInterval(checkIntervalId);
+
+                checkIntervalId = setInterval(() => {
                     checkCount++;
-                    
-                    // Verificar se o Clickadilla injetou algo no container
+
                     const hasContent = dom.clickadillaContainer.children.length > 0;
                     const hasIframe = dom.clickadillaContainer.querySelector('iframe') !== null;
                     const hasVideo = dom.clickadillaContainer.querySelector('video') !== null;
-                    
-                    if (hasContent || hasIframe || hasVideo) {
+                    const hasImg = dom.clickadillaContainer.querySelector('img') !== null;
+
+                    // Verificar se o container tem conteúdo visível
+                    const containerStyle = window.getComputedStyle(dom.clickadillaContainer);
+                    const isVisible = containerStyle.display !== 'none' && containerStyle.opacity !== '0';
+
+                    if (hasContent || hasIframe || hasVideo || hasImg) {
+                        // Anúncio carregou!
                         adLoaded = true;
-                        clearInterval(checkInterval);
-                        dom.adLoading.style.display = 'none';
+                        clearInterval(checkIntervalId);
+                        checkIntervalId = null;
+
                         console.log('✅ Clickadilla carregou o anúncio!');
-                        
-                        // Tentar detectar quando o anúncio termina
-                        // Clickadilla geralmente mostra um vídeo ou overlay
-                        // Vamos monitorar se o elemento foi removido ou se o vídeo terminou
-                        
-                        // Se for um iframe, não temos controle direto
-                        // Vamos usar o timeout máximo
-                        setTimeout(() => {
-                            if (!adSkipped && !adCompleted) {
-                                console.log('⏰ Anúncio finalizado (timeout)');
-                                completeAd();
-                            }
-                        }, CONFIG.adMaxDuration * 1000);
+
+                        // 🔥 MOSTRAR O ANÚNCIO AGORA
+                        showAd();
+
+                        // 🔥 MONITORAR QUANDO O ANÚNCIO TERMINAR
+                        monitorAdCompletion();
+
+                        return;
                     }
-                    
-                    // Se passou 10 segundos e não carregou, pular
-                    if (checkCount > 20) {
-                        clearInterval(checkInterval);
-                        if (!adLoaded) {
-                            console.log('⚠️ Clickadilla não carregou em 10s, pulando...');
-                            dom.adLoading.innerHTML = `
-                                <i class="fas fa-exclamation-triangle" style="color:#ff9800;"></i>
-                                <span>Anúncio não disponível</span>
-                            `;
-                            setTimeout(() => {
-                                if (!adSkipped && !adCompleted) {
-                                    skipAd();
-                                }
-                            }, 2000);
-                        }
+
+                    // Se passou do tempo máximo, pular
+                    if (checkCount >= maxChecks) {
+                        clearInterval(checkIntervalId);
+                        checkIntervalId = null;
+                        console.log('⏰ Clickadilla não carregou em tempo hábil, pulando...');
+                        // Não mostrar anúncio, ir direto para o vídeo
+                        playVideoDirectly();
                     }
-                }, 500);
-                
-                // Fallback: se o anúncio não carregar em 15 segundos, pular
+                }, CONFIG.checkInterval);
+
+                // Fallback: se passar 15 segundos e não carregou
                 setTimeout(() => {
-                    if (!adSkipped && !adCompleted && !adLoaded) {
-                        console.log('⏰ Timeout do anúncio, pulando...');
-                        skipAd();
+                    if (!adLoaded && !adSkipped && !adCompleted) {
+                        clearInterval(checkIntervalId);
+                        checkIntervalId = null;
+                        console.log('⏰ Timeout do anúncio (15s), pulando...');
+                        playVideoDirectly();
                     }
                 }, 15000);
+            }
+
+            // ============================================================
+            // MOSTRAR ANÚNCIO (quando carregado)
+            // ============================================================
+            function showAd() {
+                if (adShown) return;
+                adShown = true;
+                adStartTime = Date.now();
+
+                console.log('🎬 Mostrando anúncio...');
+
+                // Esconder o vídeo
+                dom.videoIframe.style.display = 'none';
+
+                // Mostrar o anúncio com transição suave
+                dom.adContainer.style.display = 'flex';
+                // Forçar reflow para a transição funcionar
+                void dom.adContainer.offsetWidth;
+                dom.adContainer.classList.add('visible');
+
+                // Registrar que o anúncio começou
+                console.log('📢 Anúncio em exibição');
+            }
+
+            // ============================================================
+            // MONITORAR QUANDO O ANÚNCIO TERMINA
+            // ============================================================
+            function monitorAdCompletion() {
+                // Verificar periodicamente se o anúncio ainda está lá
+                let monitorCount = 0;
+                const monitorInterval = setInterval(() => {
+                    monitorCount++;
+
+                    // Verificar se o container ainda tem conteúdo
+                    const hasContent = dom.clickadillaContainer.children.length > 0;
+                    const containerDisplay = window.getComputedStyle(dom.clickadillaContainer).display;
+
+                    // Se o container está vazio ou escondido, o anúncio terminou
+                    if (!hasContent || containerDisplay === 'none') {
+                        if (!adSkipped && !adCompleted) {
+                            console.log('✅ Anúncio terminou (container vazio)');
+                            adCompleted = true;
+                            clearInterval(monitorInterval);
+                            hideAdAndPlayVideo();
+                        }
+                        return;
+                    }
+
+                    // Verificar se passou do tempo máximo
+                    const elapsed = (Date.now() - adStartTime) / 1000;
+                    if (elapsed > CONFIG.adMaxDuration) {
+                        if (!adSkipped && !adCompleted) {
+                            console.log('⏰ Tempo máximo do anúncio atingido');
+                            adCompleted = true;
+                            clearInterval(monitorInterval);
+                            hideAdAndPlayVideo();
+                        }
+                        return;
+                    }
+
+                    // Verificar se o usuário interagiu com o skip do Clickadilla
+                    // Não temos como detectar diretamente, então usamos o tempo
+                }, 500);
+
+                // Fallback: após 30 segundos, forçar término
+                setTimeout(() => {
+                    if (!adSkipped && !adCompleted) {
+                        console.log('⏰ Forçando término do anúncio (timeout final)');
+                        adCompleted = true;
+                        clearInterval(monitorInterval);
+                        hideAdAndPlayVideo();
+                    }
+                }, CONFIG.adMaxDuration * 1000 + 2000);
+            }
+
+            // ============================================================
+            // PULAR ANÚNCIO (chamado pelo usuário ou automaticamente)
+            // ============================================================
+            function skipAd() {
+                if (adSkipped || adCompleted) return;
+                adSkipped = true;
+
+                console.log('⏭️ Pulando anúncio...');
+
+                // 🔥 SILENCIAR O ÁUDIO DO ANÚNCIO
+                muteAdAudio();
+
+                // Esconder o anúncio e mostrar o vídeo
+                hideAdAndPlayVideo();
+
+                // Limpar intervalo de monitoramento
+                if (checkIntervalId) {
+                    clearInterval(checkIntervalId);
+                    checkIntervalId = null;
+                }
+            }
+
+            // ============================================================
+            // REPRODUZIR VÍDEO DIRETAMENTE (sem anúncio)
+            // ============================================================
+            function playVideoDirectly() {
+                if (adSkipped || adCompleted) return;
+                adSkipped = true;
+                console.log('▶️ Reproduzindo vídeo diretamente (sem anúncio)');
+                hideAdAndPlayVideo();
+            }
+
+            // ============================================================
+            // ESCONDER ANÚNCIO E REPRODUZIR VÍDEO
+            // ============================================================
+            function hideAdAndPlayVideo() {
+                // Esconder anúncio
+                dom.adContainer.classList.remove('visible');
+                dom.adContainer.style.display = 'none';
+
+                // Mostrar vídeo
+                dom.videoIframe.style.display = 'block';
+
+                // Carregar o vídeo (se ainda não foi carregado)
+                if (dom.videoIframe.src === 'about:blank' || dom.videoIframe.src === '') {
+                    dom.videoIframe.src = videoUrl;
+                } else if (dom.videoIframe.src !== videoUrl) {
+                    // Recarregar se for URL diferente
+                    dom.videoIframe.src = videoUrl;
+                }
+
+                console.log('▶️ Vídeo iniciado!');
             }
 
             // ============================================================
@@ -798,7 +912,8 @@
 
                     // Preencher informações
                     dom.videoTitle.textContent = videoData.titulo || 'Sem título';
-                    dom.videoViews.innerHTML = `<i class="fas fa-eye"></i> ${formatViews(videoData.views || 0)} visualizações`;
+                    dom.videoViews.innerHTML =
+                        `<i class="fas fa-eye"></i> ${formatViews(videoData.views || 0)} visualizações`;
                     dom.videoDate.innerHTML = `<i class="far fa-calendar-alt"></i> ${formatDate(videoData.criado_em)}`;
                     dom.videoBadge.textContent = `${formatViews(videoData.views || 0)} views`;
                     dom.videoDescription.textContent = videoData.descricao || '';
@@ -809,14 +924,15 @@
                     } else if (videoData.embed_url) {
                         videoUrl = videoData.embed_url;
                     } else if (videoData.youtube_id) {
-                        videoUrl = `https://www.youtube.com/embed/${videoData.youtube_id}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3`;
+                        videoUrl =
+                            `https://www.youtube.com/embed/${videoData.youtube_id}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3`;
                     } else {
                         videoUrl = videoData.video_url || '';
                     }
 
                     console.log('🎬 URL do vídeo:', videoUrl);
 
-                    // 🔥 INICIAR O FLUXO: ANÚNCIO → VÍDEO
+                    // 🔥 INICIAR O FLUXO: ANÚNCIO EM SEGUNDO PLANO → VÍDEO
                     startClickadillaAd();
 
                     // Registrar view
@@ -832,12 +948,14 @@
                     dom.videoTitle.textContent = 'Erro ao carregar vídeo';
                     dom.videoDescription.textContent = err.message || 'Tente novamente mais tarde.';
                     dom.adContainer.innerHTML = `
-                        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#e50914;gap:12px;">
+                        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#e50914;gap:12px;padding:20px;">
                             <i class="fas fa-exclamation-triangle" style="font-size:40px;"></i>
                             <span>${err.message || 'Erro ao carregar'}</span>
                             <button onclick="location.reload()" style="padding:10px 24px;background:#e50914;border:none;border-radius:20px;color:#fff;cursor:pointer;font-weight:600;">Tentar novamente</button>
                         </div>
                     `;
+                    dom.adContainer.style.display = 'flex';
+                    dom.adContainer.classList.add('visible');
                     showToast('Erro ao carregar vídeo', true);
                     return null;
                 }
@@ -855,7 +973,8 @@
 
                     const data = await resp.json();
                     if (data.views) {
-                        dom.videoViews.innerHTML = `<i class="fas fa-eye"></i> ${formatViews(data.views)} visualizações`;
+                        dom.videoViews.innerHTML =
+                            `<i class="fas fa-eye"></i> ${formatViews(data.views)} visualizações`;
                         dom.videoBadge.textContent = `${formatViews(data.views)} views`;
                     }
                 } catch (err) {
@@ -897,7 +1016,7 @@
                         const card = document.createElement('div');
                         card.className = 'related-card';
                         card.dataset.id = v.id;
-                        
+
                         let thumb = v.thumbnail || '';
                         if (!thumb || thumb.includes('dQw4w9WgXcQ')) {
                             if (v.isStreamable) {
@@ -906,7 +1025,7 @@
                                 thumb = 'https://placehold.co/320x180/1a2d42/64b5f6?text=DSO';
                             }
                         }
-                        
+
                         card.innerHTML = `
                             <div class="thumb">
                                 <img src="${thumb}" 
@@ -944,11 +1063,6 @@
             }
 
             // ============================================================
-            // EVENTOS DO BOTÃO SKIP
-            // ============================================================
-            dom.adSkipBtn.addEventListener('click', skipAd);
-
-            // ============================================================
             // INICIALIZAÇÃO
             // ============================================================
             async function init() {
@@ -958,12 +1072,14 @@
                     dom.videoTitle.textContent = 'ID do vídeo não encontrado';
                     dom.videoDescription.textContent = 'URL inválida. Volte para a lista de vídeos.';
                     dom.adContainer.innerHTML = `
-                        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#ff9800;gap:12px;">
+                        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#ff9800;gap:12px;padding:20px;">
                             <i class="fas fa-exclamation-triangle" style="font-size:40px;"></i>
                             <span>ID do vídeo não encontrado</span>
                             <a href="/videos" style="color:#64b5f6;text-decoration:none;">Voltar para a lista</a>
                         </div>
                     `;
+                    dom.adContainer.style.display = 'flex';
+                    dom.adContainer.classList.add('visible');
                     dom.relatedGrid.innerHTML = `
                         <div class="empty-state" style="grid-column:1/-1;">
                             <i class="fas fa-info-circle"></i>
@@ -982,7 +1098,7 @@
             init();
 
             // Expor para debug
-            window.__videoPlayer = { loadVideo, loadRelated, registerView, skipAd };
+            window.__videoPlayer = { loadVideo, loadRelated, registerView, skipAd, muteAdAudio };
 
         })();
     </script>
