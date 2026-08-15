@@ -4,9 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DSO Vídeos - Player</title>
-    <!-- 🔥 IMPORTANTE: Meta tag para forçar a política de referenciador -->
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- 🔥 ADSTERRA - Carregar o gerenciador de anúncios -->
+    <script async src="https://js.wpadmngr.com/static/adManager.js" data-admpid="452853"></script>
+    
     <style>
         /* ============================================================
            RESET E BASE
@@ -87,7 +90,7 @@
         }
 
         /* ============================================================
-           PLAYER
+           PLAYER WRAPPER
            ============================================================ */
         .player-wrapper {
             background: #0a0f1a;
@@ -96,6 +99,7 @@
             border: 1px solid rgba(100, 181, 246, 0.08);
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
             margin-bottom: 24px;
+            position: relative;
         }
 
         .player-wrapper .player-container {
@@ -113,36 +117,108 @@
             border: none;
         }
 
-        .player-wrapper .player-loading {
+        /* ============================================================
+           ANÚNCIO (Adsterra)
+           ============================================================ */
+        #adContainer {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
+            background: #0a0f1a;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: #0a0f1a;
-            color: #78909c;
+            z-index: 10;
+        }
+
+        #adContainer .ad-label {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            font-size: 11px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            z-index: 11;
+            letter-spacing: 0.5px;
+        }
+
+        #adContainer .ad-skip {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s;
+            z-index: 11;
+            font-weight: 600;
+            display: none;
+        }
+
+        #adContainer .ad-skip:hover {
+            background: rgba(229, 9, 20, 0.8);
+            border-color: #e50914;
+        }
+
+        #adContainer .ad-skip.show {
+            display: block;
+        }
+
+        #adContainer .ad-timer {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            color: #fff;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            z-index: 11;
+        }
+
+        /* Placeholder do Adsterra */
+        #adsterraPlaceholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #adsterraPlaceholder iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Loading do anúncio */
+        .ad-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             gap: 16px;
-            z-index: 5;
-            transition: opacity 0.5s;
+            color: #78909c;
         }
 
-        .player-wrapper .player-loading.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .player-wrapper .player-loading i {
-            font-size: 48px;
+        .ad-loading i {
+            font-size: 40px;
             animation: spin 1s linear infinite;
             color: #64b5f6;
         }
 
-        .player-wrapper .player-loading span {
-            font-size: 15px;
+        .ad-loading span {
+            font-size: 14px;
         }
 
         @keyframes spin {
@@ -206,7 +282,7 @@
         }
 
         /* ============================================================
-           RECOMENDADOS (RELACIONADOS)
+           RECOMENDADOS
            ============================================================ */
         .related-section {
             margin-top: 32px;
@@ -318,80 +394,6 @@
         }
 
         /* ============================================================
-           ESTADO VAZIO / CARREGANDO
-           ============================================================ */
-        .loading-state {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 40px 20px;
-            gap: 16px;
-            color: #78909c;
-            font-size: 15px;
-        }
-
-        .loading-state i {
-            font-size: 24px;
-            animation: spin 1s linear infinite;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #78909c;
-        }
-
-        .empty-state i {
-            font-size: 40px;
-            margin-bottom: 12px;
-            color: #2a3d5f;
-        }
-
-        .empty-state h4 {
-            font-size: 17px;
-            color: #b0bec5;
-            margin-bottom: 4px;
-        }
-
-        .error-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #e50914;
-        }
-
-        .error-state i {
-            font-size: 40px;
-            margin-bottom: 12px;
-        }
-
-        .error-state h4 {
-            font-size: 18px;
-            margin-bottom: 4px;
-        }
-
-        .error-state p {
-            color: #78909c;
-            font-size: 14px;
-        }
-
-        .error-state .btn-retry {
-            margin-top: 16px;
-            background: transparent;
-            border: 1px solid rgba(229, 9, 20, 0.3);
-            color: #e50914;
-            padding: 10px 30px;
-            border-radius: 30px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .error-state .btn-retry:hover {
-            background: rgba(229, 9, 20, 0.1);
-            border-color: #e50914;
-        }
-
-        /* ============================================================
            TOAST
            ============================================================ */
         .toast {
@@ -436,37 +438,29 @@
             .header {
                 padding: 12px 16px;
             }
-
             .header .logo {
                 font-size: 17px;
             }
-
             .header .logo i {
                 font-size: 22px;
             }
-
             .header .back-link {
                 font-size: 13px;
                 padding: 4px 10px;
             }
-
             .container {
                 padding: 12px 12px 40px;
             }
-
             .video-info {
                 padding: 16px 16px 20px;
             }
-
             .video-info .title {
                 font-size: 18px;
             }
-
             .video-info .meta {
                 font-size: 13px;
                 gap: 12px 16px;
             }
-
             .related-grid {
                 grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
                 gap: 12px;
@@ -477,20 +471,16 @@
             .header .logo {
                 font-size: 15px;
             }
-
             .header .back-link span {
                 display: none;
             }
-
             .video-info .title {
                 font-size: 16px;
             }
-
             .related-grid {
                 grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
                 gap: 10px;
             }
-
             .related-card .info h4 {
                 font-size: 12px;
             }
@@ -507,7 +497,6 @@
             <i class="fas fa-film"></i>
             DSO <span>Vídeos</span>
         </a>
-
         <a href="/videos" class="back-link">
             <i class="fas fa-arrow-left"></i>
             <span>Voltar para vídeos</span>
@@ -521,16 +510,30 @@
 
         <!-- PLAYER -->
         <div class="player-wrapper" id="playerWrapper">
-            <div class="player-container">
-                <div class="player-loading" id="playerLoading">
-                    <i class="fas fa-spinner"></i>
-                    <span>Carregando vídeo...</span>
+            <div class="player-container" id="playerContainer">
+                
+                <!-- 🔥 ANÚNCIO (aparece antes do vídeo) -->
+                <div id="adContainer">
+                    <div class="ad-label">
+                        <i class="fas fa-ad"></i> Anúncio
+                    </div>
+                    
+                    <!-- Placeholder para o Adsterra -->
+                    <div id="adsterraPlaceholder">
+                        <div class="ad-loading">
+                            <i class="fas fa-spinner"></i>
+                            <span>Carregando anúncio...</span>
+                        </div>
+                    </div>
+                    
+                    <div class="ad-timer" id="adTimer">⏱️ 5s</div>
+                    <button class="ad-skip" id="adSkipBtn">⏭️ Pular</button>
                 </div>
-                <!-- 🔥 IFRAME CORRIGIDO COM TODAS AS CONFIGURAÇÕES -->
-                <iframe id="playerIframe"
+                
+                <!-- VÍDEO (Streamable) -->
+                <iframe id="videoIframe"
                         src="about:blank"
-                        referrerpolicy="strict-origin-when-cross-origin"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allow="fullscreen; accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowfullscreen>
                 </iframe>
             </div>
@@ -547,7 +550,7 @@
             </div>
         </div>
 
-        <!-- RECOMENDADOS (RELACIONADOS) -->
+        <!-- RECOMENDADOS -->
         <div class="related-section">
             <div class="section-title">
                 <i class="fas fa-list-ul"></i> Recomendados para você
@@ -561,9 +564,7 @@
 
     </div>
 
-    <!-- ============================================================
-    TOAST
-    ============================================================ -->
+    <!-- TOAST -->
     <div id="toastContainer"></div>
 
     <!-- ============================================================
@@ -578,18 +579,20 @@
             // ============================================================
             const CONFIG = {
                 relatedLimit: 8,
-                apiBase: '/api'
+                apiBase: '/api',
+                adSkipTime: 5, // segundos até o botão "Pular" aparecer
+                adDuration: 15 // duração máxima do anúncio
             };
 
             // ============================================================
             // DOM REFS
             // ============================================================
-            const $ = (sel) => document.querySelector(sel);
-            const $$ = (sel) => document.querySelectorAll(sel);
-
             const dom = {
-                playerIframe: $('#playerIframe'),
-                playerLoading: $('#playerLoading'),
+                videoIframe: $('#videoIframe'),
+                adContainer: $('#adContainer'),
+                adPlaceholder: $('#adsterraPlaceholder'),
+                adTimer: $('#adTimer'),
+                adSkipBtn: $('#adSkipBtn'),
                 videoTitle: $('#videoTitle'),
                 videoViews: $('#videoViews'),
                 videoDate: $('#videoDate'),
@@ -598,6 +601,16 @@
                 relatedGrid: $('#relatedGrid'),
                 toastContainer: $('#toastContainer')
             };
+
+            // ============================================================
+            // ESTADO
+            // ============================================================
+            let adSkipped = false;
+            let adCompleted = false;
+            let adTimerInterval = null;
+            let adCountdown = CONFIG.adSkipTime;
+            let videoUrl = '';
+            let videoData = null;
 
             // ============================================================
             // TOAST
@@ -634,46 +647,53 @@
             }
 
             // ============================================================
-            // EXTRAIR ID DO YOUTUBE (CORRIGIDO)
+            // GERENCIAMENTO DE ANÚNCIOS
             // ============================================================
-            function extractYoutubeId(url) {
-                if (!url) return null;
+            function startAdTimer() {
+                adCountdown = CONFIG.adSkipTime;
+                dom.adSkipBtn.classList.remove('show');
+                dom.adTimer.textContent = `⏱️ ${adCountdown}s`;
                 
-                // 🔥 REMOVER ?si= e outros parâmetros de rastreamento
-                let cleanUrl = url;
-                
-                // Remover ?si=... (parâmetro de compartilhamento do YouTube)
-                cleanUrl = cleanUrl.replace(/\?si=[\w-]+/, '');
-                cleanUrl = cleanUrl.replace(/&si=[\w-]+/, '');
-                
-                // Remover qualquer outro ? ou & que possa atrapalhar
-                cleanUrl = cleanUrl.split('?')[0];
-                cleanUrl = cleanUrl.split('&')[0];
-                
-                const patterns = [
-                    /(?:youtube\.com\/watch\?v=)([\w-]+)/,
-                    /(?:youtu\.be\/)([\w-]+)/,
-                    /(?:youtube\.com\/embed\/)([\w-]+)/
-                ];
-                
-                for (const pattern of patterns) {
-                    const match = cleanUrl.match(pattern);
-                    if (match) return match[1];
-                }
-                
-                // Se for apenas o ID (11 caracteres)
-                if (/^[\w-]{11}$/.test(url)) return url;
-                
-                return null;
+                clearInterval(adTimerInterval);
+                adTimerInterval = setInterval(() => {
+                    adCountdown--;
+                    if (adCountdown > 0) {
+                        dom.adTimer.textContent = `⏱️ ${adCountdown}s`;
+                    } else {
+                        dom.adTimer.textContent = '⏱️ Pular';
+                        dom.adSkipBtn.classList.add('show');
+                        clearInterval(adTimerInterval);
+                    }
+                }, 1000);
+
+                // Auto-skip após duração máxima
+                setTimeout(() => {
+                    if (!adSkipped && !adCompleted) {
+                        skipAd();
+                    }
+                }, CONFIG.adDuration * 1000);
             }
 
-            // ============================================================
-            // GERAR URL DE EMBED (CORRIGIDO)
-            // ============================================================
-            function getEmbedUrl(videoId) {
-                if (!videoId) return null;
-                // 🔥 USAR youtube-nocookie.com para evitar problemas de privacidade
-                return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3`;
+            function skipAd() {
+                if (adSkipped || adCompleted) return;
+                adSkipped = true;
+                clearInterval(adTimerInterval);
+                console.log('⏭️ Anúncio pulado');
+                hideAdAndPlayVideo();
+            }
+
+            function completeAd() {
+                if (adCompleted) return;
+                adCompleted = true;
+                clearInterval(adTimerInterval);
+                console.log('✅ Anúncio concluído');
+                hideAdAndPlayVideo();
+            }
+
+            function hideAdAndPlayVideo() {
+                dom.adContainer.style.display = 'none';
+                dom.videoIframe.src = videoUrl;
+                dom.videoIframe.style.display = 'block';
             }
 
             // ============================================================
@@ -683,67 +703,32 @@
                 try {
                     const resp = await fetch(`${CONFIG.apiBase}/video/${videoId}`);
                     if (!resp.ok) {
-                        if (resp.status === 404) {
-                            throw new Error('Vídeo não encontrado');
-                        }
+                        if (resp.status === 404) throw new Error('Vídeo não encontrado');
                         throw new Error('Erro ao carregar vídeo');
                     }
 
-                    const video = await resp.json();
+                    videoData = await resp.json();
 
                     // Preencher informações
-                    dom.videoTitle.textContent = video.titulo || 'Sem título';
-                    dom.videoViews.innerHTML = `<i class="fas fa-eye"></i> ${formatViews(video.views || 0)} visualizações`;
-                    dom.videoDate.innerHTML = `<i class="far fa-calendar-alt"></i> ${formatDate(video.criado_em)}`;
-                    dom.videoBadge.textContent = `${formatViews(video.views || 0)} views`;
-                    dom.videoDescription.textContent = video.descricao || '';
+                    dom.videoTitle.textContent = videoData.titulo || 'Sem título';
+                    dom.videoViews.innerHTML = `<i class="fas fa-eye"></i> ${formatViews(videoData.views || 0)} visualizações`;
+                    dom.videoDate.innerHTML = `<i class="far fa-calendar-alt"></i> ${formatDate(videoData.criado_em)}`;
+                    dom.videoBadge.textContent = `${formatViews(videoData.views || 0)} views`;
+                    dom.videoDescription.textContent = videoData.descricao || '';
 
-                    // 🔥 CARREGAR PLAYER COM CONFIGURAÇÕES CORRETAS
-                    if (video.youtube_id) {
-                        // Extrair ID limpo (sem ?si=)
-                        const cleanId = extractYoutubeId(video.youtube_id) || video.youtube_id;
-                        const embedUrl = getEmbedUrl(cleanId);
-                        
-                        console.log('🎬 Carregando embed:', embedUrl);
-                        console.log('🔑 ID limpo:', cleanId);
-                        
-                        // 🔥 RECARREGAR IFRAME PARA APLICAR CONFIGURAÇÕES
-                        const iframe = dom.playerIframe;
-                        
-                        // Resetar o iframe para aplicar as configurações
-                        iframe.src = 'about:blank';
-                        
-                        // Forçar recarga com as configurações corretas
-                        setTimeout(() => {
-                            iframe.src = embedUrl;
-                            iframe.referrerPolicy = 'strict-origin-when-cross-origin';
-                            
-                            // Adicionar atributos de segurança
-                            iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
-                            iframe.setAttribute('allowfullscreen', '');
-                            iframe.setAttribute('frameborder', '0');
-                            
-                            // Esconder loading após carregar
-                            iframe.onload = () => {
-                                dom.playerLoading.classList.add('hidden');
-                                console.log('✅ Player carregado com sucesso!');
-                            };
-                            
-                            // Fallback: esconder loading após 8s
-                            setTimeout(() => {
-                                dom.playerLoading.classList.add('hidden');
-                            }, 8000);
-                        }, 100);
-                        
+                    // 🔥 Definir URL do vídeo (Streamable)
+                    if (videoData.streamable_url) {
+                        videoUrl = videoData.streamable_url;
                     } else {
-                        dom.playerLoading.innerHTML = `
-                            <i class="fas fa-exclamation-triangle" style="color:#ff9800;"></i>
-                            <span>ID do YouTube não encontrado</span>
-                        `;
-                        setTimeout(() => {
-                            dom.playerLoading.classList.add('hidden');
-                        }, 3000);
+                        // Fallback: tentar montar URL do Streamable
+                        const streamableId = videoData.streamable_id || videoData.youtube_id || videoId;
+                        videoUrl = `https://streamable.com/e/${streamableId}?autoplay=1`;
                     }
+
+                    console.log('🎬 URL do vídeo:', videoUrl);
+
+                    // 🔥 INICIAR O FLUXO: ANÚNCIO → VÍDEO
+                    startAdFlow();
 
                     // Registrar view
                     await registerView(videoId);
@@ -751,22 +736,81 @@
                     // Carregar recomendados
                     await loadRelated(videoId);
 
-                    return video;
+                    return videoData;
 
                 } catch (err) {
                     console.error('Erro loadVideo:', err);
                     dom.videoTitle.textContent = 'Erro ao carregar vídeo';
                     dom.videoDescription.textContent = err.message || 'Tente novamente mais tarde.';
-                    dom.playerLoading.innerHTML = `
-                        <i class="fas fa-exclamation-triangle" style="color:#e50914;"></i>
-                        <span>${err.message || 'Erro ao carregar'}</span>
+                    dom.adContainer.innerHTML = `
+                        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#e50914;gap:12px;">
+                            <i class="fas fa-exclamation-triangle" style="font-size:40px;"></i>
+                            <span>${err.message || 'Erro ao carregar'}</span>
+                            <button onclick="location.reload()" style="padding:10px 24px;background:#e50914;border:none;border-radius:20px;color:#fff;cursor:pointer;font-weight:600;">Tentar novamente</button>
+                        </div>
                     `;
-                    setTimeout(() => {
-                        dom.playerLoading.classList.add('hidden');
-                    }, 3000);
                     showToast('Erro ao carregar vídeo', true);
                     return null;
                 }
+            }
+
+            // ============================================================
+            // FLUXO: ANÚNCIO → VÍDEO
+            // ============================================================
+            function startAdFlow() {
+                // Resetar estado
+                adSkipped = false;
+                adCompleted = false;
+                clearInterval(adTimerInterval);
+                
+                // Mostrar container do anúncio
+                dom.adContainer.style.display = 'flex';
+                dom.videoIframe.src = 'about:blank';
+                dom.videoIframe.style.display = 'none';
+                
+                // Iniciar timer
+                startAdTimer();
+                
+                // 🔥 INJETAR ANÚNCIO DO ADSTERRA
+                // O Adsterra usa o placeholder para mostrar anúncios
+                // Vamos usar o data-adsterra ou criar um elemento dinâmico
+                
+                // Método 1: Usar o placeholder existente
+                // O Adsterra pode injetar automaticamente se tiver a div certa
+                
+                // Método 2: Usar o script do Adsterra com a div
+                // O Adsterra já foi carregado no <head>
+                // Agora vamos criar um elemento para ele
+                
+                // Limpar placeholder
+                dom.adPlaceholder.innerHTML = '';
+                
+                // Criar um elemento para o Adsterra
+                // O Adsterra reconhece divs com data-adsterra
+                const adDiv = document.createElement('div');
+                adDiv.setAttribute('data-adsterra', 'video');
+                adDiv.setAttribute('data-adsterra-key', '452853');
+                adDiv.style.width = '100%';
+                adDiv.style.height = '100%';
+                adDiv.style.display = 'flex';
+                adDiv.style.alignItems = 'center';
+                adDiv.style.justifyContent = 'center';
+                
+                // Adicionar ao placeholder
+                dom.adPlaceholder.appendChild(adDiv);
+                
+                // Se o Adsterra não carregar automaticamente, tentar forçar
+                // O script já está carregado, ele deve detectar a div
+                
+                console.log('📢 Anúncio iniciado (Adsterra)');
+                
+                // Fallback: se o anúncio não carregar em 8 segundos, pular
+                setTimeout(() => {
+                    if (!adSkipped && !adCompleted) {
+                        console.log('⏰ Timeout do anúncio, pulando...');
+                        skipAd();
+                    }
+                }, 8000);
             }
 
             // ============================================================
@@ -780,25 +824,17 @@
                     if (!resp.ok) throw new Error('Erro ao registrar view');
 
                     const data = await resp.json();
-
                     if (data.views) {
                         dom.videoViews.innerHTML = `<i class="fas fa-eye"></i> ${formatViews(data.views)} visualizações`;
                         dom.videoBadge.textContent = `${formatViews(data.views)} views`;
                     }
-
-                    if (data.alreadyViewed) {
-                        console.log('👁️ View já registrada para este usuário');
-                    } else {
-                        console.log('👁️ View registrada com sucesso');
-                    }
-
                 } catch (err) {
                     console.warn('Erro ao registrar view:', err);
                 }
             }
 
             // ============================================================
-            // CARREGAR RECOMENDADOS (RELACIONADOS)
+            // CARREGAR RECOMENDADOS
             // ============================================================
             async function loadRelated(videoId) {
                 dom.relatedGrid.innerHTML = `
@@ -813,7 +849,6 @@
 
                     const data = await resp.json();
                     const videos = data.videos || [];
-
                     const filtered = videos.filter(v => v.id !== videoId);
 
                     if (filtered.length === 0) {
@@ -869,6 +904,11 @@
             }
 
             // ============================================================
+            // EVENTOS DO BOTÃO SKIP
+            // ============================================================
+            dom.adSkipBtn.addEventListener('click', skipAd);
+
+            // ============================================================
             // INICIALIZAÇÃO
             // ============================================================
             async function init() {
@@ -877,13 +917,13 @@
                 if (!videoId) {
                     dom.videoTitle.textContent = 'ID do vídeo não encontrado';
                     dom.videoDescription.textContent = 'URL inválida. Volte para a lista de vídeos.';
-                    dom.playerLoading.innerHTML = `
-                        <i class="fas fa-exclamation-triangle" style="color:#ff9800;"></i>
-                        <span>ID do vídeo não encontrado</span>
+                    dom.adContainer.innerHTML = `
+                        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#ff9800;gap:12px;">
+                            <i class="fas fa-exclamation-triangle" style="font-size:40px;"></i>
+                            <span>ID do vídeo não encontrado</span>
+                            <a href="/videos" style="color:#64b5f6;text-decoration:none;">Voltar para a lista</a>
+                        </div>
                     `;
-                    setTimeout(() => {
-                        dom.playerLoading.classList.add('hidden');
-                    }, 2000);
                     dom.relatedGrid.innerHTML = `
                         <div class="empty-state" style="grid-column:1/-1;">
                             <i class="fas fa-info-circle"></i>
@@ -902,7 +942,7 @@
             init();
 
             // Expor para debug
-            window.__videoPlayer = { loadVideo, loadRelated, registerView };
+            window.__videoPlayer = { loadVideo, loadRelated, registerView, skipAd };
 
         })();
     </script>
