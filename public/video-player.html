@@ -8,6 +8,16 @@
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script async src="https://js.wpadmngr.com/static/adManager.js" data-admpid="452853"></script>
+
+    <script>
+        (function() {
+            window.clickadillaConfig = {
+                selector: '#playerContainer',
+                autoLoad: true
+            };
+        })();
+    </script>
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -191,60 +201,6 @@
         @keyframes badgePulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.7; }
-        }
-
-        #adContainer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #0a0f1a;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 15;
-            opacity: 0;
-            transition: opacity 0.5s ease;
-        }
-
-        #adContainer.visible {
-            display: flex;
-            opacity: 1;
-        }
-
-        #adContainer .ad-label {
-            position: absolute;
-            top: 12px;
-            right: 16px;
-            background: rgba(0, 0, 0, 0.8);
-            color: #fff;
-            font-size: 11px;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-weight: 700;
-            z-index: 16;
-            letter-spacing: 0.5px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .ad-container {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #0a0f1a;
-        }
-
-        .ad-container iframe,
-        .ad-container video,
-        .ad-container img {
-            max-width: 100%;
-            max-height: 100%;
         }
 
         .video-preview {
@@ -541,13 +497,6 @@
                     <div class="play-label" id="playLabel">Clique para reproduzir</div>
                 </div>
 
-                <div id="adContainer">
-                    <div class="ad-label">
-                        <i class="fas fa-ad"></i> Anúncio
-                    </div>
-                    <div id="clickadilla-slot" class="ad-container"></div>
-                </div>
-
                 <iframe id="videoIframe" src="about:blank"
                         allow="fullscreen; accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowfullscreen>
@@ -591,16 +540,15 @@
                 relatedLimit: 8,
                 apiBase: '/api',
                 adMaxDuration: 30,
-                checkInterval: 300,
                 adCheckTimeout: 8000,
+                adCooldownMs: 3 * 60 * 1000,
+                adStorageKey: 'dso_last_ad_time',
                 defaultRatio: '16-9'
             };
 
             const $ = (sel) => document.querySelector(sel);
             const dom = {
                 videoIframe: $('#videoIframe'),
-                adContainer: $('#adContainer'),
-                clickadillaSlot: document.getElementById('clickadilla-slot'),
                 playOverlay: $('#playOverlay'),
                 playBtn: $('#playBtn'),
                 playLabel: $('#playLabel'),
@@ -619,17 +567,15 @@
             let state = {
                 videoUrl: '',
                 videoData: null,
-                adLoaded: false,
                 adShown: false,
                 adSkipped: false,
                 adCompleted: false,
                 isPlaying: false,
                 adStartTime: 0,
-                checkIntervalId: null,
                 monitorIntervalId: null,
                 userClicked: false,
                 adDetected: false,
-                adCheckTimeoutId: null,
+                adBlockedByCooldown: false,
                 videoRatio: CONFIG.defaultRatio
             };
 
@@ -698,31 +644,104 @@
                 dom.videoPreview.classList.add('hidden');
             }
 
-            function hasAdLoaded() {
-                const container = dom.clickadillaSlot;
-                if (!container) return false;
-                const hasContent = container.children.length > 0;
-                const hasIframe = container.querySelector('iframe') !== null;
-                const hasVideo = container.querySelector('video') !== null;
-                const hasImg = container.querySelector('img') !== null;
-                const hasCanvas = container.querySelector('canvas') !== null;
-                return hasContent || hasIframe || hasVideo || hasImg || hasCanvas;
+            function getLastAdTime() {
+                try {
+                    return parseInt(localStorage.getItem(CONFIG.adStorageKey) || '0', 10);
+                } catch(e) { return 0; }
             }
 
-            function muteAdAudio() {
-                const container = dom.clickadillaSlot;
-                if (!container) return;
-                container.querySelectorAll('video').forEach(v => { try { v.muted = true; v.pause(); } catch(e){} });
-                container.querySelectorAll('audio').forEach(a => { try { a.muted = true; a.pause(); } catch(e){} });
-                container.querySelectorAll('iframe').forEach(ifr => {
-                    try {
-                        const doc = ifr.contentDocument || ifr.contentWindow?.document;
-                        if (doc) {
-                            doc.querySelectorAll('video').forEach(el => { el.muted = true; el.pause(); });
-                            doc.querySelectorAll('audio').forEach(el => { el.muted = true; el.pause(); });
+            function setLastAdTime() {
+                try {
+                    localStorage.setItem(CONFIG.adStorageKey, Date.now().toString());
+                } catch(e) {}
+            }
+
+            function canShowAd() {
+                return (Date.now() - getLastAdTime()) >= CONFIG.adCooldownMs;
+            }
+
+            function detectClickadillaOverlay() {
+                const selectors = [
+                    '[id^="clickadilla"]',
+                    '[class*="clickadilla"]',
+                    '[id*="clickadilla"]',
+                    'iframe[src*="clickadilla"]',
+                    'iframe[src*="clickamarty"]',
+                    'iframe[src*="tubecorporate"]'
+                ];
+                for (const sel of selectors) {
+                    const els = document.querySelectorAll(sel);
+                    for (const el of els) {
+                        const style = window.getComputedStyle(el);
+                        const rect = el.getBoundingClientRect();
+                        if (style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 50 && rect.height > 50) {
+                            return el;
                         }
-                    } catch(e){}
+                    }
+                }
+                return null;
+            }
+
+            let overlayObserver = null;
+            let overlayCheckInterval = null;
+
+            function startOverlayDetection(onDetected) {
+                stopOverlayDetection();
+
+                const check = () => {
+                    const overlay = detectClickadillaOverlay();
+                    if (overlay) {
+                        onDetected(overlay);
+                        return true;
+                    }
+                    return false;
+                };
+
+                if (check()) return;
+
+                overlayObserver = new MutationObserver(() => {
+                    if (check()) stopOverlayDetection();
                 });
+
+                overlayObserver.observe(document.body, {
+                    childList: true,
+                    subtree: true,
+                    attributes: true,
+                    attributeFilter: ['style', 'class']
+                });
+
+                let elapsed = 0;
+                overlayCheckInterval = setInterval(() => {
+                    elapsed += 300;
+                    if (check()) {
+                        stopOverlayDetection();
+                    } else if (elapsed >= CONFIG.adCheckTimeout) {
+                        stopOverlayDetection();
+                    }
+                }, 300);
+            }
+
+            function stopOverlayDetection() {
+                if (overlayObserver) {
+                    overlayObserver.disconnect();
+                    overlayObserver = null;
+                }
+                if (overlayCheckInterval) {
+                    clearInterval(overlayCheckInterval);
+                    overlayCheckInterval = null;
+                }
+            }
+
+            function triggerClickadillaAd() {
+                const container = dom.playerContainer;
+                if (!container) return;
+                try {
+                    container.dispatchEvent(new MouseEvent('click', {
+                        bubbles: true,
+                        cancelable: true,
+                        view: window
+                    }));
+                } catch(e) {}
             }
 
             function playVideo() {
@@ -731,9 +750,6 @@
 
                 dom.playOverlay.classList.add('hidden');
                 hidePreview();
-
-                dom.adContainer.classList.remove('visible');
-                dom.adContainer.style.display = 'none';
 
                 dom.videoIframe.style.display = 'block';
 
@@ -755,14 +771,28 @@
                 hidePreview();
                 dom.videoIframe.style.display = 'none';
 
-                dom.adContainer.style.display = 'flex';
-                void dom.adContainer.offsetWidth;
-                dom.adContainer.classList.add('visible');
-
                 dom.adBadge.style.display = 'flex';
                 dom.adBadge.innerHTML = '<i class="fas fa-ad"></i> Anúncio';
 
+                triggerClickadillaAd();
+
+                startOverlayDetection((overlay) => {
+                    state.adDetected = true;
+                });
+
                 startAdMonitoring();
+            }
+
+            function finishAd() {
+                if (state.adSkipped || state.adCompleted) return;
+                state.adCompleted = true;
+                setLastAdTime();
+                if (state.monitorIntervalId) {
+                    clearInterval(state.monitorIntervalId);
+                    state.monitorIntervalId = null;
+                }
+                stopOverlayDetection();
+                playVideo();
             }
 
             function startAdMonitoring() {
@@ -771,105 +801,67 @@
                     state.monitorIntervalId = null;
                 }
 
+                let overlayWasVisible = false;
+
                 state.monitorIntervalId = setInterval(() => {
-                    const stillHasContent = hasAdLoaded();
-                    if (!stillHasContent) {
-                        if (!state.adSkipped && !state.adCompleted) {
-                            state.adCompleted = true;
-                            clearInterval(state.monitorIntervalId);
-                            state.monitorIntervalId = null;
-                            playVideo();
-                        }
+                    const overlay = detectClickadillaOverlay();
+                    const elapsed = (Date.now() - state.adStartTime) / 1000;
+
+                    if (overlay) {
+                        overlayWasVisible = true;
+                    }
+
+                    if (overlayWasVisible && !overlay && elapsed > 2) {
+                        finishAd();
                         return;
                     }
-                    const elapsed = (Date.now() - state.adStartTime) / 1000;
+
                     if (elapsed > CONFIG.adMaxDuration) {
-                        if (!state.adSkipped && !state.adCompleted) {
-                            state.adCompleted = true;
-                            clearInterval(state.monitorIntervalId);
-                            state.monitorIntervalId = null;
-                            playVideo();
-                        }
+                        finishAd();
                     }
-                }, 500);
+                }, 800);
 
                 setTimeout(() => {
                     if (!state.adSkipped && !state.adCompleted) {
-                        state.adCompleted = true;
-                        if (state.monitorIntervalId) {
-                            clearInterval(state.monitorIntervalId);
-                            state.monitorIntervalId = null;
-                        }
-                        playVideo();
+                        finishAd();
                     }
                 }, CONFIG.adMaxDuration * 1000 + 2000);
             }
 
             function checkAdInBackground() {
-                if (state.checkIntervalId) clearInterval(state.checkIntervalId);
-                if (state.adCheckTimeoutId) clearTimeout(state.adCheckTimeoutId);
+                if (!canShowAd()) {
+                    state.adBlockedByCooldown = true;
+                    state.adDetected = false;
+                    dom.adBadge.style.display = 'none';
+                    dom.playLabel.textContent = 'Clique para reproduzir';
+                    return;
+                }
 
-                let checkCount = 0;
+                state.adBlockedByCooldown = false;
 
-                state.checkIntervalId = setInterval(() => {
-                    checkCount++;
-
-                    if (hasAdLoaded()) {
-                        state.adLoaded = true;
-                        state.adDetected = true;
-                        clearInterval(state.checkIntervalId);
-                        state.checkIntervalId = null;
-                        if (state.adCheckTimeoutId) {
-                            clearTimeout(state.adCheckTimeoutId);
-                            state.adCheckTimeoutId = null;
-                        }
-
-                        dom.adBadge.style.display = 'flex';
-                        dom.adBadge.innerHTML = '<i class="fas fa-ad"></i> Assistir anúncio';
-                        dom.playLabel.textContent = 'Clique para assistir ao anúncio';
-
-                        if (state.userClicked && !state.isPlaying && !state.adShown) {
-                            showAd();
-                        }
-                        return;
-                    }
-
-                    if (checkCount * CONFIG.checkInterval >= CONFIG.adCheckTimeout) {
-                        clearInterval(state.checkIntervalId);
-                        state.checkIntervalId = null;
-                        if (state.adCheckTimeoutId) {
-                            clearTimeout(state.adCheckTimeoutId);
-                            state.adCheckTimeoutId = null;
-                        }
-                        state.adLoaded = false;
-                        state.adDetected = false;
-                        dom.adBadge.style.display = 'none';
-                        dom.playLabel.textContent = 'Clique para reproduzir';
-
-                        if (state.userClicked && !state.isPlaying) {
-                            playVideo();
-                        }
-                    }
-                }, CONFIG.checkInterval);
+                startOverlayDetection(() => {
+                    state.adDetected = true;
+                    dom.adBadge.style.display = 'flex';
+                    dom.adBadge.innerHTML = '<i class="fas fa-ad"></i> Assistir anúncio';
+                    dom.playLabel.textContent = 'Clique para assistir ao anúncio';
+                });
             }
 
             function handlePlayClick() {
                 if (state.isPlaying) return;
                 state.userClicked = true;
 
-                if (state.adDetected && hasAdLoaded()) {
-                    showAd();
-                } else if (state.adLoaded === false) {
+                if (state.adBlockedByCooldown) {
                     playVideo();
-                } else {
-                    if (hasAdLoaded()) {
-                        state.adDetected = true;
-                        state.adLoaded = true;
-                        showAd();
-                        return;
-                    }
-                    playVideo();
+                    return;
                 }
+
+                if (state.adDetected && canShowAd()) {
+                    showAd();
+                    return;
+                }
+
+                playVideo();
             }
 
             async function loadVideo(videoId) {
@@ -974,24 +966,6 @@
                 e.stopPropagation();
                 handlePlayClick();
             });
-
-            const observer = new MutationObserver(() => {
-                if (hasAdLoaded() && !state.adDetected) {
-                    state.adDetected = true;
-                    state.adLoaded = true;
-                    dom.adBadge.style.display = 'flex';
-                    dom.adBadge.innerHTML = '<i class="fas fa-ad"></i> Assistir anúncio';
-                    dom.playLabel.textContent = 'Clique para assistir ao anúncio';
-
-                    if (state.userClicked && !state.isPlaying && !state.adShown) {
-                        showAd();
-                    }
-                }
-            });
-
-            if (dom.clickadillaSlot) {
-                observer.observe(dom.clickadillaSlot, { childList: true, subtree: true });
-            }
 
             async function init() {
                 const videoId = getVideoIdFromUrl();
