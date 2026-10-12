@@ -7,16 +7,9 @@
     <title>DSO Vídeos - Player</title>
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- CLICKADILLA - Script do anúncio -->
     <script async src="https://js.wpadmngr.com/static/adManager.js" data-admpid="452853"></script>
-    
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -49,13 +42,8 @@
             text-decoration: none;
         }
 
-        .header .logo i {
-            font-size: 26px;
-        }
-
-        .header .logo span {
-            color: #64b5f6;
-        }
+        .header .logo i { font-size: 26px; }
+        .header .logo span { color: #64b5f6; }
 
         .header .back-link {
             color: #64b5f6;
@@ -81,9 +69,15 @@
             padding: 20px 24px 60px;
         }
 
-        /* ============================================================
-           PLAYER WRAPPER - ADAPTATIVO
-           ============================================================ */
+        .banner-slot {
+            text-align: center;
+            padding: 12px 0;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         .player-wrapper {
             background: #0a0f1a;
             border-radius: 16px;
@@ -101,7 +95,6 @@
             transition: padding-top 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Proporções suportadas via classes */
         .player-container.ratio-16-9 { padding-top: 56.25%; }
         .player-container.ratio-9-16 { padding-top: 177.78%; max-height: 80vh; }
         .player-container.ratio-4-3  { padding-top: 75%; }
@@ -109,7 +102,7 @@
         .player-container.ratio-21-9 { padding-top: 42.85%; }
         .player-container.ratio-auto { padding-top: 56.25%; }
 
-        .player-wrapper .player-container iframe {
+        .player-wrapper .player-container iframe#videoIframe {
             position: absolute;
             top: 0;
             left: 0;
@@ -117,11 +110,9 @@
             height: 100%;
             border: none;
             background: #000;
+            z-index: 5;
         }
 
-        /* ============================================================
-           BOTÃO PLAY CENTRAL
-           ============================================================ */
         #playOverlay {
             position: absolute;
             top: 0;
@@ -132,11 +123,10 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: rgba(0, 0, 0, 0.65);
+            background: rgba(0, 0, 0, 0.55);
             z-index: 20;
             cursor: pointer;
             transition: opacity 0.5s ease;
-            backdrop-filter: blur(2px);
         }
 
         #playOverlay.hidden {
@@ -203,9 +193,6 @@
             50% { opacity: 0.7; }
         }
 
-        /* ============================================================
-           ANÚNCIO (CLICKADILLA)
-           ============================================================ */
         #adContainer {
             position: absolute;
             top: 0;
@@ -217,7 +204,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 10;
+            z-index: 15;
             opacity: 0;
             transition: opacity 0.5s ease;
         }
@@ -237,7 +224,7 @@
             padding: 6px 16px;
             border-radius: 20px;
             font-weight: 700;
-            z-index: 11;
+            z-index: 16;
             letter-spacing: 0.5px;
             display: flex;
             align-items: center;
@@ -260,9 +247,6 @@
             max-height: 100%;
         }
 
-        /* ============================================================
-           THUMBNAIL PREVIEW (quando o vídeo não começou)
-           ============================================================ */
         .video-preview {
             position: absolute;
             top: 0;
@@ -281,9 +265,6 @@
             pointer-events: none;
         }
 
-        /* ============================================================
-           INFO DO VÍDEO
-           ============================================================ */
         .video-info {
             padding: 20px 24px 24px;
             background: #14233a;
@@ -308,11 +289,7 @@
             color: #78909c;
         }
 
-        .video-info .meta .views i {
-            color: #64b5f6;
-            margin-right: 6px;
-        }
-
+        .video-info .meta .views i,
         .video-info .meta .date i {
             color: #64b5f6;
             margin-right: 6px;
@@ -336,12 +313,7 @@
             word-break: break-word;
         }
 
-        /* ============================================================
-           RECOMENDADOS
-           ============================================================ */
-        .related-section {
-            margin-top: 32px;
-        }
+        .related-section { margin-top: 32px; }
 
         .related-section .section-title {
             font-size: 18px;
@@ -416,13 +388,9 @@
             margin-left: 2px;
         }
 
-        .related-card:hover .thumb .play-icon {
-            opacity: 1;
-        }
+        .related-card:hover .thumb .play-icon { opacity: 1; }
 
-        .related-card .info {
-            padding: 10px 12px 12px;
-        }
+        .related-card .info { padding: 10px 12px 12px; }
 
         .related-card .info h4 {
             font-size: 13px;
@@ -444,13 +412,8 @@
             gap: 5px;
         }
 
-        .related-card .info .views i {
-            font-size: 12px;
-        }
+        .related-card .info .views i { font-size: 12px; }
 
-        /* ============================================================
-           TOAST
-           ============================================================ */
         .toast {
             position: fixed;
             bottom: 30px;
@@ -470,14 +433,8 @@
             gap: 10px;
         }
 
-        .toast i {
-            color: #4caf50;
-            font-size: 18px;
-        }
-
-        .toast.error i {
-            color: #e50914;
-        }
+        .toast i { color: #4caf50; font-size: 18px; }
+        .toast.error i { color: #e50914; }
 
         @keyframes toastFade {
             0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
@@ -524,74 +481,29 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* ============================================================
-           RESPONSIVIDADE
-           ============================================================ */
         @media (max-width: 768px) {
-            .header {
-                padding: 12px 16px;
-            }
-            .header .logo {
-                font-size: 17px;
-            }
-            .header .logo i {
-                font-size: 22px;
-            }
-            .header .back-link {
-                font-size: 13px;
-                padding: 4px 10px;
-            }
-            .container {
-                padding: 12px 12px 40px;
-            }
-            .video-info {
-                padding: 16px 16px 20px;
-            }
-            .video-info .title {
-                font-size: 18px;
-            }
-            .video-info .meta {
-                font-size: 13px;
-                gap: 12px 16px;
-            }
-            .related-grid {
-                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-                gap: 12px;
-            }
-            #playOverlay .play-btn {
-                width: 60px;
-                height: 60px;
-                font-size: 28px;
-            }
+            .header { padding: 12px 16px; }
+            .header .logo { font-size: 17px; }
+            .header .logo i { font-size: 22px; }
+            .header .back-link { font-size: 13px; padding: 4px 10px; }
+            .container { padding: 12px 12px 40px; }
+            .video-info { padding: 16px 16px 20px; }
+            .video-info .title { font-size: 18px; }
+            .video-info .meta { font-size: 13px; gap: 12px 16px; }
+            .related-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+            #playOverlay .play-btn { width: 60px; height: 60px; font-size: 28px; }
             .player-container.ratio-9-16 { max-height: 70vh; }
             .player-container.ratio-1-1 { max-height: 70vh; }
         }
 
         @media (max-width: 480px) {
-            .header .logo {
-                font-size: 15px;
-            }
-            .header .back-link span {
-                display: none;
-            }
-            .video-info .title {
-                font-size: 16px;
-            }
-            .related-grid {
-                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-                gap: 10px;
-            }
-            .related-card .info h4 {
-                font-size: 12px;
-            }
-            #playOverlay .play-btn {
-                width: 50px;
-                height: 50px;
-                font-size: 22px;
-            }
-            #playOverlay .play-label {
-                font-size: 12px;
-            }
+            .header .logo { font-size: 15px; }
+            .header .back-link span { display: none; }
+            .video-info .title { font-size: 16px; }
+            .related-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+            .related-card .info h4 { font-size: 12px; }
+            #playOverlay .play-btn { width: 50px; height: 50px; font-size: 22px; }
+            #playOverlay .play-label { font-size: 12px; }
             .player-container.ratio-9-16 { max-height: 60vh; }
             .player-container.ratio-1-1 { max-height: 60vh; }
         }
@@ -599,7 +511,6 @@
 </head>
 <body>
 
-    <!-- HEADER -->
     <header class="header">
         <a href="/videos" class="logo">
             <i class="fas fa-film"></i>
@@ -611,17 +522,15 @@
         </a>
     </header>
 
-    <!-- CONTEÚDO PRINCIPAL -->
+    <div class="banner-slot" data-banner-id="1500401"></div>
+
     <div class="container">
-        
-        <!-- PLAYER -->
+
         <div class="player-wrapper" id="playerWrapper">
             <div class="player-container ratio-16-9" id="playerContainer">
 
-                <!-- 🔥 PREVIEW / THUMBNAIL -->
                 <div class="video-preview" id="videoPreview"></div>
 
-                <!-- 🔥 BOTÃO PLAY CENTRAL -->
                 <div id="playOverlay">
                     <div class="ad-badge" id="adBadge" style="display:none;">
                         <i class="fas fa-ad"></i> Anúncio
@@ -632,22 +541,19 @@
                     <div class="play-label" id="playLabel">Clique para reproduzir</div>
                 </div>
 
-                <!-- 🔥 ANÚNCIO (CLICKADILLA) -->
                 <div id="adContainer">
                     <div class="ad-label">
                         <i class="fas fa-ad"></i> Anúncio
                     </div>
-                    <div class="ad-container" id="clickadillaContainer"></div>
+                    <div id="clickadilla-slot" class="ad-container"></div>
                 </div>
 
-                <!-- VÍDEO -->
                 <iframe id="videoIframe" src="about:blank"
                         allow="fullscreen; accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowfullscreen>
                 </iframe>
             </div>
 
-            <!-- INFO DO VÍDEO -->
             <div class="video-info" id="videoInfo">
                 <div class="title" id="videoTitle">Carregando...</div>
                 <div class="meta">
@@ -656,11 +562,11 @@
                     <span class="badge-views" id="videoBadge">Carregando...</span>
                 </div>
                 <div class="description" id="videoDescription"></div>
-                <div data-banner-id="1500401"></div>
             </div>
         </div>
-        <div data-banner-id="1500403"></div>
-        <!-- RECOMENDADOS -->
+
+        <div class="banner-slot" data-banner-id="1500403"></div>
+
         <div class="related-section">
             <div class="section-title">
                 <i class="fas fa-list-ul"></i> Recomendados para você
@@ -671,39 +577,30 @@
                 </div>
             </div>
         </div>
-<div data-banner-id="1500404"></div>
+
+        <div class="banner-slot" data-banner-id="1500404"></div>
     </div>
 
-    <!-- TOAST -->
     <div id="toastContainer"></div>
 
-    <!-- ============================================================
-    JAVASCRIPT
-    ============================================================ -->
     <script>
         (function() {
             'use strict';
 
-            // ============================================================
-            // CONFIG
-            // ============================================================
             const CONFIG = {
                 relatedLimit: 8,
                 apiBase: '/api',
                 adMaxDuration: 30,
                 checkInterval: 300,
-                adCheckTimeout: 8000, // Tempo máximo para esperar o anúncio
+                adCheckTimeout: 8000,
                 defaultRatio: '16-9'
             };
 
-            // ============================================================
-            // DOM REFS
-            // ============================================================
             const $ = (sel) => document.querySelector(sel);
             const dom = {
                 videoIframe: $('#videoIframe'),
                 adContainer: $('#adContainer'),
-                clickadillaContainer: $('#clickadillaContainer'),
+                clickadillaSlot: document.getElementById('clickadilla-slot'),
                 playOverlay: $('#playOverlay'),
                 playBtn: $('#playBtn'),
                 playLabel: $('#playLabel'),
@@ -719,9 +616,6 @@
                 videoPreview: $('#videoPreview')
             };
 
-            // ============================================================
-            // ESTADO
-            // ============================================================
             let state = {
                 videoUrl: '',
                 videoData: null,
@@ -739,23 +633,14 @@
                 videoRatio: CONFIG.defaultRatio
             };
 
-            // ============================================================
-            // TOAST
-            // ============================================================
             function showToast(message, isError = false) {
                 const toast = document.createElement('div');
                 toast.className = `toast ${isError ? 'error' : ''}`;
-                toast.innerHTML =
-                    `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${message}`;
+                toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${message}`;
                 dom.toastContainer.appendChild(toast);
-                setTimeout(() => {
-                    if (toast.parentNode) toast.remove();
-                }, 2800);
+                setTimeout(() => { if (toast.parentNode) toast.remove(); }, 2800);
             }
 
-            // ============================================================
-            // FORMATADORES
-            // ============================================================
             function formatViews(num) {
                 if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
                 if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
@@ -774,28 +659,15 @@
                 return parts[parts.length - 1] || null;
             }
 
-            // ============================================================
-            // DETECTAR PROPORÇÃO DO VÍDEO
-            // ============================================================
             function detectVideoRatio() {
-                // Tentar detectar pela URL do thumbnail ou metadados
                 const data = state.videoData;
                 if (!data) return CONFIG.defaultRatio;
-
-                // Se for Streamable, geralmente é 16:9
                 if (data.streamable_url) return '16-9';
-
-                // Se for YouTube, 16:9
                 if (data.youtube_id) return '16-9';
-
-                // Tentar detectar por palavras-chave no título/descrição
                 const text = ((data.titulo || '') + ' ' + (data.descricao || '')).toLowerCase();
-                if (text.includes('shorts') || text.includes('vertical') || text.includes('tiktok') || text.includes('reels')) {
-                    return '9-16';
-                }
+                if (text.includes('shorts') || text.includes('vertical') || text.includes('tiktok') || text.includes('reels')) return '9-16';
                 if (text.includes('quadrado') || text.includes('square')) return '1-1';
                 if (text.includes('cinema') || text.includes('ultrawide')) return '21-9';
-
                 return CONFIG.defaultRatio;
             }
 
@@ -803,65 +675,18 @@
                 state.videoRatio = ratio;
                 dom.playerContainer.className = 'player-container';
                 dom.playerContainer.classList.add(`ratio-${ratio}`);
-                console.log('📐 Proporção aplicada:', ratio);
-            }
-
-            // ============================================================
-            // GERAR THUMBNAIL
-            // ============================================================
-            function generateThumbnail(data) {
-                // 1. Se já tem thumbnail definido, usar
-                if (data.thumbnail && !data.thumbnail.includes('dQw4w9WgXcQ')) {
-                    return data.thumbnail;
-                }
-
-                // 2. Se for YouTube, usar thumbnail do YouTube
-                if (data.youtube_id) {
-                    return `https://img.youtube.com/vi/${data.youtube_id}/hqdefault.jpg`;
-                }
-
-                // 3. Se for Streamable, tentar extrair do ID
-                if (data.streamable_id) {
-                    // Streamable não tem thumbnail pública direta, usar placeholder
-                    return createPlaceholder(data.titulo || 'Vídeo');
-                }
-
-                // 4. Tentar extrair do embed_url
-                if (data.embed_url) {
-                    // Tentar extrair ID de plataformas conhecidas
-                    const streamableMatch = data.embed_url.match(/streamable\.com\/e\/([\w-]+)/);
-                    if (streamableMatch) {
-                        return createPlaceholder(data.titulo || 'Vídeo');
-                    }
-                }
-
-                // 5. Fallback: placeholder
-                return createPlaceholder(data.titulo || 'Vídeo');
             }
 
             function createPlaceholder(title) {
-                // Criar placeholder SVG elegante com o título
                 const safeTitle = (title || 'Vídeo').substring(0, 30).replace(/[<>&"']/g, '');
-                const svg = `
-                    <svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">
-                        <defs>
-                            <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#0f1a2e;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#1a2d4a;stop-opacity:1" />
-                            </linearGradient>
-                            <linearGradient id="icon" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#64b5f6;stop-opacity:0.8" />
-                                <stop offset="100%" style="stop-color:#e50914;stop-opacity:0.8" />
-                            </linearGradient>
-                        </defs>
-                        <rect width="640" height="360" fill="url(#bg)"/>
-                        <circle cx="320" cy="150" r="45" fill="none" stroke="url(#icon)" stroke-width="3" opacity="0.6"/>
-                        <polygon points="305,130 305,170 345,150" fill="url(#icon)" opacity="0.8"/>
-                        <text x="320" y="240" font-family="Segoe UI, Arial, sans-serif" font-size="18" fill="#64b5f6" text-anchor="middle" opacity="0.9">${safeTitle}</text>
-                        <text x="320" y="270" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#78909c" text-anchor="middle" opacity="0.7">DSO Vídeos</text>
-                    </svg>
-                `;
+                const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360"><defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#0f1a2e"/><stop offset="100%" style="stop-color:#1a2d4a"/></linearGradient><linearGradient id="ic" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#64b5f6" stop-opacity="0.8"/><stop offset="100%" style="stop-color:#e50914" stop-opacity="0.8"/></linearGradient></defs><rect width="640" height="360" fill="url(#bg)"/><circle cx="320" cy="150" r="45" fill="none" stroke="url(#ic)" stroke-width="3" opacity="0.6"/><polygon points="305,130 305,170 345,150" fill="url(#ic)" opacity="0.8"/><text x="320" y="240" font-family="Segoe UI, Arial, sans-serif" font-size="18" fill="#64b5f6" text-anchor="middle">${safeTitle}</text><text x="320" y="270" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#78909c" text-anchor="middle">DSO Vídeos</text></svg>`;
                 return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
+            }
+
+            function generateThumbnail(data) {
+                if (data.thumbnail && !data.thumbnail.includes('dQw4w9WgXcQ')) return data.thumbnail;
+                if (data.youtube_id) return `https://img.youtube.com/vi/${data.youtube_id}/hqdefault.jpg`;
+                return createPlaceholder(data.titulo || 'Vídeo');
             }
 
             function setPreview(thumbnail) {
@@ -873,77 +698,45 @@
                 dom.videoPreview.classList.add('hidden');
             }
 
-            // ============================================================
-            // VERIFICAR SE HÁ ANÚNCIO CARREGADO
-            // ============================================================
             function hasAdLoaded() {
-                const container = dom.clickadillaContainer;
+                const container = dom.clickadillaSlot;
                 if (!container) return false;
-                
                 const hasContent = container.children.length > 0;
                 const hasIframe = container.querySelector('iframe') !== null;
                 const hasVideo = container.querySelector('video') !== null;
                 const hasImg = container.querySelector('img') !== null;
-                const hasDiv = container.querySelector('div') !== null;
-                const hasScript = container.querySelector('script') !== null;
-
-                // Verificar se o container tem dimensões visíveis
-                const rect = container.getBoundingClientRect();
-                const hasSize = rect.width > 0 && rect.height > 0;
-
-                return (hasContent || hasIframe || hasVideo || hasImg || hasDiv || hasScript) && hasSize;
+                const hasCanvas = container.querySelector('canvas') !== null;
+                return hasContent || hasIframe || hasVideo || hasImg || hasCanvas;
             }
 
-            // ============================================================
-            // SILENCIAR ANÚNCIO
-            // ============================================================
             function muteAdAudio() {
-                console.log('🔇 Tentando silenciar anúncio...');
-                const container = dom.clickadillaContainer;
+                const container = dom.clickadillaSlot;
                 if (!container) return;
-                
-                const videos = container.querySelectorAll('video');
-                const audios = container.querySelectorAll('audio');
-                const iframes = container.querySelectorAll('iframe');
-
-                videos.forEach(v => {
-                    try { v.muted = true; v.pause(); } catch (e) {}
-                });
-                audios.forEach(a => {
-                    try { a.muted = true; a.pause(); } catch (e) {}
-                });
-                iframes.forEach(iframe => {
+                container.querySelectorAll('video').forEach(v => { try { v.muted = true; v.pause(); } catch(e){} });
+                container.querySelectorAll('audio').forEach(a => { try { a.muted = true; a.pause(); } catch(e){} });
+                container.querySelectorAll('iframe').forEach(ifr => {
                     try {
-                        const doc = iframe.contentDocument || iframe.contentWindow?.document;
+                        const doc = ifr.contentDocument || ifr.contentWindow?.document;
                         if (doc) {
                             doc.querySelectorAll('video').forEach(el => { el.muted = true; el.pause(); });
                             doc.querySelectorAll('audio').forEach(el => { el.muted = true; el.pause(); });
                         }
-                    } catch (e) {}
+                    } catch(e){}
                 });
             }
 
-            // ============================================================
-            // REPRODUZIR VÍDEO
-            // ============================================================
             function playVideo() {
                 if (state.isPlaying) return;
                 state.isPlaying = true;
 
-                console.log('▶️ Reproduzindo vídeo...');
-
-                // Esconder overlay e preview
                 dom.playOverlay.classList.add('hidden');
                 hidePreview();
 
-                // Esconder anúncio
                 dom.adContainer.classList.remove('visible');
                 dom.adContainer.style.display = 'none';
 
-                // Mostrar vídeo
                 dom.videoIframe.style.display = 'block';
 
-                // Carregar o vídeo
                 if (state.videoUrl) {
                     if (dom.videoIframe.src === 'about:blank' || dom.videoIframe.src === '') {
                         dom.videoIframe.src = state.videoUrl;
@@ -951,45 +744,27 @@
                         dom.videoIframe.src = state.videoUrl;
                     }
                 }
-
-                console.log('✅ Vídeo iniciado!');
             }
 
-            // ============================================================
-            // MOSTRAR ANÚNCIO
-            // ============================================================
             function showAd() {
                 if (state.adShown) return;
                 state.adShown = true;
                 state.adStartTime = Date.now();
 
-                console.log('🎬 Mostrando anúncio...');
-
-                // Esconder overlay e preview
                 dom.playOverlay.classList.add('hidden');
                 hidePreview();
-
-                // Esconder vídeo
                 dom.videoIframe.style.display = 'none';
 
-                // Mostrar anúncio
                 dom.adContainer.style.display = 'flex';
                 void dom.adContainer.offsetWidth;
                 dom.adContainer.classList.add('visible');
 
-                // Atualizar badge
                 dom.adBadge.style.display = 'flex';
                 dom.adBadge.innerHTML = '<i class="fas fa-ad"></i> Anúncio';
 
-                console.log('📢 Anúncio em exibição');
-
-                // Iniciar monitoramento do anúncio
                 startAdMonitoring();
             }
 
-            // ============================================================
-            // MONITORAR ANÚNCIO
-            // ============================================================
             function startAdMonitoring() {
                 if (state.monitorIntervalId) {
                     clearInterval(state.monitorIntervalId);
@@ -997,14 +772,9 @@
                 }
 
                 state.monitorIntervalId = setInterval(() => {
-                    // Verificar se o anúncio ainda está lá
                     const stillHasContent = hasAdLoaded();
-                    const containerDisplay = window.getComputedStyle(dom.clickadillaContainer).display;
-
-                    // Se o container está vazio ou escondido, o anúncio terminou
-                    if (!stillHasContent || containerDisplay === 'none') {
+                    if (!stillHasContent) {
                         if (!state.adSkipped && !state.adCompleted) {
-                            console.log('✅ Anúncio terminou (container vazio)');
                             state.adCompleted = true;
                             clearInterval(state.monitorIntervalId);
                             state.monitorIntervalId = null;
@@ -1012,25 +782,19 @@
                         }
                         return;
                     }
-
-                    // Verificar se passou do tempo máximo
                     const elapsed = (Date.now() - state.adStartTime) / 1000;
                     if (elapsed > CONFIG.adMaxDuration) {
                         if (!state.adSkipped && !state.adCompleted) {
-                            console.log('⏰ Tempo máximo do anúncio atingido');
                             state.adCompleted = true;
                             clearInterval(state.monitorIntervalId);
                             state.monitorIntervalId = null;
                             playVideo();
                         }
-                        return;
                     }
                 }, 500);
 
-                // Fallback: após 30 segundos, forçar término
                 setTimeout(() => {
                     if (!state.adSkipped && !state.adCompleted) {
-                        console.log('⏰ Forçando término do anúncio (timeout final)');
                         state.adCompleted = true;
                         if (state.monitorIntervalId) {
                             clearInterval(state.monitorIntervalId);
@@ -1041,58 +805,15 @@
                 }, CONFIG.adMaxDuration * 1000 + 2000);
             }
 
-            // ============================================================
-            // PULAR ANÚNCIO
-            // ============================================================
-            function skipAd() {
-                if (state.adSkipped || state.adCompleted) return;
-                state.adSkipped = true;
-
-                console.log('⏭️ Pulando anúncio...');
-
-                // Silenciar áudio
-                muteAdAudio();
-
-                // Reproduzir vídeo
-                playVideo();
-
-                // Limpar intervalos
-                if (state.monitorIntervalId) {
-                    clearInterval(state.monitorIntervalId);
-                    state.monitorIntervalId = null;
-                }
-                if (state.checkIntervalId) {
-                    clearInterval(state.checkIntervalId);
-                    state.checkIntervalId = null;
-                }
-                if (state.adCheckTimeoutId) {
-                    clearTimeout(state.adCheckTimeoutId);
-                    state.adCheckTimeoutId = null;
-                }
-            }
-
-            // ============================================================
-            // VERIFICAR ANÚNCIO (COM TIMEOUT INTELIGENTE)
-            // ============================================================
             function checkAdInBackground() {
-                console.log('🔍 Verificando anúncio...');
-
-                // Limpar verificações anteriores
-                if (state.checkIntervalId) {
-                    clearInterval(state.checkIntervalId);
-                    state.checkIntervalId = null;
-                }
-                if (state.adCheckTimeoutId) {
-                    clearTimeout(state.adCheckTimeoutId);
-                    state.adCheckTimeoutId = null;
-                }
+                if (state.checkIntervalId) clearInterval(state.checkIntervalId);
+                if (state.adCheckTimeoutId) clearTimeout(state.adCheckTimeoutId);
 
                 let checkCount = 0;
 
                 state.checkIntervalId = setInterval(() => {
                     checkCount++;
 
-                    // Verificar se o anúncio carregou
                     if (hasAdLoaded()) {
                         state.adLoaded = true;
                         state.adDetected = true;
@@ -1103,19 +824,16 @@
                             state.adCheckTimeoutId = null;
                         }
 
-                        console.log('✅ Anúncio detectado!');
                         dom.adBadge.style.display = 'flex';
                         dom.adBadge.innerHTML = '<i class="fas fa-ad"></i> Assistir anúncio';
                         dom.playLabel.textContent = 'Clique para assistir ao anúncio';
 
-                        // Se o usuário já clicou, mostrar anúncio imediatamente
-                        if (state.userClicked) {
+                        if (state.userClicked && !state.isPlaying && !state.adShown) {
                             showAd();
                         }
                         return;
                     }
 
-                    // Timeout de verificação (8 segundos)
                     if (checkCount * CONFIG.checkInterval >= CONFIG.adCheckTimeout) {
                         clearInterval(state.checkIntervalId);
                         state.checkIntervalId = null;
@@ -1123,61 +841,37 @@
                             clearTimeout(state.adCheckTimeoutId);
                             state.adCheckTimeoutId = null;
                         }
-                        console.log('ℹ️ Nenhum anúncio disponível após timeout');
                         state.adLoaded = false;
                         state.adDetected = false;
                         dom.adBadge.style.display = 'none';
                         dom.playLabel.textContent = 'Clique para reproduzir';
 
-                        // Se o usuário já clicou, reproduzir vídeo diretamente
                         if (state.userClicked && !state.isPlaying) {
-                            console.log('▶️ Usuário já clicou, reproduzindo vídeo diretamente');
                             playVideo();
                         }
                     }
                 }, CONFIG.checkInterval);
             }
 
-            // ============================================================
-            // INICIAR PLAY (CLIQUE DO USUÁRIO)
-            // ============================================================
             function handlePlayClick() {
                 if (state.isPlaying) return;
                 state.userClicked = true;
 
-                console.log('👆 Usuário clicou em play');
-
-                // Verificar se há anúncio carregado
                 if (state.adDetected && hasAdLoaded()) {
-                    // Tem anúncio - mostrar imediatamente
-                    console.log('🎬 Anúncio detectado, mostrando imediatamente...');
                     showAd();
                 } else if (state.adLoaded === false) {
-                    // Já sabemos que não tem anúncio - reproduzir vídeo
-                    console.log('▶️ Sem anúncio, reproduzindo vídeo diretamente');
                     playVideo();
                 } else {
-                    // Ainda não sabemos se tem anúncio - verificar rapidamente
-                    console.log('🔍 Verificando anúncio antes de reproduzir...');
-                    
-                    // Verificar imediatamente
                     if (hasAdLoaded()) {
                         state.adDetected = true;
                         state.adLoaded = true;
                         showAd();
                         return;
                     }
-
-                    // Se não tem anúncio ainda, reproduzir vídeo diretamente
-                    // (o anúncio pode aparecer depois, mas o usuário já clicou)
-                    console.log('▶️ Nenhum anúncio no momento, reproduzindo vídeo');
                     playVideo();
                 }
             }
 
-            // ============================================================
-            // CARREGAR VÍDEO
-            // ============================================================
             async function loadVideo(videoId) {
                 try {
                     const resp = await fetch(`${CONFIG.apiBase}/video/${videoId}`);
@@ -1188,111 +882,64 @@
 
                     state.videoData = await resp.json();
 
-                    // Preencher informações
                     dom.videoTitle.textContent = state.videoData.titulo || 'Sem título';
-                    dom.videoViews.innerHTML =
-                        `<i class="fas fa-eye"></i> ${formatViews(state.videoData.views || 0)} visualizações`;
-                    dom.videoDate.innerHTML =
-                        `<i class="far fa-calendar-alt"></i> ${formatDate(state.videoData.criado_em)}`;
+                    dom.videoViews.innerHTML = `<i class="fas fa-eye"></i> ${formatViews(state.videoData.views || 0)} visualizações`;
+                    dom.videoDate.innerHTML = `<i class="far fa-calendar-alt"></i> ${formatDate(state.videoData.criado_em)}`;
                     dom.videoBadge.textContent = `${formatViews(state.videoData.views || 0)} views`;
                     dom.videoDescription.textContent = state.videoData.descricao || '';
 
-                    // 🔥 DETECTAR E APLICAR PROPORÇÃO
-                    const ratio = detectVideoRatio();
-                    applyRatio(ratio);
+                    applyRatio(detectVideoRatio());
+                    setPreview(generateThumbnail(state.videoData));
 
-                    // 🔥 GERAR E APLICAR THUMBNAIL
-                    const thumbnail = generateThumbnail(state.videoData);
-                    setPreview(thumbnail);
-
-                    // Definir URL do vídeo
                     if (state.videoData.streamable_url) {
                         state.videoUrl = state.videoData.streamable_url;
                     } else if (state.videoData.embed_url) {
                         state.videoUrl = state.videoData.embed_url;
                     } else if (state.videoData.youtube_id) {
-                        state.videoUrl =
-                            `https://www.youtube.com/embed/${state.videoData.youtube_id}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3`;
+                        state.videoUrl = `https://www.youtube.com/embed/${state.videoData.youtube_id}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3`;
                     } else {
                         state.videoUrl = state.videoData.video_url || '';
                     }
 
-                    console.log('🎬 URL do vídeo:', state.videoUrl);
-
-                    // 🔥 INICIAR VERIFICAÇÃO DO ANÚNCIO EM SEGUNDO PLANO
                     checkAdInBackground();
-
-                    // Registrar view
                     await registerView(videoId);
-
-                    // Carregar recomendados
                     await loadRelated(videoId);
 
                     return state.videoData;
-
                 } catch (err) {
-                    console.error('Erro loadVideo:', err);
                     dom.videoTitle.textContent = 'Erro ao carregar vídeo';
                     dom.videoDescription.textContent = err.message || 'Tente novamente mais tarde.';
-                    dom.playOverlay.innerHTML = `
-                        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;">
-                            <i class="fas fa-exclamation-triangle" style="font-size:40px;color:#e50914;margin-bottom:12px;"></i>
-                            <span style="color:#e0e0e0;font-size:16px;">${err.message || 'Erro ao carregar'}</span>
-                            <button onclick="location.reload()" style="margin-top:16px;padding:10px 24px;background:#e50914;border:none;border-radius:20px;color:#fff;cursor:pointer;font-weight:600;">Tentar novamente</button>
-                        </div>
-                    `;
+                    dom.playOverlay.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;"><i class="fas fa-exclamation-triangle" style="font-size:40px;color:#e50914;margin-bottom:12px;"></i><span style="color:#e0e0e0;font-size:16px;">${err.message || 'Erro ao carregar'}</span><button onclick="location.reload()" style="margin-top:16px;padding:10px 24px;background:#e50914;border:none;border-radius:20px;color:#fff;cursor:pointer;font-weight:600;">Tentar novamente</button></div>`;
                     showToast('Erro ao carregar vídeo', true);
                     return null;
                 }
             }
 
-            // ============================================================
-            // REGISTRAR VIEW
-            // ============================================================
             async function registerView(videoId) {
                 try {
-                    const resp = await fetch(`${CONFIG.apiBase}/video/${videoId}/view`, {
-                        method: 'POST'
-                    });
-                    if (!resp.ok) throw new Error('Erro ao registrar view');
-
+                    const resp = await fetch(`${CONFIG.apiBase}/video/${videoId}/view`, { method: 'POST' });
+                    if (!resp.ok) throw new Error('Erro');
                     const data = await resp.json();
                     if (data.views) {
-                        dom.videoViews.innerHTML =
-                            `<i class="fas fa-eye"></i> ${formatViews(data.views)} visualizações`;
+                        dom.videoViews.innerHTML = `<i class="fas fa-eye"></i> ${formatViews(data.views)} visualizações`;
                         dom.videoBadge.textContent = `${formatViews(data.views)} views`;
                     }
-                } catch (err) {
-                    console.warn('Erro ao registrar view:', err);
-                }
+                } catch (err) {}
             }
 
-            // ============================================================
-            // CARREGAR RECOMENDADOS
-            // ============================================================
             async function loadRelated(videoId) {
-                dom.relatedGrid.innerHTML = `
-                    <div class="loading-state">
-                        <i class="fas fa-spinner"></i> Carregando recomendados...
-                    </div>
-                `;
+                dom.relatedGrid.innerHTML = `<div class="loading-state"><i class="fas fa-spinner"></i> Carregando recomendados...</div>`;
 
                 try {
                     const resp = await fetch(`${CONFIG.apiBase}/videos/popular?limit=${CONFIG.relatedLimit}`);
-                    if (!resp.ok) throw new Error('Erro ao carregar recomendados');
+                    if (!resp.ok) throw new Error('Erro');
 
                     const data = await resp.json();
                     const videos = data.videos || [];
                     const filtered = videos.filter(v => v.id !== videoId);
 
                     if (filtered.length === 0) {
-                        dom.relatedGrid.innerHTML = `
-                            <div class="empty-state" style="grid-column:1/-1;">
-                                <i class="fas fa-info-circle"></i>
-                                <h4>Sem recomendações</h4>
-                                <p>Volte mais tarde para mais vídeos.</p>
-                            </div>
-                        `;
+                        dom.relatedGrid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><i class="fas fa-info-circle"></i><h4>Sem recomendações</h4><p>Volte mais tarde para mais vídeos.</p></div>`;
                         return;
                     }
 
@@ -1302,27 +949,13 @@
                         card.className = 'related-card';
                         card.dataset.id = v.id;
 
-                        // Gerar thumbnail para o card
                         let thumb = v.thumbnail || '';
                         if (!thumb || thumb.includes('dQw4w9WgXcQ')) {
                             thumb = createPlaceholder(v.titulo || 'Vídeo');
                         }
 
-                        card.innerHTML = `
-                            <div class="thumb">
-                                <img src="${thumb}" 
-                                     alt="${v.titulo || 'Vídeo'}"
-                                     loading="lazy"
-                                     onerror="this.src='${createPlaceholder(v.titulo || 'Vídeo')}'">
-                                <div class="play-icon"><i class="fas fa-play"></i></div>
-                            </div>
-                            <div class="info">
-                                <h4>${v.titulo || 'Sem título'}</h4>
-                                <div class="views">
-                                    <i class="fas fa-eye"></i> ${formatViews(v.views || 0)}
-                                </div>
-                            </div>
-                        `;
+                        card.innerHTML = `<div class="thumb"><img src="${thumb}" alt="${v.titulo || 'Vídeo'}" loading="lazy" onerror="this.src='${createPlaceholder(v.titulo || 'Vídeo')}'"><div class="play-icon"><i class="fas fa-play"></i></div></div><div class="info"><h4>${v.titulo || 'Sem título'}</h4><div class="views"><i class="fas fa-eye"></i> ${formatViews(v.views || 0)}</div></div>`;
+
                         card.addEventListener('click', () => {
                             window.location.href = `/video/${v.id}`;
                         });
@@ -1331,97 +964,52 @@
 
                     dom.relatedGrid.innerHTML = '';
                     dom.relatedGrid.appendChild(fragment);
-
                 } catch (err) {
-                    console.error('Erro loadRelated:', err);
-                    dom.relatedGrid.innerHTML = `
-                        <div class="empty-state" style="grid-column:1/-1;">
-                            <i class="fas fa-exclamation-triangle" style="color:#ff9800;"></i>
-                            <h4>Erro ao carregar recomendações</h4>
-                            <p>Tente novamente mais tarde.</p>
-                        </div>
-                    `;
+                    dom.relatedGrid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><i class="fas fa-exclamation-triangle" style="color:#ff9800;"></i><h4>Erro ao carregar recomendações</h4><p>Tente novamente mais tarde.</p></div>`;
                 }
             }
 
-            // ============================================================
-            // EVENTOS
-            // ============================================================
-            // Clique no botão Play
             dom.playOverlay.addEventListener('click', handlePlayClick);
             dom.playBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
                 handlePlayClick();
             });
 
-            // Detectar quando o Clickadilla injeta algo no container (mutação)
             const observer = new MutationObserver(() => {
                 if (hasAdLoaded() && !state.adDetected) {
                     state.adDetected = true;
                     state.adLoaded = true;
-                    console.log('✅ Clickadilla injetou conteúdo detectado por MutationObserver');
                     dom.adBadge.style.display = 'flex';
                     dom.adBadge.innerHTML = '<i class="fas fa-ad"></i> Assistir anúncio';
                     dom.playLabel.textContent = 'Clique para assistir ao anúncio';
 
-                    // Se o usuário já clicou, mostrar anúncio
                     if (state.userClicked && !state.isPlaying && !state.adShown) {
                         showAd();
                     }
                 }
             });
 
-            observer.observe(dom.clickadillaContainer, {
-                childList: true,
-                subtree: true
-            });
+            if (dom.clickadillaSlot) {
+                observer.observe(dom.clickadillaSlot, { childList: true, subtree: true });
+            }
 
-            // ============================================================
-            // INICIALIZAÇÃO
-            // ============================================================
             async function init() {
                 const videoId = getVideoIdFromUrl();
 
                 if (!videoId) {
                     dom.videoTitle.textContent = 'ID do vídeo não encontrado';
                     dom.videoDescription.textContent = 'URL inválida. Volte para a lista de vídeos.';
-                    dom.playOverlay.innerHTML = `
-                        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;">
-                            <i class="fas fa-exclamation-triangle" style="font-size:40px;color:#ff9800;margin-bottom:12px;"></i>
-                            <span style="color:#e0e0e0;font-size:16px;">ID do vídeo não encontrado</span>
-                            <a href="/videos" style="margin-top:12px;color:#64b5f6;text-decoration:none;">Voltar para a lista</a>
-                        </div>
-                    `;
-                    dom.relatedGrid.innerHTML = `
-                        <div class="empty-state" style="grid-column:1/-1;">
-                            <i class="fas fa-info-circle"></i>
-                            <h4>Nenhum vídeo selecionado</h4>
-                            <p><a href="/videos" style="color:#64b5f6;text-decoration:none;">Voltar para a lista</a></p>
-                        </div>
-                    `;
+                    dom.playOverlay.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;"><i class="fas fa-exclamation-triangle" style="font-size:40px;color:#ff9800;margin-bottom:12px;"></i><span style="color:#e0e0e0;font-size:16px;">ID do vídeo não encontrado</span><a href="/videos" style="margin-top:12px;color:#64b5f6;text-decoration:none;">Voltar para a lista</a></div>`;
+                    dom.relatedGrid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><i class="fas fa-info-circle"></i><h4>Nenhum vídeo selecionado</h4><p><a href="/videos" style="color:#64b5f6;text-decoration:none;">Voltar para a lista</a></p></div>`;
                     return;
                 }
 
-                // Carregar vídeo
                 await loadVideo(videoId);
             }
 
-            // Iniciar
             init();
 
-            // Expor para debug
-            window.__videoPlayer = {
-                loadVideo,
-                loadRelated,
-                registerView,
-                skipAd,
-                playVideo,
-                state,
-                detectVideoRatio,
-                applyRatio,
-                generateThumbnail,
-                createPlaceholder
-            };
+            window.__videoPlayer = { loadVideo, loadRelated, registerView, playVideo, state };
 
         })();
     </script>
