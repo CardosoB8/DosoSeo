@@ -7,14 +7,7 @@
     <script async src="https://js.wpadmngr.com/static/adManager.js" data-admpid="459377"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* ============================================================
-           RESET E BASE
-           ============================================================ */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -23,9 +16,6 @@
             min-height: 100vh;
         }
 
-        /* ============================================================
-           HEADER
-           ============================================================ */
         .header {
             background: linear-gradient(135deg, #0f1a2e, #1a2d4a);
             padding: 16px 24px;
@@ -50,13 +40,8 @@
             text-decoration: none;
         }
 
-        .header .logo i {
-            font-size: 28px;
-        }
-
-        .header .logo span {
-            color: #64b5f6;
-        }
+        .header .logo i { font-size: 28px; }
+        .header .logo span { color: #64b5f6; }
 
         .header .search-box {
             display: flex;
@@ -87,9 +72,7 @@
             outline: none;
         }
 
-        .header .search-box input::placeholder {
-            color: #78909c;
-        }
+        .header .search-box input::placeholder { color: #78909c; }
 
         .header .search-box button {
             background: transparent;
@@ -101,9 +84,7 @@
             transition: color 0.3s;
         }
 
-        .header .search-box button:hover {
-            color: #e50914;
-        }
+        .header .search-box button:hover { color: #e50914; }
 
         .header .back-home {
             color: #64b5f6;
@@ -116,22 +97,23 @@
             white-space: nowrap;
         }
 
-        .header .back-home:hover {
-            color: #e50914;
-        }
+        .header .back-home:hover { color: #e50914; }
 
-        /* ============================================================
-           CONTEÚDO PRINCIPAL
-           ============================================================ */
         .container {
             max-width: 1280px;
             margin: 0 auto;
             padding: 20px 24px 60px;
         }
 
-        /* ============================================================
-           RECOMENDADOS (DESTAQUE)
-           ============================================================ */
+        .banner-slot {
+            text-align: center;
+            padding: 12px 0;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         .section-title {
             font-size: 20px;
             font-weight: 600;
@@ -142,10 +124,7 @@
             color: #e0e0e0;
         }
 
-        .section-title i {
-            color: #e50914;
-            font-size: 22px;
-        }
+        .section-title i { color: #e50914; font-size: 22px; }
 
         .section-title .badge-count {
             font-size: 13px;
@@ -163,9 +142,7 @@
             -webkit-overflow-scrolling: touch;
         }
 
-        .recomendados-scroll::-webkit-scrollbar {
-            height: 4px;
-        }
+        .recomendados-scroll::-webkit-scrollbar { height: 4px; }
 
         .recomendados-scroll::-webkit-scrollbar-track {
             background: rgba(255, 255, 255, 0.05);
@@ -231,13 +208,9 @@
             margin-left: 3px;
         }
 
-        .recomendado-card:hover .thumb .play-icon {
-            opacity: 1;
-        }
+        .recomendado-card:hover .thumb .play-icon { opacity: 1; }
 
-        .recomendado-card .info {
-            padding: 12px 14px 14px;
-        }
+        .recomendado-card .info { padding: 12px 14px 14px; }
 
         .recomendado-card .info h3 {
             font-size: 14px;
@@ -259,13 +232,8 @@
             gap: 5px;
         }
 
-        .recomendado-card .info .views i {
-            font-size: 13px;
-        }
+        .recomendado-card .info .views i { font-size: 13px; }
 
-        /* ============================================================
-           GRADE DE VÍDEOS
-           ============================================================ */
         .video-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -337,13 +305,9 @@
             margin-left: 3px;
         }
 
-        .video-card:hover .thumb .play-icon {
-            opacity: 1;
-        }
+        .video-card:hover .thumb .play-icon { opacity: 1; }
 
-        .video-card .info {
-            padding: 12px 14px 14px;
-        }
+        .video-card .info { padding: 12px 14px 14px; }
 
         .video-card .info h3 {
             font-size: 14px;
@@ -365,13 +329,8 @@
             gap: 5px;
         }
 
-        .video-card .info .views i {
-            font-size: 13px;
-        }
+        .video-card .info .views i { font-size: 13px; }
 
-        /* ============================================================
-           ESTADO VAZIO / CARREGANDO
-           ============================================================ */
         .loading {
             display: flex;
             justify-content: center;
@@ -410,9 +369,6 @@
             margin-bottom: 8px;
         }
 
-        /* ============================================================
-           CARREGAR MAIS
-           ============================================================ */
         .load-more {
             text-align: center;
             margin-top: 32px;
@@ -441,9 +397,6 @@
             cursor: not-allowed;
         }
 
-        /* ============================================================
-           TOAST
-           ============================================================ */
         .toast {
             position: fixed;
             bottom: 30px;
@@ -463,10 +416,7 @@
             gap: 10px;
         }
 
-        .toast i {
-            color: #4caf50;
-            font-size: 18px;
-        }
+        .toast i { color: #4caf50; font-size: 18px; }
 
         @keyframes toastFade {
             0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
@@ -475,78 +425,29 @@
             100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
         }
 
-        /* ============================================================
-           RESPONSIVIDADE
-           ============================================================ */
         @media (max-width: 768px) {
-            .header {
-                padding: 12px 16px;
-                flex-wrap: wrap;
-            }
-
-            .header .logo {
-                font-size: 18px;
-            }
-
-            .header .search-box {
-                order: 3;
-                flex-basis: 100%;
-                max-width: 100%;
-                margin-top: 4px;
-            }
-
-            .header .back-home {
-                font-size: 13px;
-            }
-
-            .container {
-                padding: 12px 12px 40px;
-            }
-
-            .video-grid {
-                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-                gap: 12px;
-            }
-
-            .recomendado-card {
-                flex: 0 0 160px;
-            }
-
-            .section-title {
-                font-size: 17px;
-            }
+            .header { padding: 12px 16px; flex-wrap: wrap; }
+            .header .logo { font-size: 18px; }
+            .header .search-box { order: 3; flex-basis: 100%; max-width: 100%; margin-top: 4px; }
+            .header .back-home { font-size: 13px; }
+            .container { padding: 12px 12px 40px; }
+            .video-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+            .recomendado-card { flex: 0 0 160px; }
+            .section-title { font-size: 17px; }
         }
 
         @media (max-width: 480px) {
-            .video-grid {
-                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-                gap: 10px;
-            }
-
-            .recomendado-card {
-                flex: 0 0 140px;
-            }
-
-            .header .logo {
-                font-size: 16px;
-            }
-
-            .header .logo i {
-                font-size: 22px;
-            }
-
+            .video-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+            .recomendado-card { flex: 0 0 140px; }
+            .header .logo { font-size: 16px; }
+            .header .logo i { font-size: 22px; }
             .video-card .info h3,
-            .recomendado-card .info h3 {
-                font-size: 12px;
-            }
+            .recomendado-card .info h3 { font-size: 12px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- ============================================================
-    HEADER
-    ============================================================ -->
     <header class="header">
         <a href="/" class="logo">
             <i class="fas fa-film"></i>
@@ -563,27 +464,20 @@
         </a>
     </header>
 
-    <!-- ============================================================
-    CONTEÚDO PRINCIPAL
-    ============================================================ -->
+    <div class="banner-slot" data-banner-id="1500401"></div>
+
     <div class="container">
-<div data-banner-id="1500401"></div>
-        <!-- ============================================================
-        RECOMENDADOS (DESTAQUE)
-        ============================================================ -->
+
         <div id="recomendadosSection">
             <div class="section-title">
                 <i class="fas fa-fire"></i> Recomendados
                 <span class="badge-count" id="recomendadosCount">—</span>
             </div>
-            <div class="recomendados-scroll" id="recomendadosContainer">
-                <!-- Preenchido via JS -->
-            </div>
+            <div class="recomendados-scroll" id="recomendadosContainer"></div>
         </div>
-<div data-banner-id="1500403"></div>
-        <!-- ============================================================
-        TODOS OS VÍDEOS
-        ============================================================ -->
+
+        <div class="banner-slot" data-banner-id="1500403"></div>
+
         <div class="section-title" style="margin-top: 8px;">
             <i class="fas fa-th-large"></i> Todos os Vídeos
             <span class="badge-count" id="totalCount">—</span>
@@ -605,24 +499,16 @@
             <h3>Nenhum vídeo encontrado</h3>
             <p>Tente ajustar sua pesquisa ou volte mais tarde.</p>
         </div>
-<div data-banner-id="1500404"></div>
+
+        <div class="banner-slot" data-banner-id="1500404"></div>
     </div>
 
-    <!-- ============================================================
-    TOAST (feedback visual)
-    ============================================================ -->
     <div id="toastContainer"></div>
 
-    <!-- ============================================================
-    JAVASCRIPT
-    ============================================================ -->
     <script>
         (function() {
             'use strict';
 
-            // ============================================================
-            // CONFIGURAÇÕES
-            // ============================================================
             const CONFIG = {
                 videosPerPage: 20,
                 popularLimit: 8,
@@ -630,9 +516,6 @@
                 apiBase: '/api'
             };
 
-            // ============================================================
-            // ESTADO
-            // ============================================================
             let state = {
                 videos: [],
                 page: 1,
@@ -642,12 +525,7 @@
                 isSearching: false
             };
 
-            // ============================================================
-            // DOM REFS
-            // ============================================================
             const $ = (sel) => document.querySelector(sel);
-            const $$ = (sel) => document.querySelectorAll(sel);
-
             const dom = {
                 grid: $('#videoGrid'),
                 loading: $('#loadingIndicator'),
@@ -662,9 +540,6 @@
                 toastContainer: $('#toastContainer')
             };
 
-            // ============================================================
-            // TOAST
-            // ============================================================
             function showToast(message, icon = 'fa-check-circle') {
                 const toast = document.createElement('div');
                 toast.className = 'toast';
@@ -675,9 +550,6 @@
                 }, 2800);
             }
 
-            // ============================================================
-            // FORMATADORES
-            // ============================================================
             function formatViews(num) {
                 if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
                 if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
@@ -690,20 +562,36 @@
                 return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
             }
 
-            // ============================================================
-            // RENDERIZAÇÃO
-            // ============================================================
+            function createPlaceholder(title) {
+                const safeTitle = (title || 'Vídeo').substring(0, 30).replace(/[<>&"']/g, '');
+                const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360"><defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#0f1a2e"/><stop offset="100%" style="stop-color:#1a2d4a"/></linearGradient><linearGradient id="ic" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#64b5f6" stop-opacity="0.8"/><stop offset="100%" style="stop-color:#e50914" stop-opacity="0.8"/></linearGradient></defs><rect width="640" height="360" fill="url(#bg)"/><circle cx="320" cy="150" r="45" fill="none" stroke="url(#ic)" stroke-width="3" opacity="0.6"/><polygon points="305,130 305,170 345,150" fill="url(#ic)" opacity="0.8"/><text x="320" y="240" font-family="Segoe UI, Arial, sans-serif" font-size="18" fill="#64b5f6" text-anchor="middle">${safeTitle}</text><text x="320" y="270" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#78909c" text-anchor="middle">DSO Vídeos</text></svg>`;
+                return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
+            }
+
+            function getThumbnail(video) {
+                if (video.thumbnail && !video.thumbnail.includes('dQw4w9WgXcQ') && !video.thumbnail.includes('via.placeholder')) {
+                    return video.thumbnail;
+                }
+                if (video.youtube_id) {
+                    return `https://img.youtube.com/vi/${video.youtube_id}/hqdefault.jpg`;
+                }
+                return createPlaceholder(video.titulo || 'Vídeo');
+            }
+
             function renderVideoCard(video, isPopular = false) {
                 const card = document.createElement('div');
                 card.className = isPopular ? 'recomendado-card' : 'video-card';
                 card.dataset.id = video.id;
 
+                const thumb = getThumbnail(video);
+                const fallback = createPlaceholder(video.titulo || 'Vídeo');
+
                 card.innerHTML = `
                     <div class="thumb">
-                        <img src="${video.thumbnail || 'https://via.placeholder.com/320x180/1a2d42/64b5f6?text=DSO'}" 
-                             alt="${video.titulo || 'Vídeo'}"
+                        <img src="${thumb}" 
+                             alt="${(video.titulo || 'Vídeo').replace(/"/g, '&quot;')}"
                              loading="lazy"
-                             onerror="this.src='https://via.placeholder.com/320x180/1a2d42/64b5f6?text=DSO'">
+                             onerror="this.onerror=null;this.src='${fallback}'">
                         <div class="play-icon"><i class="fas fa-play"></i></div>
                     </div>
                     <div class="info">
@@ -737,7 +625,6 @@
                 });
                 container.appendChild(fragment);
 
-                // Atualizar contadores
                 if (!isPopular) {
                     dom.totalCount.textContent = state.videos.length;
                 }
@@ -759,9 +646,6 @@
                 dom.loadMoreContainer.style.display = show ? 'block' : 'none';
             }
 
-            // ============================================================
-            // CARREGAR VÍDEOS
-            // ============================================================
             async function loadVideos(page = 1, search = '', append = false) {
                 if (state.isLoading) return;
                 state.isLoading = true;
@@ -794,10 +678,8 @@
                     state.hasMore = data.hasMore || false;
                     state.total = data.total || 0;
 
-                    // Renderizar
                     renderVideos(state.videos, false, false);
 
-                    // Atualizar estado
                     if (!state.isSearching) {
                         dom.totalCount.textContent = state.total || 0;
                     }
@@ -825,9 +707,6 @@
                 }
             }
 
-            // ============================================================
-            // CARREGAR RECOMENDADOS (POPULARES)
-            // ============================================================
             async function loadRecomendados() {
                 try {
                     const resp = await fetch(`${CONFIG.apiBase}/videos/popular?limit=${CONFIG.popularLimit}`);
@@ -858,9 +737,6 @@
                 }
             }
 
-            // ============================================================
-            // BUSCA
-            // ============================================================
             let searchTimeout = null;
 
             function performSearch() {
@@ -872,26 +748,20 @@
                 state.isSearching = term.length > 0;
                 state.page = 1;
 
-                // Resetar grid
                 dom.grid.innerHTML = '';
                 dom.totalCount.textContent = '...';
 
                 if (term.length === 0) {
-                    // Voltar para lista normal
                     loadVideos(1, '', false);
                     return;
                 }
 
-                // Busca com debounce
                 clearTimeout(searchTimeout);
                 searchTimeout = setTimeout(() => {
                     loadVideos(1, term, false);
                 }, CONFIG.debounceDelay);
             }
 
-            // ============================================================
-            // CARREGAR MAIS
-            // ============================================================
             function loadMore() {
                 if (state.isLoading || !state.hasMore) return;
                 const nextPage = state.page + 1;
@@ -899,46 +769,27 @@
                 loadVideos(nextPage, state.searchTerm, true);
             }
 
-            // ============================================================
-            // EVENTOS
-            // ============================================================
-            // Busca ao digitar
             dom.searchInput.addEventListener('input', performSearch);
-
-            // Busca ao clicar no botão
             dom.searchBtn.addEventListener('click', performSearch);
-
-            // Busca ao pressionar Enter
             dom.searchInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     performSearch();
                 }
             });
-
-            // Carregar mais
             dom.loadMoreBtn.addEventListener('click', loadMore);
 
-            // ============================================================
-            // INICIALIZAÇÃO
-            // ============================================================
             async function init() {
-                // Carregar recomendados
                 await loadRecomendados();
-
-                // Carregar lista principal
                 await loadVideos(1, '', false);
 
-                // Se não tiver vídeos, mostrar mensagem
                 if (state.videos.length === 0 && !state.isSearching) {
                     setEmpty(true);
                 }
             }
 
-            // Iniciar
             init();
 
-            // Expor para debug (opcional)
             window.__videoHub = { state, loadVideos, loadRecomendados, performSearch };
 
         })();
