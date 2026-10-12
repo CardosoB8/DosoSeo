@@ -9,15 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script async src="https://js.wpadmngr.com/static/adManager.js" data-admpid="452853"></script>
 
-    <script>
-        (function() {
-            window.clickadillaConfig = {
-                selector: '#playerContainer',
-                autoLoad: true
-            };
-        })();
-    </script>
-
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -110,7 +101,6 @@
         .player-container.ratio-4-3  { padding-top: 75%; }
         .player-container.ratio-1-1  { padding-top: 100%; max-height: 80vh; }
         .player-container.ratio-21-9 { padding-top: 42.85%; }
-        .player-container.ratio-auto { padding-top: 56.25%; }
 
         .player-wrapper .player-container iframe#videoIframe {
             position: absolute;
@@ -539,8 +529,6 @@
             const CONFIG = {
                 relatedLimit: 8,
                 apiBase: '/api',
-                adMaxDuration: 30,
-                adCheckTimeout: 8000,
                 adCooldownMs: 3 * 60 * 1000,
                 adStorageKey: 'dso_last_ad_time',
                 defaultRatio: '16-9'
@@ -567,14 +555,8 @@
             let state = {
                 videoUrl: '',
                 videoData: null,
-                adShown: false,
-                adSkipped: false,
-                adCompleted: false,
                 isPlaying: false,
-                adStartTime: 0,
-                monitorIntervalId: null,
                 userClicked: false,
-                adDetected: false,
                 adBlockedByCooldown: false,
                 videoRatio: CONFIG.defaultRatio
             };
@@ -608,8 +590,7 @@
             function detectVideoRatio() {
                 const data = state.videoData;
                 if (!data) return CONFIG.defaultRatio;
-                if (data.streamable_url) return '16-9';
-                if (data.youtube_id) return '16-9';
+                if (data.streamable_url || data.youtube_id) return '16-9';
                 const text = ((data.titulo || '') + ' ' + (data.descricao || '')).toLowerCase();
                 if (text.includes('shorts') || text.includes('vertical') || text.includes('tiktok') || text.includes('reels')) return '9-16';
                 if (text.includes('quadrado') || text.includes('square')) return '1-1';
@@ -660,88 +641,16 @@
                 return (Date.now() - getLastAdTime()) >= CONFIG.adCooldownMs;
             }
 
-            function detectClickadillaOverlay() {
-                const selectors = [
-                    '[id^="clickadilla"]',
-                    '[class*="clickadilla"]',
-                    '[id*="clickadilla"]',
-                    'iframe[src*="clickadilla"]',
-                    'iframe[src*="clickamarty"]',
-                    'iframe[src*="tubecorporate"]'
-                ];
-                for (const sel of selectors) {
-                    const els = document.querySelectorAll(sel);
-                    for (const el of els) {
-                        const style = window.getComputedStyle(el);
-                        const rect = el.getBoundingClientRect();
-                        if (style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 50 && rect.height > 50) {
-                            return el;
-                        }
-                    }
+            function checkAdAvailability() {
+                if (!canShowAd()) {
+                    state.adBlockedByCooldown = true;
+                    dom.adBadge.style.display = 'none';
+                    dom.playLabel.textContent = 'Clique para reproduzir';
+                    return;
                 }
-                return null;
-            }
-
-            let overlayObserver = null;
-            let overlayCheckInterval = null;
-
-            function startOverlayDetection(onDetected) {
-                stopOverlayDetection();
-
-                const check = () => {
-                    const overlay = detectClickadillaOverlay();
-                    if (overlay) {
-                        onDetected(overlay);
-                        return true;
-                    }
-                    return false;
-                };
-
-                if (check()) return;
-
-                overlayObserver = new MutationObserver(() => {
-                    if (check()) stopOverlayDetection();
-                });
-
-                overlayObserver.observe(document.body, {
-                    childList: true,
-                    subtree: true,
-                    attributes: true,
-                    attributeFilter: ['style', 'class']
-                });
-
-                let elapsed = 0;
-                overlayCheckInterval = setInterval(() => {
-                    elapsed += 300;
-                    if (check()) {
-                        stopOverlayDetection();
-                    } else if (elapsed >= CONFIG.adCheckTimeout) {
-                        stopOverlayDetection();
-                    }
-                }, 300);
-            }
-
-            function stopOverlayDetection() {
-                if (overlayObserver) {
-                    overlayObserver.disconnect();
-                    overlayObserver = null;
-                }
-                if (overlayCheckInterval) {
-                    clearInterval(overlayCheckInterval);
-                    overlayCheckInterval = null;
-                }
-            }
-
-            function triggerClickadillaAd() {
-                const container = dom.playerContainer;
-                if (!container) return;
-                try {
-                    container.dispatchEvent(new MouseEvent('click', {
-                        bubbles: true,
-                        cancelable: true,
-                        view: window
-                    }));
-                } catch(e) {}
+                state.adBlockedByCooldown = false;
+                dom.adBadge.style.display = 'none';
+                dom.playLabel.textContent = 'Clique para reproduzir';
             }
 
             function playVideo() {
@@ -762,103 +671,12 @@
                 }
             }
 
-            function showAd() {
-                if (state.adShown) return;
-                state.adShown = true;
-                state.adStartTime = Date.now();
-
-                dom.playOverlay.classList.add('hidden');
-                hidePreview();
-                dom.videoIframe.style.display = 'none';
-
-                dom.adBadge.style.display = 'flex';
-                dom.adBadge.innerHTML = '<i class="fas fa-ad"></i> Anúncio';
-
-                triggerClickadillaAd();
-
-                startOverlayDetection((overlay) => {
-                    state.adDetected = true;
-                });
-
-                startAdMonitoring();
-            }
-
-            function finishAd() {
-                if (state.adSkipped || state.adCompleted) return;
-                state.adCompleted = true;
-                setLastAdTime();
-                if (state.monitorIntervalId) {
-                    clearInterval(state.monitorIntervalId);
-                    state.monitorIntervalId = null;
-                }
-                stopOverlayDetection();
-                playVideo();
-            }
-
-            function startAdMonitoring() {
-                if (state.monitorIntervalId) {
-                    clearInterval(state.monitorIntervalId);
-                    state.monitorIntervalId = null;
-                }
-
-                let overlayWasVisible = false;
-
-                state.monitorIntervalId = setInterval(() => {
-                    const overlay = detectClickadillaOverlay();
-                    const elapsed = (Date.now() - state.adStartTime) / 1000;
-
-                    if (overlay) {
-                        overlayWasVisible = true;
-                    }
-
-                    if (overlayWasVisible && !overlay && elapsed > 2) {
-                        finishAd();
-                        return;
-                    }
-
-                    if (elapsed > CONFIG.adMaxDuration) {
-                        finishAd();
-                    }
-                }, 800);
-
-                setTimeout(() => {
-                    if (!state.adSkipped && !state.adCompleted) {
-                        finishAd();
-                    }
-                }, CONFIG.adMaxDuration * 1000 + 2000);
-            }
-
-            function checkAdInBackground() {
-                if (!canShowAd()) {
-                    state.adBlockedByCooldown = true;
-                    state.adDetected = false;
-                    dom.adBadge.style.display = 'none';
-                    dom.playLabel.textContent = 'Clique para reproduzir';
-                    return;
-                }
-
-                state.adBlockedByCooldown = false;
-
-                startOverlayDetection(() => {
-                    state.adDetected = true;
-                    dom.adBadge.style.display = 'flex';
-                    dom.adBadge.innerHTML = '<i class="fas fa-ad"></i> Assistir anúncio';
-                    dom.playLabel.textContent = 'Clique para assistir ao anúncio';
-                });
-            }
-
             function handlePlayClick() {
                 if (state.isPlaying) return;
                 state.userClicked = true;
 
-                if (state.adBlockedByCooldown) {
-                    playVideo();
-                    return;
-                }
-
-                if (state.adDetected && canShowAd()) {
-                    showAd();
-                    return;
+                if (canShowAd()) {
+                    setLastAdTime();
                 }
 
                 playVideo();
@@ -893,7 +711,7 @@
                         state.videoUrl = state.videoData.video_url || '';
                     }
 
-                    checkAdInBackground();
+                    checkAdAvailability();
                     await registerView(videoId);
                     await loadRelated(videoId);
 
