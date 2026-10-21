@@ -388,9 +388,9 @@ const publicPaths = [
     '/api/start-download', '/api/step-config', '/api/next-step',
     '/page1', '/page2', '/page3', '/generate-password',
     '/videos', '/video', '/api/videos', '/api/video',
-    '/api/automymuze'
+    '/api/automymuze',
+    '/internal'
 ];
-
 app.use(async (req, res, next) => {
     const isPublic = publicPaths.some(p => req.path.startsWith(p)) || 
                      req.path === '/' ||
@@ -399,8 +399,9 @@ app.use(async (req, res, next) => {
                      req.path.startsWith('/admin') ||
                      req.path.startsWith('/videos') ||
                      req.path.startsWith('/video') ||
-                     req.path.startsWith('/api/automymuze');
-    
+                     req.path.startsWith('/api/automymuze') ||
+                     req.path.startsWith('/internal');
+
     if (isPublic) {
         return next();
     }
