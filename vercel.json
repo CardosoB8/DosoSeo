@@ -23,5 +23,11 @@
       "src": "/(.*)",
       "dest": "/index.js"
     }
+  ],
+  "crons": [
+    {
+      "path": "/internal/automymuze/tick",
+      "schedule": "*/15 * * * *"
+    }
   ]
 }
