@@ -17,7 +17,6 @@
             --warning: #f59e0b;
             --danger: #ef4444;
         }
-
         [data-theme="dark"] {
             --bg-primary: #0f0f1a;
             --bg-secondary: #1a1a2e;
@@ -29,7 +28,6 @@
             --header-bg: #0f172a;
             --shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
-
         [data-theme="light"] {
             --bg-primary: #f8fafc;
             --bg-secondary: #ffffff;
@@ -41,9 +39,7 @@
             --header-bg: #7c3aed;
             --shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
             font-family: 'Quicksand', sans-serif;
             background: var(--bg-primary);
@@ -52,8 +48,6 @@
             display: flex;
             flex-direction: column;
         }
-
-        /* Header */
         .header {
             background: var(--header-bg);
             padding: 10px 16px;
@@ -62,13 +56,11 @@
             z-index: 100;
             box-shadow: var(--shadow);
         }
-
         .header-content {
             display: flex;
             align-items: center;
             gap: 12px;
         }
-
         .logo {
             display: flex;
             align-items: center;
@@ -78,11 +70,8 @@
             font-weight: 700;
             font-size: 1.2rem;
         }
-
         .logo i { color: var(--accent); }
-
         .search-wrapper { flex: 1; }
-
         .search-bar {
             width: 100%;
             padding: 8px 14px;
@@ -93,11 +82,8 @@
             font-family: 'Quicksand', sans-serif;
             font-size: 0.9rem;
         }
-
         .search-bar::placeholder { color: rgba(255,255,255,0.6); }
-
-        .header-actions { display: flex; gap: 6px; }
-
+        .header-actions { display: flex; gap: 6px; align-items: center; }
         .icon-btn {
             background: rgba(255,255,255,0.1);
             border: none;
@@ -112,8 +98,30 @@
             text-decoration: none;
             font-size: 1rem;
         }
-
-        /* Categorias */
+        /* BOTÃO AUTO MYMUZE NO HEADER */
+        .btn-automymuze {
+            background: linear-gradient(135deg, #10b981, #06b6d4);
+            border: none;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 30px;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 700;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 8px rgba(16,185,129,0.4);
+            white-space: nowrap;
+        }
+        .btn-automymuze:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16,185,129,0.5);
+        }
+        .btn-automymuze i {
+            font-size: 0.9rem;
+        }
         .categories {
             padding: 10px 12px;
             display: flex;
@@ -122,9 +130,7 @@
             background: var(--bg-secondary);
             border-bottom: 1px solid var(--border-color);
         }
-
         .categories::-webkit-scrollbar { display: none; }
-
         .category-btn {
             padding: 6px 14px;
             border-radius: 30px;
@@ -139,14 +145,11 @@
             align-items: center;
             gap: 5px;
         }
-
         .category-btn.active {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
             border-color: transparent;
         }
-
-        /* Grid - ALTURA FIXA */
         .items-grid {
             padding: 12px;
             display: flex;
@@ -155,8 +158,6 @@
             flex: 1;
             align-content: flex-start;
         }
-
-        /* CARD COM ALTURA FIXA */
         .item-card {
             width: calc((100% - 16px) / 3);
             height: 170px;
@@ -169,12 +170,10 @@
             display: flex;
             flex-direction: column;
         }
-
         .item-image-wrapper {
             height: 100px;
             padding: 5px 5px 3px;
         }
-
         .item-image {
             width: 100%;
             height: 100%;
@@ -182,14 +181,12 @@
             border-radius: 6px;
             background: linear-gradient(135deg, var(--primary-light), var(--secondary));
         }
-
         .item-info {
             padding: 6px 8px;
             flex: 1;
             display: flex;
             flex-direction: column;
         }
-
         .item-title {
             font-size: 0.7rem;
             line-height: 1.3;
@@ -200,14 +197,12 @@
             overflow: hidden;
             margin-bottom: 4px;
         }
-
         .item-meta {
             display: flex;
             align-items: center;
             justify-content: space-between;
             margin-top: auto;
         }
-
         .item-category {
             font-size: 0.5rem;
             padding: 2px 5px;
@@ -217,7 +212,6 @@
             font-weight: 600;
             text-transform: uppercase;
         }
-
         .item-downloads {
             display: flex;
             align-items: center;
@@ -225,16 +219,12 @@
             color: var(--text-muted);
             font-size: 0.55rem;
         }
-
-        /* Tablet */
         @media (min-width: 640px) {
             .items-grid { gap: 12px; padding: 16px; max-width: 1200px; margin: 0 auto; }
             .item-card { width: calc((100% - 36px) / 4); height: 200px; }
             .item-image-wrapper { height: 120px; }
             .item-title { font-size: 0.8rem; }
         }
-
-        /* Desktop */
         @media (min-width: 1024px) {
             .item-card { width: calc((100% - 48px) / 5); height: 220px; }
             .item-image-wrapper { height: 135px; }
@@ -242,21 +232,334 @@
             .header-content { max-width: 1200px; margin: 0 auto; }
             .categories { max-width: 1200px; margin: 0 auto; }
         }
-
-        /* Estados */
         .loading, .empty-state {
             width: 100%;
             text-align: center;
             padding: 50px 20px;
             color: var(--text-muted);
         }
-
         footer {
             text-align: center;
             padding: 12px;
             color: var(--text-muted);
             font-size: 0.7rem;
             border-top: 1px solid var(--border-color);
+        }
+
+        /* ============================================================ */
+        /* MODAL AUTO MYMUZE                                            */
+        /* ============================================================ */
+        .amz-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 99999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            animation: amzFadeIn 0.2s ease;
+        }
+        .amz-overlay.show { display: flex; }
+        @keyframes amzFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .amz-modal {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 24px;
+            max-width: 520px;
+            width: 100%;
+            max-height: 92vh;
+            overflow-y: auto;
+            padding: 24px 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05);
+            animation: amzSlideUp 0.3s cubic-bezier(.2,.9,.3,1.2);
+            position: relative;
+        }
+        @keyframes amzSlideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .amz-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(255,255,255,0.08);
+            border: none;
+            color: #94a3b8;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+        .amz-close:hover { background: rgba(255,255,255,0.15); color: white; }
+
+        .amz-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 0 20px;
+        }
+        .amz-logo {
+            width: 64px;
+            height: 64px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #10b981, #06b6d4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            box-shadow: 0 8px 24px rgba(16,185,129,0.4);
+            font-size: 28px;
+            color: white;
+        }
+        .amz-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 6px;
+        }
+        .amz-subtitle {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            line-height: 1.4;
+        }
+
+        .amz-plans {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .amz-plan {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .amz-plan:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(16,185,129,0.4);
+            transform: translateY(-2px);
+        }
+        .amz-plan-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+        .amz-plan-free .amz-plan-icon {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        .amz-plan-paid .amz-plan-icon {
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            color: white;
+        }
+        .amz-plan-body { flex: 1; }
+        .amz-plan-name {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 3px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .amz-plan-badge {
+            font-size: 0.6rem;
+            padding: 2px 7px;
+            border-radius: 20px;
+            background: rgba(16,185,129,0.2);
+            color: #10b981;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .amz-plan-desc {
+            font-size: 0.78rem;
+            color: #94a3b8;
+            line-height: 1.4;
+        }
+        .amz-plan-arrow {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        .amz-plan:hover .amz-plan-arrow { color: #10b981; }
+
+        .amz-warning {
+            background: rgba(245,158,11,0.1);
+            border: 1px solid rgba(245,158,11,0.3);
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 0.75rem;
+            color: #fbbf24;
+            line-height: 1.5;
+            margin-bottom: 12px;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+        .amz-warning i {
+            font-size: 1rem;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        /* VIEWS INTERNAS DO MODAL */
+        .amz-view { display: none; }
+        .amz-view.active { display: block; }
+
+        .amz-form-group { margin-bottom: 14px; }
+        .amz-label {
+            display: block;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+        .amz-input {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(0,0,0,0.3);
+            color: #f1f5f9;
+            font-family: 'Quicksand', sans-serif;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .amz-input:focus {
+            border-color: #10b981;
+            background: rgba(0,0,0,0.5);
+        }
+        .amz-input::placeholder { color: #64748b; }
+
+        .amz-btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .amz-btn-primary {
+            background: linear-gradient(135deg, #10b981, #06b6d4);
+            color: white;
+            box-shadow: 0 4px 16px rgba(16,185,129,0.3);
+        }
+        .amz-btn-primary:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(16,185,129,0.4);
+        }
+        .amz-btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .amz-btn-secondary {
+            background: rgba(255,255,255,0.08);
+            color: #cbd5e1;
+            margin-top: 8px;
+        }
+        .amz-btn-secondary:hover { background: rgba(255,255,255,0.15); }
+        .amz-btn-whatsapp {
+            background: linear-gradient(135deg, #25d366, #128c7e);
+            color: white;
+            box-shadow: 0 4px 16px rgba(37,211,102,0.3);
+        }
+        .amz-btn-whatsapp:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(37,211,102,0.4);
+        }
+
+        .amz-back-btn {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            cursor: pointer;
+            padding: 8px 0;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .amz-back-btn:hover { color: #f1f5f9; }
+
+        .amz-alert {
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            margin-bottom: 12px;
+            display: none;
+            line-height: 1.4;
+        }
+        .amz-alert.show { display: block; }
+        .amz-alert-error {
+            background: rgba(239,68,68,0.15);
+            border: 1px solid rgba(239,68,68,0.3);
+            color: #fca5a5;
+        }
+        .amz-alert-success {
+            background: rgba(16,185,129,0.15);
+            border: 1px solid rgba(16,185,129,0.3);
+            color: #6ee7b7;
+        }
+        .amz-alert-info {
+            background: rgba(6,182,212,0.15);
+            border: 1px solid rgba(6,182,212,0.3);
+            color: #67e8f9;
+        }
+
+        .amz-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: amzSpin 0.7s linear infinite;
+        }
+        @keyframes amzSpin { to { transform: rotate(360deg); } }
+
+        .amz-status-box {
+            background: rgba(16,185,129,0.1);
+            border: 1px solid rgba(16,185,129,0.3);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        .amz-status-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #10b981;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .amz-status-detail {
+            font-size: 0.78rem;
+            color: #94a3b8;
+            line-height: 1.5;
         }
     </style>
 </head>
@@ -268,6 +571,10 @@
                 <input type="text" class="search-bar" placeholder="Buscar..." id="searchInput">
             </div>
             <div class="header-actions">
+                <button class="btn-automymuze" id="btnAutoMyMuze" title="Auto MyMuze">
+                    <i class="fas fa-bolt"></i>
+                    <span>Auto MyMuze</span>
+                </button>
                 <button class="icon-btn" id="themeToggle"><i class="fas fa-sun"></i></button>
             </div>
         </div>
@@ -288,9 +595,135 @@
     
     <footer><p>Mr Doso Web</p></footer>
 
-    
-    
+    <!-- ============================================================ -->
+    <!-- MODAL AUTO MYMUZE                                            -->
+    <!-- ============================================================ -->
+    <div class="amz-overlay" id="amzOverlay">
+        <div class="amz-modal">
+            <button class="amz-close" id="amzClose"><i class="fas fa-times"></i></button>
+            
+            <div class="amz-header">
+                <div class="amz-logo"><i class="fas fa-bolt"></i></div>
+                <div class="amz-title">Auto MyMuze</div>
+                <div class="amz-subtitle">Mantenha sua conta MyMuze sempre ativa automaticamente</div>
+            </div>
+
+            <!-- VIEW: MENU INICIAL -->
+            <div class="amz-view active" id="amzViewMenu">
+                <div class="amz-plans">
+                    <div class="amz-plan amz-plan-free" id="amzPlanFree">
+                        <div class="amz-plan-icon"><i class="fas fa-gift"></i></div>
+                        <div class="amz-plan-body">
+                            <div class="amz-plan-name">
+                                Teste Grátis
+                                <span class="amz-plan-badge">15 dias</span>
+                            </div>
+                            <div class="amz-plan-desc">
+                                Ative uma vez e teste por 15 dias. Válido apenas para o primeiro uso.
+                            </div>
+                        </div>
+                        <div class="amz-plan-arrow"><i class="fas fa-chevron-right"></i></div>
+                    </div>
+                    <div class="amz-plan amz-plan-paid" id="amzPlanPaid">
+                        <div class="amz-plan-icon"><i class="fas fa-crown"></i></div>
+                        <div class="amz-plan-body">
+                            <div class="amz-plan-name">
+                                Mensal
+                                <span class="amz-plan-badge" style="background:rgba(245,158,11,0.2);color:#fbbf24;">10 MT</span>
+                            </div>
+                            <div class="amz-plan-desc">
+                                Pague via M-Pesa/E-Mola e receba uma chave de renovação por 30 dias.
+                            </div>
+                        </div>
+                        <div class="amz-plan-arrow"><i class="fas fa-chevron-right"></i></div>
+                    </div>
+                </div>
+                <div class="amz-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div>
+                        <strong>Atenção:</strong> se você usa o app MyMuze instalado no celular, não faça login lá enquanto o Auto MyMuze estiver ativo. O MyMuze só permite um dispositivo por vez — um vai derrubar o outro.
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: TESTE GRÁTIS (INPUT MSISDN) -->
+            <div class="amz-view" id="amzViewFree">
+                <button class="amz-back-btn" id="amzBackFromFree"><i class="fas fa-arrow-left"></i> Voltar</button>
+                <div class="amz-alert amz-alert-error" id="amzFreeAlert"></div>
+                <div class="amz-form-group">
+                    <label class="amz-label">Número do celular (com DDD)</label>
+                    <input type="tel" class="amz-input" id="amzFreeMsisdn" placeholder="Ex.: 258858861745" inputmode="numeric">
+                </div>
+                <button class="amz-btn amz-btn-primary" id="amzFreeSubmit">
+                    <i class="fas fa-bolt"></i>
+                    <span>Ativar Teste Grátis</span>
+                </button>
+            </div>
+
+            <!-- VIEW: OTP -->
+            <div class="amz-view" id="amzViewOtp">
+                <button class="amz-back-btn" id="amzBackFromOtp"><i class="fas fa-arrow-left"></i> Voltar</button>
+                <div class="amz-alert amz-alert-info show">
+                    <i class="fas fa-sms"></i> Enviamos um SMS para <strong id="amzOtpNumber">...</strong>. Digite o código abaixo.
+                </div>
+                <div class="amz-alert amz-alert-error" id="amzOtpAlert"></div>
+                <div class="amz-form-group">
+                    <label class="amz-label">Código OTP (4 a 6 dígitos)</label>
+                    <input type="tel" class="amz-input" id="amzOtpCode" placeholder="Ex.: 123456" inputmode="numeric" maxlength="6">
+                </div>
+                <button class="amz-btn amz-btn-primary" id="amzOtpSubmit">
+                    <i class="fas fa-check"></i>
+                    <span>Confirmar Código</span>
+                </button>
+            </div>
+
+            <!-- VIEW: MENSAL (PAY VIA WHATSAPP) -->
+            <div class="amz-view" id="amzViewPaid">
+                <button class="amz-back-btn" id="amzBackFromPaid"><i class="fas fa-arrow-left"></i> Voltar</button>
+                <div class="amz-alert amz-alert-info show">
+                    <i class="fas fa-info-circle"></i> Pague <strong>10 MT</strong> via M-Pesa/E-Mola. Depois de pagar, você recebe uma chave única no WhatsApp. Insira a chave abaixo.
+                </div>
+                <button class="amz-btn amz-btn-whatsapp" id="amzWhatsappBtn">
+                    <i class="fab fa-whatsapp"></i>
+                    <span>Falar no WhatsApp</span>
+                </button>
+                <div style="height:16px"></div>
+                <div class="amz-alert amz-alert-error" id="amzPaidAlert"></div>
+                <div class="amz-form-group">
+                    <label class="amz-label">Número do celular</label>
+                    <input type="tel" class="amz-input" id="amzPaidMsisdn" placeholder="Ex.: 258858861745" inputmode="numeric">
+                </div>
+                <div class="amz-form-group">
+                    <label class="amz-label">Chave de renovação</label>
+                    <input type="text" class="amz-input" id="amzPaidKey" placeholder="AMZ-XXXX-XXXX-XXXX" style="text-transform:uppercase;letter-spacing:1px;">
+                </div>
+                <button class="amz-btn amz-btn-primary" id="amzPaidSubmit">
+                    <i class="fas fa-key"></i>
+                    <span>Resgatar Chave</span>
+                </button>
+            </div>
+
+            <!-- VIEW: STATUS ATIVO -->
+            <div class="amz-view" id="amzViewStatus">
+                <div class="amz-status-box">
+                    <div class="amz-status-title">
+                        <i class="fas fa-check-circle"></i>
+                        <span id="amzStatusTitle">Auto MyMuze Ativo</span>
+                    </div>
+                    <div class="amz-status-detail" id="amzStatusDetail">
+                        Seu número está sendo atualizado automaticamente.
+                    </div>
+                </div>
+                <button class="amz-btn amz-btn-secondary" id="amzStatusClose">Fechar</button>
+            </div>
+
+        </div>
+    </div>
+
     <script>
+        // ============================================================
+        // TEMA
+        // ============================================================
         function initTheme() {
             const theme = localStorage.getItem('theme') || 'dark';
             document.body.setAttribute('data-theme', theme);
@@ -347,10 +780,267 @@
                 if (page === 1) grid.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>Erro</h3></div>';
             } finally { loading = false; }
         }
-        
+
+        // ============================================================
+        // AUTO MYMUZE — FRONTEND
+        // ============================================================
+        const AMZ = {
+            state: { msisdn: '', deviceId: '', view: 'menu' },
+            els: {},
+
+            init() {
+                this.els = {
+                    overlay: document.getElementById('amzOverlay'),
+                    close: document.getElementById('amzClose'),
+                    views: {
+                        menu: document.getElementById('amzViewMenu'),
+                        free: document.getElementById('amzViewFree'),
+                        otp: document.getElementById('amzViewOtp'),
+                        paid: document.getElementById('amzViewPaid'),
+                        status: document.getElementById('amzViewStatus'),
+                    },
+                    free: {
+                        btn: document.getElementById('amzPlanFree'),
+                        back: document.getElementById('amzBackFromFree'),
+                        input: document.getElementById('amzFreeMsisdn'),
+                        submit: document.getElementById('amzFreeSubmit'),
+                        alert: document.getElementById('amzFreeAlert'),
+                    },
+                    otp: {
+                        back: document.getElementById('amzBackFromOtp'),
+                        input: document.getElementById('amzOtpCode'),
+                        submit: document.getElementById('amzOtpSubmit'),
+                        alert: document.getElementById('amzOtpAlert'),
+                        number: document.getElementById('amzOtpNumber'),
+                    },
+                    paid: {
+                        btn: document.getElementById('amzPlanPaid'),
+                        back: document.getElementById('amzBackFromPaid'),
+                        whatsapp: document.getElementById('amzWhatsappBtn'),
+                        msisdn: document.getElementById('amzPaidMsisdn'),
+                        key: document.getElementById('amzPaidKey'),
+                        submit: document.getElementById('amzPaidSubmit'),
+                        alert: document.getElementById('amzPaidAlert'),
+                    },
+                    status: {
+                        title: document.getElementById('amzStatusTitle'),
+                        detail: document.getElementById('amzStatusDetail'),
+                        close: document.getElementById('amzStatusClose'),
+                    },
+                };
+                this.bind();
+            },
+
+            bind() {
+                const E = this.els;
+                // Abrir
+                document.getElementById('btnAutoMyMuze').addEventListener('click', () => this.open());
+
+                // Fechar
+                E.close.addEventListener('click', () => this.close());
+                E.overlay.addEventListener('click', (e) => { if (e.target === E.overlay) this.close(); });
+
+                // Navegação
+                E.free.btn.addEventListener('click', () => this.show('free'));
+                E.paid.btn.addEventListener('click', () => this.show('paid'));
+                E.free.back.addEventListener('click', () => this.show('menu'));
+                E.otp.back.addEventListener('click', () => this.show('menu'));
+                E.paid.back.addEventListener('click', () => this.show('menu'));
+                E.status.close.addEventListener('click', () => this.close());
+
+                // Ações
+                E.free.submit.addEventListener('click', () => this.activateFree());
+                E.otp.submit.addEventListener('click', () => this.verifyOtp());
+                E.paid.submit.addEventListener('click', () => this.redeemKey());
+                E.paid.whatsapp.addEventListener('click', () => this.openWhatsApp());
+
+                // Enter pra submeter
+                E.free.input.addEventListener('keypress', (e) => { if (e.key === 'Enter') this.activateFree(); });
+                E.otp.input.addEventListener('keypress', (e) => { if (e.key === 'Enter') this.verifyOtp(); });
+                E.paid.key.addEventListener('keypress', (e) => { if (e.key === 'Enter') this.redeemKey(); });
+            },
+
+            open() {
+                this.els.overlay.classList.add('show');
+                this.show('menu');
+            },
+
+            close() {
+                this.els.overlay.classList.remove('show');
+            },
+
+            show(view) {
+                Object.values(this.els.views).forEach(v => v.classList.remove('active'));
+                if (this.els.views[view]) this.els.views[view].classList.add('active');
+                this.state.view = view;
+                this.clearAlerts();
+            },
+
+            clearAlerts() {
+                const E = this.els;
+                [E.free.alert, E.otp.alert, E.paid.alert].forEach(a => {
+                    a.classList.remove('show');
+                    a.textContent = '';
+                });
+            },
+
+            alert(which, message, type = 'error') {
+                const a = this.els[which].alert;
+                a.className = 'amz-alert amz-alert-' + type + ' show';
+                a.innerHTML = '<i class="fas fa-' + (type === 'error' ? 'exclamation-circle' : type === 'success' ? 'check-circle' : 'info-circle') + '"></i> ' + message;
+            },
+
+            loading(btn, on) {
+                if (on) {
+                    btn.disabled = true;
+                    btn._origHTML = btn.innerHTML;
+                    btn.innerHTML = '<span class="amz-spinner"></span> Aguarde...';
+                } else {
+                    btn.disabled = false;
+                    if (btn._origHTML) btn.innerHTML = btn._origHTML;
+                }
+            },
+
+            validateMsisdn(raw) {
+                const m = String(raw || '').replace(/\D/g, '');
+                if (m.length < 9 || m.length > 15) return null;
+                return m;
+            },
+
+            async activateFree() {
+                const E = this.els.free;
+                const msisdn = this.validateMsisdn(E.input.value);
+                if (!msisdn) {
+                    return this.alert('free', 'Digite um número válido (9 a 15 dígitos).');
+                }
+                this.loading(E.submit, true);
+                try {
+                    const deviceId = 'web-' + Math.random().toString(36).slice(2, 12);
+                    const res = await fetch('/api/automymuze/free-trial', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ msisdn, deviceId }),
+                    });
+                    const data = await res.json();
+                    if (!res.ok) {
+                        const msg = {
+                            teste_ja_usado: 'Este número já usou o teste grátis.',
+                            msisdn_invalido: 'Número inválido.',
+                            ja_tem_sessao: 'Este número já tem uma sessão ativa.',
+                        }[data.error] || data.error || 'Erro ao ativar.';
+                        this.alert('free', msg);
+                        this.loading(E.submit, false);
+                        return;
+                    }
+                    this.state.msisdn = msisdn;
+                    this.state.deviceId = deviceId;
+                    this.els.otp.number.textContent = msisdn;
+                    this.show('otp');
+                    setTimeout(() => this.els.otp.input.focus(), 100);
+                } catch (e) {
+                    this.alert('free', 'Erro de conexão. Tente novamente.');
+                } finally {
+                    this.loading(E.submit, false);
+                }
+            },
+
+            async verifyOtp() {
+                const E = this.els.otp;
+                const otp = String(E.input.value || '').trim();
+                if (otp.length < 4) return this.alert('otp', 'Digite o código completo.');
+                this.loading(E.submit, true);
+                try {
+                    const res = await fetch('/api/automymuze/verify-otp', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            msisdn: this.state.msisdn,
+                            otp,
+                            deviceId: this.state.deviceId,
+                        }),
+                    });
+                    const data = await res.json();
+                    if (!res.ok) {
+                        this.alert('otp', 'Código inválido. Verifique o SMS e tente novamente.');
+                        this.loading(E.submit, false);
+                        return;
+                    }
+                    // Ativado com sucesso
+                    this.els.status.title.textContent = 'Auto MyMuze Ativado!';
+                    const planName = data.plano === 'free_trial' ? 'Teste Grátis' : 'Mensal';
+                    const fim = new Date(data.plano_fim).toLocaleDateString('pt-BR');
+                    this.els.status.detail.innerHTML =
+                        'Plano: <strong>' + planName + '</strong><br>' +
+                        'Válido até: <strong>' + fim + '</strong><br>' +
+                        'Seu número será atualizado automaticamente todos os dias.';
+                    this.show('status');
+                } catch (e) {
+                    this.alert('otp', 'Erro de conexão. Tente novamente.');
+                } finally {
+                    this.loading(E.submit, false);
+                }
+            },
+
+            async redeemKey() {
+                const E = this.els.paid;
+                const msisdn = this.validateMsisdn(E.msisdn.value);
+                const codigo = String(E.key.value || '').trim().toUpperCase();
+                if (!msisdn) return this.alert('paid', 'Digite um número válido.');
+                if (!codigo || codigo.length < 10) return this.alert('paid', 'Digite a chave completa (AMZ-XXXX-XXXX-XXXX).');
+                this.loading(E.submit, true);
+                try {
+                    const res = await fetch('/api/automymuze/redeem-key', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ msisdn, codigo }),
+                    });
+                    const data = await res.json();
+                    if (!res.ok) {
+                        this.alert('paid', data.error || 'Erro ao resgatar chave.');
+                        this.loading(E.submit, false);
+                        return;
+                    }
+                    if (data.precisaOtp) {
+                        // A chave foi aplicada mas precisa refazer OTP
+                        this.alert('paid',
+                            'Chave aplicada! Agora faça login com OTP para ativar a automação. Redirecionando...',
+                            'success');
+                        setTimeout(() => {
+                            document.getElementById('amzPlanFree').click();
+                            this.els.free.input.value = msisdn;
+                            this.els.free.input.disabled = true;
+                        }, 1500);
+                        return;
+                    }
+                    // Sucesso total
+                    this.els.status.title.textContent = 'Chave Resgatada!';
+                    const fim = new Date(data.plano_fim).toLocaleDateString('pt-BR');
+                    this.els.status.detail.innerHTML =
+                        'Plano: <strong>Mensal</strong> (' + data.dias + ' dias)<br>' +
+                        'Válido até: <strong>' + fim + '</strong><br>' +
+                        'Seu número será atualizado automaticamente.';
+                    this.show('status');
+                } catch (e) {
+                    this.alert('paid', 'Erro de conexão. Tente novamente.');
+                } finally {
+                    this.loading(E.submit, false);
+                }
+            },
+
+            openWhatsApp() {
+                const phone = '258858861745';
+                const msg = encodeURIComponent('Olá! Quero ativar o Auto MyMuze mensal (10 MT). Meu número é: ');
+                window.open('https://api.whatsapp.com/send?phone=' + phone + '&text=' + msg, '_blank');
+            },
+        };
+
+        // ============================================================
+        // INIT
+        // ============================================================
         document.addEventListener('DOMContentLoaded', () => {
             initTheme();
             loadItems();
+            AMZ.init();
             
             document.getElementById('themeToggle').onclick = () => {
                 const t = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
