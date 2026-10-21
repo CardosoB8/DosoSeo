@@ -251,25 +251,20 @@ function getRandomCpaLink() {
     return CPA_LINKS[Math.floor(Math.random() * CPA_LINKS.length)];
 }
 
-// 🔥 FUNÇÃO CORRIGIDA - ACEITA YOUTUBE E STREAMABLE
 function extractYoutubeId(url) {
     if (!url) return null;
     
-    // Remover ?si= e outros parâmetros
     let cleanUrl = url.replace(/\?si=[\w-]+/g, '');
     cleanUrl = cleanUrl.replace(/&si=[\w-]+/g, '');
     cleanUrl = cleanUrl.split('?')[0];
     cleanUrl = cleanUrl.split('&')[0];
     
-    // 🔥 VERIFICAR SE É STREAMABLE
     if (cleanUrl.includes('streamable.com')) {
-        // Extrair ID do Streamable: https://streamable.com/e/xxxxx
         const match = cleanUrl.match(/streamable\.com\/e\/([\w-]+)/);
         if (match) {
             console.log('✅ Streamable ID encontrado:', match[1]);
             return match[1];
         }
-        // Ou: https://streamable.com/xxxxx
         const match2 = cleanUrl.match(/streamable\.com\/([\w-]+)/);
         if (match2) {
             console.log('✅ Streamable ID encontrado:', match2[1]);
@@ -278,7 +273,6 @@ function extractYoutubeId(url) {
         return null;
     }
     
-    // YouTube
     const patterns = [
         /(?:youtube\.com\/watch\?v=)([\w-]+)/,
         /(?:youtu\.be\/)([\w-]+)/,
@@ -290,7 +284,6 @@ function extractYoutubeId(url) {
         if (match) return match[1];
     }
     
-    // Se for apenas o ID (11 caracteres - YouTube ou Streamable)
     if (/^[\w-]{11}$/.test(url)) return url;
     
     return null;
@@ -394,7 +387,8 @@ const publicPaths = [
     '/admin-login', '/admin-panel', '/item', '/api/items', '/api/item', 
     '/api/start-download', '/api/step-config', '/api/next-step',
     '/page1', '/page2', '/page3', '/generate-password',
-    '/videos', '/video', '/api/videos', '/api/video'
+    '/videos', '/video', '/api/videos', '/api/video',
+    '/api/automymuze'
 ];
 
 app.use(async (req, res, next) => {
@@ -404,7 +398,8 @@ app.use(async (req, res, next) => {
                      req.path.startsWith('/js') ||
                      req.path.startsWith('/admin') ||
                      req.path.startsWith('/videos') ||
-                     req.path.startsWith('/video');
+                     req.path.startsWith('/video') ||
+                     req.path.startsWith('/api/automymuze');
     
     if (isPublic) {
         return next();
@@ -501,7 +496,6 @@ app.get('/video/:id', (req, res) => {
 // API DE VÍDEOS (PÚBLICA)
 // =================================================================
 
-// Listar todos os vídeos
 app.get('/api/videos', async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
@@ -558,7 +552,6 @@ app.get('/api/videos', async (req, res) => {
     }
 });
 
-// Vídeos populares (recomendados)
 app.get('/api/videos/popular', async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 8;
@@ -587,7 +580,6 @@ app.get('/api/videos/popular', async (req, res) => {
     }
 });
 
-// Detalhes de um vídeo
 app.get('/api/video/:id', async (req, res) => {
     try {
         const videoId = req.params.id;
@@ -597,21 +589,17 @@ app.get('/api/video/:id', async (req, res) => {
             return res.status(404).json({ error: 'Vídeo não encontrado' });
         }
         
-        // 🔥 MONTAR URL CORRETA PARA O PLAYER
         let videoUrl = '';
         let embedUrl = '';
         const isStreamable = !!video.streamable_url;
         
         if (isStreamable) {
-            // É Streamable
             videoUrl = video.streamable_url;
             embedUrl = video.streamable_url;
         } else if (video.youtube_id) {
-            // É YouTube
             videoUrl = `https://www.youtube.com/watch?v=${video.youtube_id}`;
             embedUrl = `https://www.youtube-nocookie.com/embed/${video.youtube_id}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3`;
         } else {
-            // Fallback: tentar usar o youtube_url
             const id = extractYoutubeId(video.youtube_url);
             if (id) {
                 videoUrl = `https://www.youtube.com/watch?v=${id}`;
@@ -638,7 +626,6 @@ app.get('/api/video/:id', async (req, res) => {
     }
 });
 
-// Incrementar visualização
 app.post('/api/video/:id/view', viewLimiter, async (req, res) => {
     try {
         const videoId = req.params.id;
@@ -663,7 +650,6 @@ app.post('/api/video/:id/view', viewLimiter, async (req, res) => {
     }
 });
 
-// Buscar vídeos
 app.get('/api/videos/search', async (req, res) => {
     try {
         const q = req.query.q || '';
@@ -709,7 +695,6 @@ app.get('/api/videos/search', async (req, res) => {
 // API ADMIN DE VÍDEOS
 // =================================================================
 
-// Listar todos os vídeos (admin)
 app.get('/admin/api/videos', requireAdmin, async (req, res) => {
     try {
         const videoIds = await redisClient.zRange('videos:ativos', 0, -1, { REV: true });
@@ -731,7 +716,6 @@ app.get('/admin/api/videos', requireAdmin, async (req, res) => {
     }
 });
 
-// 🔥 ADICIONAR VÍDEO (ACEITA YOUTUBE E STREAMABLE)
 app.post('/admin/api/video', requireAdmin, async (req, res) => {
     try {
         const { titulo, descricao, youtube_url, ativo } = req.body;
@@ -740,7 +724,6 @@ app.post('/admin/api/video', requireAdmin, async (req, res) => {
             return res.status(400).json({ error: 'Título e URL são obrigatórios' });
         }
         
-        // 🔥 EXTRAIR ID (YouTube ou Streamable)
         const videoIdExtracted = extractYoutubeId(youtube_url);
         if (!videoIdExtracted) {
             return res.status(400).json({ error: 'URL inválida. Use YouTube (watch?v=) ou Streamable (streamable.com/e/)' });
@@ -749,7 +732,6 @@ app.post('/admin/api/video', requireAdmin, async (req, res) => {
         const id = generateVideoId();
         const now = new Date().toISOString();
         
-        // 🔥 DETECTAR O TIPO DE URL
         const isStreamable = youtube_url.includes('streamable.com');
         const isYoutube = youtube_url.includes('youtube.com') || youtube_url.includes('youtu.be');
         
@@ -765,7 +747,6 @@ app.post('/admin/api/video', requireAdmin, async (req, res) => {
             ativo: ativo === 'true' ? 'true' : 'false'
         };
         
-        // 🔥 GERAR THUMBNAIL
         if (isYoutube) {
             videoData.thumbnail = `https://img.youtube.com/vi/${videoIdExtracted}/hqdefault.jpg`;
         } else {
@@ -788,7 +769,6 @@ app.post('/admin/api/video', requireAdmin, async (req, res) => {
     }
 });
 
-// 🔥 EDITAR VÍDEO (ACEITA YOUTUBE E STREAMABLE)
 app.put('/admin/api/video/:id', requireAdmin, async (req, res) => {
     try {
         const videoId = req.params.id;
@@ -855,7 +835,6 @@ app.put('/admin/api/video/:id', requireAdmin, async (req, res) => {
     }
 });
 
-// Deletar vídeo
 app.delete('/admin/api/video/:id', requireAdmin, async (req, res) => {
     try {
         const videoId = req.params.id;
@@ -1046,9 +1025,6 @@ app.get('/api/step-config', async (req, res) => {
     }
 });
 
-// =================================================================
-// PRÓXIMA ETAPA
-// =================================================================
 app.post('/api/next-step', async (req, res) => {
     try {
         const { currentStep, cpaOpened, sessionId: bodySessionId, timerIniciadoEm } = req.body;
@@ -1896,6 +1872,31 @@ app.get('/:alias', async (req, res) => {
 });
 
 // =================================================================
+// AUTO MYMUZE — carregamento protegido
+// =================================================================
+(async () => {
+    // Espera Redis conectar (máx 30s)
+    let tries = 0;
+    while (!redisClient.isOpen && tries < 30) {
+        await new Promise(r => setTimeout(r, 1000));
+        tries++;
+    }
+    if (!redisClient.isOpen) {
+        console.error('❌ AutoMyMuze desativado: Redis não conectou em 30s');
+        return;
+    }
+    try {
+        const AutoMyMuze = require('./lib/automymuze');
+        AutoMyMuze.start(redisClient);
+        AutoMyMuze.registerRoutes(app, redisClient, requireAdmin);
+        console.log('✅ AutoMyMuze carregado');
+    } catch (e) {
+        console.error('❌ Falha ao carregar AutoMyMuze:', e.message);
+        console.error('   O resto do servidor continua funcionando.');
+    }
+})();
+
+// =================================================================
 // INICIAR SERVIDOR
 // =================================================================
 app.listen(PORT, () => {
@@ -1910,6 +1911,7 @@ app.listen(PORT, () => {
     ✅ HUB DE VÍDEOS COM PLAYER
     ✅ PAINEL ADMIN COM GERENCIAMENTO DE VÍDEOS
     ✅ SUPORTE A STREAMABLE E YOUTUBE
+    ✅ AUTO MYMUZE
     `);
 });
 
