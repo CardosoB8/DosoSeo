@@ -46,11 +46,7 @@
             --header-bg: #7c3aed;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Quicksand', sans-serif;
@@ -60,7 +56,6 @@
             transition: background 0.3s, color 0.3s;
         }
 
-        /* Header */
         .admin-header {
             background: var(--header-bg);
             padding: 14px 20px;
@@ -79,28 +74,11 @@
             gap: 12px;
         }
 
-        .logo-area {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: white;
-        }
+        .logo-area { display: flex; align-items: center; gap: 12px; color: white; }
+        .logo-area i { font-size: 1.5rem; color: var(--accent); }
+        .logo-area h1 { font-size: 1.3rem; font-weight: 700; }
 
-        .logo-area i {
-            font-size: 1.5rem;
-            color: var(--accent);
-        }
-
-        .logo-area h1 {
-            font-size: 1.3rem;
-            font-weight: 700;
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        .header-actions { display: flex; align-items: center; gap: 8px; }
 
         .header-btn {
             background: rgba(255, 255, 255, 0.1);
@@ -120,31 +98,13 @@
             backdrop-filter: blur(10px);
             white-space: nowrap;
         }
+        .header-btn i { font-size: 1rem; }
+        .header-btn:hover { background: rgba(255, 255, 255, 0.2); }
+        .header-btn.icon-only { padding: 10px; }
+        .header-btn.icon-only span { display: none; }
 
-        .header-btn i {
-            font-size: 1rem;
-        }
+        .dashboard-container { max-width: 1400px; margin: 0 auto; padding: 20px; }
 
-        .header-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .header-btn.icon-only {
-            padding: 10px;
-        }
-
-        .header-btn.icon-only span {
-            display: none;
-        }
-
-        /* Container principal */
-        .dashboard-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        /* Navegação por abas */
         .admin-tabs {
             display: flex;
             gap: 4px;
@@ -175,30 +135,17 @@
             white-space: nowrap;
             min-width: 80px;
         }
-
-        .admin-tab i {
-            font-size: 1rem;
-        }
-
+        .admin-tab i { font-size: 1rem; }
         .admin-tab.active {
             background: var(--primary);
             color: white;
             box-shadow: 0 5px 15px rgba(124, 58, 237, 0.3);
         }
+        .admin-tab:hover:not(.active) { background: var(--bg-secondary); }
 
-        .admin-tab:hover:not(.active) {
-            background: var(--bg-secondary);
-        }
+        .section { display: none; }
+        .section.active { display: block; }
 
-        .section {
-            display: none;
-        }
-
-        .section.active {
-            display: block;
-        }
-
-        /* Cards de estatísticas */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -224,36 +171,14 @@
             letter-spacing: 0.5px;
             margin-bottom: 10px;
         }
+        .stat-header i { color: var(--primary); font-size: 1rem; }
 
-        .stat-header i {
-            color: var(--primary);
-            font-size: 1rem;
-        }
+        .stat-value { font-size: 2rem; font-weight: 700; color: var(--text-primary); line-height: 1.2; }
 
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            line-height: 1.2;
-        }
+        .stat-change { font-size: 0.75rem; margin-top: 6px; display: flex; align-items: center; gap: 4px; }
+        .stat-change.positive { color: var(--success); }
+        .stat-change.negative { color: var(--danger); }
 
-        .stat-change {
-            font-size: 0.75rem;
-            margin-top: 6px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .stat-change.positive {
-            color: var(--success);
-        }
-
-        .stat-change.negative {
-            color: var(--danger);
-        }
-
-        /* Gráfico */
         .chart-card {
             background: var(--bg-card);
             border-radius: 16px;
@@ -262,31 +187,11 @@
             border: 1px solid var(--border-color);
             margin-bottom: 24px;
         }
+        .chart-header { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+        .chart-header i { color: var(--primary); font-size: 1.2rem; }
+        .chart-header h2 { font-size: 1.1rem; font-weight: 600; color: var(--text-primary); }
+        .chart-container { position: relative; height: 200px; }
 
-        .chart-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-
-        .chart-header i {
-            color: var(--primary);
-            font-size: 1.2rem;
-        }
-
-        .chart-header h2 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .chart-container {
-            position: relative;
-            height: 200px;
-        }
-
-        /* Seção de itens */
         .section-header {
             display: flex;
             align-items: center;
@@ -295,7 +200,6 @@
             flex-wrap: wrap;
             gap: 8px;
         }
-
         .section-header h2 {
             display: flex;
             align-items: center;
@@ -304,10 +208,7 @@
             font-weight: 600;
             color: var(--text-primary);
         }
-
-        .section-header h2 i {
-            color: var(--primary);
-        }
+        .section-header h2 i { color: var(--primary); }
 
         .add-btn {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
@@ -325,12 +226,8 @@
             transition: all 0.2s;
             box-shadow: 0 5px 15px rgba(124, 58, 237, 0.3);
         }
+        .add-btn:active { transform: scale(0.95); }
 
-        .add-btn:active {
-            transform: scale(0.95);
-        }
-
-        /* Tabela de itens */
         .table-wrapper {
             background: var(--bg-card);
             border-radius: 16px;
@@ -340,13 +237,7 @@
             overflow-x: auto;
             margin-bottom: 24px;
         }
-
-        .table-wrapper table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 700px;
-        }
-
+        .table-wrapper table { width: 100%; border-collapse: collapse; min-width: 700px; }
         .table-wrapper th {
             text-align: left;
             padding: 16px 12px;
@@ -357,17 +248,13 @@
             letter-spacing: 0.5px;
             border-bottom: 1px solid var(--border-color);
         }
-
         .table-wrapper td {
             padding: 14px 12px;
             color: var(--text-primary);
             font-size: 0.9rem;
             border-bottom: 1px solid var(--border-color);
         }
-
-        .table-wrapper tr:last-child td {
-            border-bottom: none;
-        }
+        .table-wrapper tr:last-child td { border-bottom: none; }
 
         .item-status {
             display: inline-flex;
@@ -378,22 +265,10 @@
             font-size: 0.7rem;
             font-weight: 600;
         }
+        .item-status.active { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+        .item-status.inactive { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
 
-        .item-status.active {
-            background: rgba(16, 185, 129, 0.15);
-            color: var(--success);
-        }
-
-        .item-status.inactive {
-            background: rgba(239, 68, 68, 0.15);
-            color: var(--danger);
-        }
-
-        .item-actions {
-            display: flex;
-            gap: 6px;
-        }
-
+        .item-actions { display: flex; gap: 6px; }
         .action-btn {
             background: var(--bg-secondary);
             border: none;
@@ -408,22 +283,10 @@
             transition: all 0.2s;
             font-size: 0.9rem;
         }
+        .action-btn:hover { background: var(--primary); color: white; }
+        .action-btn.duplicate:hover { background: var(--accent); color: white; }
+        .action-btn.delete:hover { background: var(--danger); }
 
-        .action-btn:hover {
-            background: var(--primary);
-            color: white;
-        }
-
-        .action-btn.duplicate:hover {
-            background: var(--accent);
-            color: white;
-        }
-
-        .action-btn.delete:hover {
-            background: var(--danger);
-        }
-
-        /* Resumo */
         .summary-card {
             background: var(--bg-card);
             border-radius: 16px;
@@ -431,7 +294,6 @@
             box-shadow: var(--shadow);
             border: 1px solid var(--border-color);
         }
-
         .summary-item {
             display: flex;
             justify-content: space-between;
@@ -439,11 +301,7 @@
             padding: 14px 0;
             border-bottom: 1px solid var(--border-color);
         }
-
-        .summary-item:last-child {
-            border-bottom: none;
-        }
-
+        .summary-item:last-child { border-bottom: none; }
         .summary-label {
             display: flex;
             align-items: center;
@@ -451,19 +309,9 @@
             color: var(--text-secondary);
             font-size: 0.9rem;
         }
+        .summary-label i { color: var(--primary); width: 20px; }
+        .summary-value { font-weight: 700; font-size: 1.1rem; color: var(--text-primary); }
 
-        .summary-label i {
-            color: var(--primary);
-            width: 20px;
-        }
-
-        .summary-value {
-            font-weight: 700;
-            font-size: 1.1rem;
-            color: var(--text-primary);
-        }
-
-        /* Busca */
         .search-bar {
             display: flex;
             align-items: center;
@@ -471,7 +319,6 @@
             margin-bottom: 16px;
             flex-wrap: wrap;
         }
-
         .search-bar input {
             flex: 1;
             min-width: 200px;
@@ -485,18 +332,9 @@
             outline: none;
             transition: border-color 0.2s;
         }
+        .search-bar input:focus { border-color: var(--primary); }
+        .search-bar .count { color: var(--text-muted); font-size: 0.85rem; white-space: nowrap; }
 
-        .search-bar input:focus {
-            border-color: var(--primary);
-        }
-
-        .search-bar .count {
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            white-space: nowrap;
-        }
-
-        /* Thumbnail na tabela */
         .thumb-preview {
             width: 50px;
             height: 28px;
@@ -505,14 +343,11 @@
             background: var(--bg-secondary);
         }
 
-        /* Modal */
         .modal-overlay {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.7);
             backdrop-filter: blur(5px);
             z-index: 1000;
@@ -520,10 +355,7 @@
             justify-content: center;
             padding: 16px;
         }
-
-        .modal-overlay.active {
-            display: flex;
-        }
+        .modal-overlay.active { display: flex; }
 
         .modal {
             background: var(--bg-card);
@@ -535,7 +367,6 @@
             box-shadow: var(--shadow-lg);
             border: 1px solid var(--border-color);
         }
-
         .modal-header {
             padding: 24px 24px 16px;
             display: flex;
@@ -547,13 +378,7 @@
             background: var(--bg-card);
             z-index: 10;
         }
-
-        .modal-header h3 {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-
+        .modal-header h3 { font-size: 1.3rem; font-weight: 700; color: var(--text-primary); }
         .modal-close {
             background: none;
             border: none;
@@ -563,16 +388,9 @@
             padding: 4px;
             transition: color 0.2s;
         }
+        .modal-close:hover { color: var(--danger); }
+        .modal-body { padding: 24px; }
 
-        .modal-close:hover {
-            color: var(--danger);
-        }
-
-        .modal-body {
-            padding: 24px;
-        }
-
-        /* Área de clone */
         .clone-area {
             background: var(--bg-secondary);
             border-radius: 12px;
@@ -580,7 +398,6 @@
             margin-bottom: 20px;
             border: 1px dashed var(--border-color);
         }
-
         .clone-area label {
             display: flex;
             align-items: center;
@@ -590,16 +407,8 @@
             font-size: 0.85rem;
             color: var(--accent);
         }
-
-        .clone-area label i {
-            color: var(--accent);
-        }
-
-        .clone-select-wrapper {
-            display: flex;
-            gap: 8px;
-        }
-
+        .clone-area label i { color: var(--accent); }
+        .clone-select-wrapper { display: flex; gap: 8px; }
         .clone-select-wrapper select {
             flex: 1;
             padding: 12px;
@@ -612,11 +421,7 @@
             outline: none;
             transition: border-color 0.2s;
         }
-
-        .clone-select-wrapper select:focus {
-            border-color: var(--accent);
-        }
-
+        .clone-select-wrapper select:focus { border-color: var(--accent); }
         .clone-btn {
             background: var(--accent);
             border: none;
@@ -633,15 +438,9 @@
             align-items: center;
             gap: 6px;
         }
+        .clone-btn:active { transform: scale(0.95); }
 
-        .clone-btn:active {
-            transform: scale(0.95);
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
+        .form-group { margin-bottom: 20px; }
         .form-group label {
             display: flex;
             align-items: center;
@@ -651,11 +450,7 @@
             font-size: 0.9rem;
             color: var(--text-secondary);
         }
-
-        .form-group label i {
-            color: var(--primary);
-        }
-
+        .form-group label i { color: var(--primary); }
         .form-group input,
         .form-group textarea,
         .form-group select {
@@ -670,25 +465,13 @@
             outline: none;
             transition: border-color 0.2s;
         }
-
         .form-group input:focus,
         .form-group textarea:focus,
-        .form-group select:focus {
-            border-color: var(--primary);
-        }
+        .form-group select:focus { border-color: var(--primary); }
+        .form-group textarea { resize: vertical; min-height: 100px; }
 
-        .form-group textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-        }
-
-        /* Tabs para escolher tipo de imagem */
         .image-tabs {
             display: flex;
             gap: 4px;
@@ -697,7 +480,6 @@
             padding: 4px;
             border-radius: 12px;
         }
-
         .image-tab {
             flex: 1;
             padding: 10px;
@@ -715,22 +497,10 @@
             justify-content: center;
             gap: 6px;
         }
+        .image-tab.active { background: var(--primary); color: white; }
+        .image-tab i { font-size: 0.9rem; }
 
-        .image-tab.active {
-            background: var(--primary);
-            color: white;
-        }
-
-        .image-tab i {
-            font-size: 0.9rem;
-        }
-
-        .placeholder-preview {
-            display: flex;
-            justify-content: center;
-            margin: 16px 0;
-        }
-
+        .placeholder-preview { display: flex; justify-content: center; margin: 16px 0; }
         .preview-box {
             width: 120px;
             height: 120px;
@@ -744,24 +514,10 @@
             border: 2px solid var(--border-color);
         }
 
-        .color-inputs {
-            display: flex;
-            gap: 12px;
-        }
-
-        .color-input {
-            flex: 1;
-        }
-
-        .color-input label {
-            font-size: 0.8rem;
-            margin-bottom: 4px;
-        }
-
-        .color-input input {
-            padding: 8px;
-            height: 45px;
-        }
+        .color-inputs { display: flex; gap: 12px; }
+        .color-input { flex: 1; }
+        .color-input label { font-size: 0.8rem; margin-bottom: 4px; }
+        .color-input input { padding: 8px; height: 45px; }
 
         .modal-footer {
             padding: 16px 24px 24px;
@@ -770,7 +526,6 @@
             justify-content: flex-end;
             border-top: 1px solid var(--border-color);
         }
-
         .modal-btn {
             padding: 12px 24px;
             border-radius: 30px;
@@ -781,35 +536,13 @@
             transition: all 0.2s;
             border: none;
         }
+        .modal-btn.cancel { background: var(--bg-secondary); color: var(--text-secondary); }
+        .modal-btn.save { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; }
+        .modal-btn:active { transform: scale(0.95); }
 
-        .modal-btn.cancel {
-            background: var(--bg-secondary);
-            color: var(--text-secondary);
-        }
+        .loading-row td { text-align: center; padding: 40px !important; color: var(--text-muted); }
+        .empty-row td { text-align: center; padding: 40px !important; color: var(--text-muted); }
 
-        .modal-btn.save {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-        }
-
-        .modal-btn:active {
-            transform: scale(0.95);
-        }
-
-        /* Loading */
-        .loading-row td {
-            text-align: center;
-            padding: 40px !important;
-            color: var(--text-muted);
-        }
-
-        .empty-row td {
-            text-align: center;
-            padding: 40px !important;
-            color: var(--text-muted);
-        }
-
-        /* Toast */
         .toast {
             position: fixed;
             bottom: 20px;
@@ -823,7 +556,6 @@
             animation: slideIn 0.3s ease;
             box-shadow: var(--shadow-lg);
         }
-
         .toast.success { background: var(--success); }
         .toast.error { background: var(--danger); }
         .toast.info { background: var(--accent); }
@@ -833,63 +565,109 @@
             to { transform: translateX(0); opacity: 1; }
         }
 
-        /* Mobile */
+        /* 🔥 NOVO: estilos exclusivos da aba Auto MyMuze */
+        .amz-stat-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 18px 14px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+        .amz-stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 4px; height: 100%;
+            background: var(--amz-accent, var(--primary));
+        }
+        .amz-stat-card.ok { --amz-accent: var(--success); }
+        .amz-stat-card.fail { --amz-accent: var(--danger); }
+        .amz-stat-card.queue { --amz-accent: var(--accent); }
+        .amz-stat-card.cron { --amz-accent: var(--warning); }
+
+        .amz-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .amz-badge.ok { background: rgba(16,185,129,.15); color: var(--success); }
+        .amz-badge.fail { background: rgba(239,68,68,.15); color: var(--danger); }
+        .amz-badge.warn { background: rgba(245,158,11,.15); color: var(--warning); }
+        .amz-badge.info { background: rgba(6,182,212,.15); color: var(--accent); }
+        .amz-badge.muted { background: var(--bg-secondary); color: var(--text-muted); }
+
+        .amz-otp-alert {
+            background: rgba(245,158,11,.1);
+            border: 1px solid rgba(245,158,11,.3);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+        }
+        .amz-otp-alert i { color: var(--warning); font-size: 1.1rem; }
+
+        .amz-key-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 8px;
+            align-items: end;
+        }
+        .amz-key-form .form-group { margin-bottom: 0; }
+        @media (max-width: 640px) {
+            .amz-key-form { grid-template-columns: 1fr; }
+        }
+
+        .amz-code {
+            font-family: 'Courier New', monospace;
+            background: var(--bg-secondary);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+        .amz-code.copyable { cursor: pointer; transition: background 0.2s; }
+        .amz-code.copyable:hover { background: var(--primary); color: white; }
+
+        .amz-filter-select {
+            padding: 10px 14px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            font-family: 'Quicksand', sans-serif;
+            font-size: 0.9rem;
+            outline: none;
+            cursor: pointer;
+        }
+        .amz-filter-select:focus { border-color: var(--primary); }
+
         @media (min-width: 640px) {
-            .stats-grid {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 16px;
-            }
-            
-            .header-btn.icon-only span {
-                display: inline;
-            }
-            
-            .header-btn.icon-only {
-                padding: 10px 16px;
-            }
+            .stats-grid { grid-template-columns: repeat(4, 1fr); gap: 16px; }
+            .header-btn.icon-only span { display: inline; }
+            .header-btn.icon-only { padding: 10px 16px; }
         }
 
         @media (max-width: 480px) {
-            .dashboard-container {
-                padding: 12px;
-            }
-            
-            .stat-value {
-                font-size: 1.5rem;
-            }
-            
-            .form-row {
-                grid-template-columns: 1fr;
-                gap: 0;
-            }
-            
-            .modal {
-                max-height: 90vh;
-            }
-            
-            .logo-area h1 {
-                font-size: 1rem;
-            }
-            
-            .color-inputs {
-                flex-direction: column;
-                gap: 8px;
-            }
-            
-            .clone-select-wrapper {
-                flex-direction: column;
-                gap: 8px;
-            }
-
-            .admin-tab {
-                font-size: 0.75rem;
-                padding: 10px 12px;
-                min-width: 60px;
-            }
-
-            .admin-tab span {
-                display: none;
-            }
+            .dashboard-container { padding: 12px; }
+            .stat-value { font-size: 1.5rem; }
+            .form-row { grid-template-columns: 1fr; gap: 0; }
+            .modal { max-height: 90vh; }
+            .logo-area h1 { font-size: 1rem; }
+            .color-inputs { flex-direction: column; gap: 8px; }
+            .clone-select-wrapper { flex-direction: column; gap: 8px; }
+            .admin-tab { font-size: 0.75rem; padding: 10px 12px; min-width: 60px; }
+            .admin-tab span { display: none; }
         }
     </style>
 </head>
@@ -932,41 +710,34 @@
                 <i class="fas fa-film"></i>
                 <span>Vídeos</span>
             </button>
+            <!-- 🔥 NOVO: aba Auto MyMuze -->
+            <button class="admin-tab" data-tab="automymuze" onclick="switchTab('automymuze')">
+                <i class="fas fa-robot"></i>
+                <span>Auto MyMuze</span>
+            </button>
         </div>
 
         <!-- ============================================================
-        SEÇÃO ITENS
+        SEÇÃO ITENS (INTACTA)
         ============================================================ -->
         <div class="section active" id="itemsSection">
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-header">
-                        <i class="fas fa-box"></i>
-                        <span>Total Itens</span>
-                    </div>
+                    <div class="stat-header"><i class="fas fa-box"></i><span>Total Itens</span></div>
                     <div class="stat-value" id="totalItems">-</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-header">
-                        <i class="fas fa-eye"></i>
-                        <span>Views Hoje</span>
-                    </div>
+                    <div class="stat-header"><i class="fas fa-eye"></i><span>Views Hoje</span></div>
                     <div class="stat-value" id="todayViews">-</div>
                     <div class="stat-change" id="viewsChange"></div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-header">
-                        <i class="fas fa-download"></i>
-                        <span>Downloads Hoje</span>
-                    </div>
+                    <div class="stat-header"><i class="fas fa-download"></i><span>Downloads Hoje</span></div>
                     <div class="stat-value" id="todayDownloads">-</div>
                     <div class="stat-change" id="downloadsChange"></div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-header">
-                        <i class="fas fa-percent"></i>
-                        <span>Conversão</span>
-                    </div>
+                    <div class="stat-header"><i class="fas fa-percent"></i><span>Conversão</span></div>
                     <div class="stat-value" id="conversionRate">-</div>
                 </div>
             </div>
@@ -982,10 +753,7 @@
             </div>
             
             <div class="section-header">
-                <h2>
-                    <i class="fas fa-list"></i>
-                    Itens Cadastrados
-                </h2>
+                <h2><i class="fas fa-list"></i>Itens Cadastrados</h2>
                 <button class="add-btn" id="newItemBtn">
                     <i class="fas fa-plus"></i>
                     <span>Novo Item</span>
@@ -1032,10 +800,9 @@
         </div>
 
         <!-- ============================================================
-        SEÇÃO VÍDEOS
+        SEÇÃO VÍDEOS (INTACTA)
         ============================================================ -->
         <div class="section" id="videosSection">
-            <!-- Estatísticas de Vídeos -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-header">
@@ -1068,10 +835,7 @@
             </div>
 
             <div class="section-header">
-                <h2>
-                    <i class="fas fa-list" style="color:#e50914;"></i>
-                    Vídeos Cadastrados
-                </h2>
+                <h2><i class="fas fa-list" style="color:#e50914;"></i>Vídeos Cadastrados</h2>
                 <button class="add-btn" id="newVideoBtn" style="background:linear-gradient(135deg,#e50914,#ff6b6b);">
                     <i class="fas fa-plus"></i>
                     <span>Adicionar Vídeo</span>
@@ -1101,10 +865,134 @@
                 </table>
             </div>
         </div>
+
+        <!-- ============================================================
+        🔥 NOVO: SEÇÃO AUTO MYMUZE
+        ============================================================ -->
+        <div class="section" id="automymuzeSection">
+            <!-- Stats da fila / cron -->
+            <div class="stats-grid">
+                <div class="amz-stat-card ok">
+                    <div class="stat-header"><i class="fas fa-check-circle"></i><span>OK (24h)</span></div>
+                    <div class="stat-value" id="amzOk24h">—</div>
+                    <div class="stat-change positive" id="amzOkRate"></div>
+                </div>
+                <div class="amz-stat-card fail">
+                    <div class="stat-header"><i class="fas fa-exclamation-triangle"></i><span>Falhas (24h)</span></div>
+                    <div class="stat-value" id="amzFail24h">—</div>
+                    <div class="stat-change negative" id="amzFailRate"></div>
+                </div>
+                <div class="amz-stat-card queue">
+                    <div class="stat-header"><i class="fas fa-list-ol"></i><span>Fila</span></div>
+                    <div class="stat-value" id="amzQueueSize">—</div>
+                    <div class="stat-change" style="color:var(--text-muted)" id="amzQueueInfo">aguardando</div>
+                </div>
+                <div class="amz-stat-card cron">
+                    <div class="stat-header"><i class="fas fa-clock"></i><span>Último Tick</span></div>
+                    <div class="stat-value" id="amzLastTick" style="font-size:1.2rem;">—</div>
+                    <div class="stat-change" style="color:var(--text-muted)" id="amzTodayMz">—</div>
+                </div>
+            </div>
+
+            <!-- Painel de usuários -->
+            <div class="section-header">
+                <h2><i class="fas fa-users"></i>Usuários</h2>
+                <button class="add-btn" id="amzRefreshUsersBtn" style="background:linear-gradient(135deg,#06b6d4,#7c3aed);">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>Atualizar</span>
+                </button>
+            </div>
+
+            <div class="search-bar">
+                <input type="text" id="amzUserSearch" placeholder="Buscar por MSISDN..." oninput="amzFilterUsers()">
+                <select class="amz-filter-select" id="amzUserStatusFilter" onchange="amzFilterUsers()">
+                    <option value="">Todos status</option>
+                    <option value="active">Ativos</option>
+                    <option value="expired">Expirados</option>
+                    <option value="otp">OTP pendente</option>
+                    <option value="free">Free trial</option>
+                </select>
+                <span class="count" id="amzUsersCount">0 usuários</span>
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>MSISDN</th>
+                            <th>Plano</th>
+                            <th>Dias</th>
+                            <th>Última att.</th>
+                            <th>Status</th>
+                            <th style="width:130px;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="amzUsersTableBody">
+                        <tr><td colspan="6" class="loading-row"><i class="fas fa-spinner fa-pulse"></i> Carregando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Painel de chaves -->
+            <div class="section-header">
+                <h2><i class="fas fa-key"></i>Chaves de Ativação</h2>
+                <button class="add-btn" id="amzRefreshKeysBtn" style="background:linear-gradient(135deg,#10b981,#06b6d4);">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>Atualizar</span>
+                </button>
+            </div>
+
+            <!-- Formulário de geração -->
+            <div class="summary-card" style="margin-bottom:16px;">
+                <div class="amz-key-form">
+                    <div class="form-group">
+                        <label><i class="fas fa-calendar-day"></i> Dias por chave</label>
+                        <input type="number" id="amzKeyDays" min="1" max="365" value="30" placeholder="30">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-layer-group"></i> Quantidade</label>
+                        <input type="number" id="amzKeyQty" min="1" max="50" value="1" placeholder="1">
+                    </div>
+                    <button class="add-btn" id="amzGenerateKeyBtn" style="justify-content:center;width:100%;">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Gerar</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="search-bar">
+                <input type="text" id="amzKeySearch" placeholder="Buscar por código ou MSISDN..." oninput="amzFilterKeys()">
+                <select class="amz-filter-select" id="amzKeyStatusFilter" onchange="amzFilterKeys()">
+                    <option value="">Todas</option>
+                    <option value="unused">Não resgatadas</option>
+                    <option value="used">Resgatadas</option>
+                    <option value="cancelled">Canceladas</option>
+                </select>
+                <span class="count" id="amzKeysCount">0 chaves</span>
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Dias</th>
+                            <th>Status</th>
+                            <th>Criada em</th>
+                            <th>Resgatada por</th>
+                            <th style="width:60px;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="amzKeysTableBody">
+                        <tr><td colspan="6" class="loading-row"><i class="fas fa-spinner fa-pulse"></i> Carregando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <!-- ============================================================
-    MODAL DE ITEM
+    MODAL DE ITEM (INTACTO)
     ============================================================ -->
     <div class="modal-overlay" id="itemModal">
         <div class="modal">
@@ -1213,7 +1101,7 @@
     </div>
 
     <!-- ============================================================
-    MODAL DE VÍDEO - CORRIGIDO (ACEITA YOUTUBE E STREAMABLE)
+    MODAL DE VÍDEO (INTACTO)
     ============================================================ -->
     <div class="modal-overlay" id="videoModal">
         <div class="modal">
@@ -1235,7 +1123,6 @@
                         <textarea id="videoDescricao" rows="3" placeholder="Descrição do vídeo..."></textarea>
                     </div>
                     
-                    <!-- 🔥 CAMPO CORRIGIDO - ACEITA YOUTUBE E STREAMABLE -->
                     <div class="form-group">
                         <label><i class="fas fa-link" style="color:#64b5f6;"></i> URL do Vídeo *</label>
                         <input type="url" id="videoUrl" placeholder="https://www.youtube.com/watch?v=xxxxx ou https://streamable.com/e/xxxxx" required>
@@ -1263,7 +1150,7 @@
     </div>
 
     <!-- ============================================================
-    MODAL DE SENHA
+    MODAL DE SENHA (INTACTO)
     ============================================================ -->
     <div class="modal-overlay" id="passwordModal">
         <div class="modal">
@@ -1303,6 +1190,13 @@
         let isEditing = false;
         let isVideoEditing = false;
 
+        // 🔥 NOVO: estado da aba Auto MyMuze
+        let amzUsers = [];
+        let amzFilteredUsers = [];
+        let amzKeys = [];
+        let amzFilteredKeys = [];
+        let amzStatsTimer = null;
+
         // ============================================================
         // TOAST
         // ============================================================
@@ -1336,7 +1230,6 @@
             if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
             return num.toString();
         }
-
         function formatViews(num) {
             if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
             if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
@@ -1355,6 +1248,18 @@
             
             if (tab === 'videos') {
                 loadVideos();
+            }
+            // 🔥 NOVO: carregar dados do Auto MyMuze ao entrar na aba
+            if (tab === 'automymuze') {
+                loadAmzStats();
+                loadAmzUsers();
+                loadAmzKeys();
+                if (!amzStatsTimer) {
+                    amzStatsTimer = setInterval(loadAmzStats, 30000);
+                }
+            } else if (amzStatsTimer) {
+                clearInterval(amzStatsTimer);
+                amzStatsTimer = null;
             }
         }
 
@@ -1534,15 +1439,8 @@
                             legend: { labels: { color: textColor, font: { family: 'Quicksand' } } }
                         },
                         scales: {
-                            y: { 
-                                beginAtZero: true, 
-                                grid: { color: gridColor }, 
-                                ticks: { color: textColor } 
-                            },
-                            x: { 
-                                grid: { display: false }, 
-                                ticks: { color: textColor } 
-                            }
+                            y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor } },
+                            x: { grid: { display: false }, ticks: { color: textColor } }
                         }
                     }
                 });
@@ -1657,10 +1555,7 @@
             modal.classList.add('active');
         }
 
-        function closeItemModal() {
-            document.getElementById('itemModal').classList.remove('active');
-        }
-
+        function closeItemModal() { document.getElementById('itemModal').classList.remove('active'); }
         function editItem(itemId) { openItemModal(itemId, false); }
         function duplicateItem(itemId) { openItemModal(itemId, true); }
 
@@ -1751,7 +1646,6 @@
             
             let html = '';
             filteredVideos.forEach((video, index) => {
-                // 🔥 USAR thumbnail correta para Streamable ou YouTube
                 let thumb = video.thumbnail || '';
                 if (!thumb || thumb.includes('dQw4w9WgXcQ')) {
                     if (video.streamable_url) {
@@ -1851,7 +1745,6 @@
                     document.getElementById('videoId').value = video.id;
                     document.getElementById('videoTitulo').value = video.titulo || '';
                     document.getElementById('videoDescricao').value = video.descricao || '';
-                    // 🔥 USAR A URL CORRETA (Streamable ou YouTube)
                     if (video.streamable_url) {
                         document.getElementById('videoUrl').value = video.streamable_url;
                     } else {
@@ -1869,10 +1762,7 @@
             modal.classList.add('active');
         }
 
-        function closeVideoModal() {
-            document.getElementById('videoModal').classList.remove('active');
-        }
-
+        function closeVideoModal() { document.getElementById('videoModal').classList.remove('active'); }
         function editVideo(videoId) { openVideoModal(videoId); }
 
         async function deleteVideo(videoId) {
@@ -1891,7 +1781,6 @@
             }
         }
 
-        // 🔥 FUNÇÃO CORRIGIDA - ACEITA YOUTUBE E STREAMABLE
         async function saveVideo() {
             const videoId = document.getElementById('videoId').value;
             const titulo = document.getElementById('videoTitulo').value.trim();
@@ -1899,17 +1788,9 @@
             const videoUrl = document.getElementById('videoUrl').value.trim();
             const ativo = document.getElementById('videoAtivo').value;
             
-            if (!titulo) {
-                showToast('O título é obrigatório', 'error');
-                return;
-            }
+            if (!titulo) { showToast('O título é obrigatório', 'error'); return; }
+            if (!videoUrl) { showToast('A URL do vídeo é obrigatória', 'error'); return; }
             
-            if (!videoUrl) {
-                showToast('A URL do vídeo é obrigatória', 'error');
-                return;
-            }
-            
-            // 🔥 VALIDAR URL (YouTube OU Streamable)
             const youtubePattern = /(?:youtube\.com\/watch\?v=)([\w-]+)|(?:youtu\.be\/)([\w-]+)/;
             const streamablePattern = /(?:streamable\.com\/e\/)([\w-]+)|(?:streamable\.com\/)([\w-]+)/;
             
@@ -1925,12 +1806,7 @@
                 const res = await fetch(url, {
                     method: method,
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        titulo, 
-                        descricao, 
-                        youtube_url: videoUrl, 
-                        ativo 
-                    })
+                    body: JSON.stringify({ titulo, descricao, youtube_url: videoUrl, ativo })
                 });
                 
                 const data = await res.json();
@@ -1949,10 +1825,7 @@
         // ============================================================
         // SENHA
         // ============================================================
-        function openPasswordModal() {
-            document.getElementById('passwordModal').classList.add('active');
-        }
-
+        function openPasswordModal() { document.getElementById('passwordModal').classList.add('active'); }
         function closePasswordModal() {
             document.getElementById('passwordModal').classList.remove('active');
             document.getElementById('passwordForm').reset();
@@ -1963,18 +1836,9 @@
             const newPass = document.getElementById('newPassword').value;
             const confirm = document.getElementById('confirmPassword').value;
             
-            if (!current || !newPass || !confirm) {
-                showToast('Preencha todos os campos', 'error');
-                return;
-            }
-            if (newPass !== confirm) {
-                showToast('As senhas não coincidem', 'error');
-                return;
-            }
-            if (newPass.length < 6) {
-                showToast('A senha deve ter no mínimo 6 caracteres', 'error');
-                return;
-            }
+            if (!current || !newPass || !confirm) { showToast('Preencha todos os campos', 'error'); return; }
+            if (newPass !== confirm) { showToast('As senhas não coincidem', 'error'); return; }
+            if (newPass.length < 6) { showToast('A senha deve ter no mínimo 6 caracteres', 'error'); return; }
             
             try {
                 const res = await fetch('/admin/api/change-password', {
@@ -1995,10 +1859,379 @@
         }
 
         async function logout() {
-            try {
-                await fetch('/admin/api/logout', { method: 'POST' });
-            } catch (e) {}
+            try { await fetch('/admin/api/logout', { method: 'POST' }); } catch (e) {}
             window.location.href = '/admin-login';
+        }
+
+        // ============================================================
+        // 🔥 NOVO: AUTO MYMUZE - UTILITÁRIOS
+        // ============================================================
+        function amzFmtRelative(ts) {
+            if (!ts) return '—';
+            const diff = Date.now() - ts;
+            if (diff < 0) return 'agora';
+            const sec = Math.floor(diff / 1000);
+            if (sec < 60) return sec + 's atrás';
+            const min = Math.floor(sec / 60);
+            if (min < 60) return min + 'min atrás';
+            const hr = Math.floor(min / 60);
+            if (hr < 24) return hr + 'h atrás';
+            const d = Math.floor(hr / 24);
+            return d + 'd atrás';
+        }
+
+        function amzFmtDate(ts) {
+            if (!ts) return '—';
+            const d = new Date(ts);
+            return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) +
+                ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function amzDaysLeft(expiresAt) {
+            if (!expiresAt) return 0;
+            return Math.max(0, Math.ceil((expiresAt - Date.now()) / (24 * 60 * 60 * 1000)));
+        }
+
+        // ============================================================
+        // 🔥 NOVO: AUTO MYMUZE - STATS
+        // ============================================================
+        async function loadAmzStats() {
+            try {
+                const res = await fetch('/admin/api/automymuze/stats');
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const data = await res.json();
+
+                const ok = data.ok_24h ?? data.ok24h ?? 0;
+                const fail = data.fail_24h ?? data.fail24h ?? 0;
+                const queueSize = data.queueSize ?? data.queue_size ?? 0;
+                const lastTick = data.lastTick ?? data.last_tick ?? null;
+                const todayMz = data.today_mz ?? data.todayMz ?? '—';
+
+                document.getElementById('amzOk24h').textContent = ok;
+                document.getElementById('amzFail24h').textContent = fail;
+                document.getElementById('amzQueueSize').textContent = queueSize;
+
+                const total = ok + fail;
+                const okRate = total > 0 ? Math.round((ok / total) * 100) : 0;
+                document.getElementById('amzOkRate').textContent = total > 0 ? okRate + '% de sucesso' : 'sem dados';
+                document.getElementById('amzFailRate').textContent = total > 0 ? (100 - okRate) + '% de falha' : '—';
+
+                document.getElementById('amzQueueInfo').textContent = queueSize > 0
+                    ? queueSize + ' aguardando processamento'
+                    : 'fila vazia';
+
+                document.getElementById('amzLastTick').textContent = lastTick ? amzFmtRelative(lastTick) : '—';
+                document.getElementById('amzTodayMz').textContent = 'Hoje MZ: ' + todayMz;
+
+                // aviso se cron parado (> 30min sem tick)
+                const cronCard = document.querySelector('.amz-stat-card.cron');
+                if (lastTick && Date.now() - lastTick > 30 * 60 * 1000) {
+                    cronCard.style.borderColor = 'var(--danger)';
+                } else {
+                    cronCard.style.borderColor = 'var(--border-color)';
+                }
+            } catch (e) {
+                console.error('Erro amz stats:', e);
+            }
+        }
+
+        // ============================================================
+        // 🔥 NOVO: AUTO MYMUZE - USERS
+        // ============================================================
+        async function loadAmzUsers() {
+            try {
+                const res = await fetch('/admin/api/automymuze/users');
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const data = await res.json();
+
+                // aceita {users:[]} ou array direto
+                amzUsers = Array.isArray(data) ? data : (data.users || data.items || []);
+                amzFilterUsers();
+            } catch (e) {
+                console.error('Erro amz users:', e);
+                document.getElementById('amzUsersTableBody').innerHTML =
+                    '<tr><td colspan="6" class="empty-row"><i class="fas fa-exclamation-circle"></i> Erro ao carregar usuários</td></tr>';
+            }
+        }
+
+        function amzUserStatus(u) {
+            if (u.otp_needed) return { key: 'otp', label: 'OTP pendente', cls: 'warn' };
+            const exp = u.expires_at || u.expira_em || u.expiresAt;
+            if (exp && exp < Date.now()) return { key: 'expired', label: 'Expirado', cls: 'fail' };
+            if (u.plan === 'free' || u.plano === 'free' || u.is_free) return { key: 'free', label: 'Free trial', cls: 'info' };
+            return { key: 'active', label: 'Ativo', cls: 'ok' };
+        }
+
+        function amzFilterUsers() {
+            const term = (document.getElementById('amzUserSearch').value || '').toLowerCase().trim();
+            const status = document.getElementById('amzUserStatusFilter').value;
+
+            amzFilteredUsers = amzUsers.filter(u => {
+                const msisdn = (u.msisdn || '').toLowerCase();
+                if (term && !msisdn.includes(term)) return false;
+                if (status) {
+                    const s = amzUserStatus(u);
+                    if (s.key !== status) return false;
+                }
+                return true;
+            });
+
+            amzRenderUsers();
+            document.getElementById('amzUsersCount').textContent = amzFilteredUsers.length + ' usuários';
+        }
+
+        function amzRenderUsers() {
+            const tbody = document.getElementById('amzUsersTableBody');
+            if (!amzFilteredUsers.length) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-row"><i class="fas fa-users-slash"></i> Nenhum usuário</td></tr>';
+                return;
+            }
+
+            let html = '';
+            amzFilteredUsers.forEach(u => {
+                const msisdn = u.msisdn || '—';
+                const plan = u.plan || u.plano || 'paid';
+                const exp = u.expires_at || u.expira_em || u.expiresAt;
+                const days = amzDaysLeft(exp);
+                const st = amzUserStatus(u);
+                const lastOk = u.last_update_ok || u.lastUpdateOk || null;
+
+                html += `
+                    <tr>
+                        <td><strong>${msisdn}</strong></td>
+                        <td>${plan}</td>
+                        <td>${days}</td>
+                        <td>${lastOk ? amzFmtRelative(lastOk) : '—'}</td>
+                        <td><span class="amz-badge ${st.cls}">${st.label}</span></td>
+                        <td>
+                            <div class="item-actions">
+                                <button class="action-btn" onclick="amzExtendUser('${msisdn}')" title="Estender">
+                                    <i class="fas fa-calendar-plus"></i>
+                                </button>
+                                <button class="action-btn duplicate" onclick="amzForceUpdate('${msisdn}')" title="Forçar atualização">
+                                    <i class="fas fa-bolt"></i>
+                                </button>
+                                <button class="action-btn delete" onclick="amzCancelUser('${msisdn}')" title="Cancelar">
+                                    <i class="fas fa-ban"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        async function amzExtendUser(msisdn) {
+            const days = prompt(`Estender ${msisdn} por quantos dias?`, '30');
+            if (!days || isNaN(days) || +days <= 0) return;
+            try {
+                const res = await fetch(`/admin/api/automymuze/user/${encodeURIComponent(msisdn)}/extend`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ days: +days })
+                });
+                const data = await res.json();
+                if (data.success !== false) {
+                    showToast(`${msisdn} estendido por ${days} dias`, 'success');
+                    loadAmzUsers();
+                } else {
+                    showToast(data.error || 'Erro ao estender', 'error');
+                }
+            } catch (e) {
+                showToast('Erro de conexão', 'error');
+            }
+        }
+
+        async function amzForceUpdate(msisdn) {
+            if (!confirm(`Forçar atualização de ${msisdn} agora?`)) return;
+            try {
+                const res = await fetch(`/admin/api/automymuze/user/${encodeURIComponent(msisdn)}/force-update`, {
+                    method: 'POST'
+                });
+                const data = await res.json();
+                if (data.success !== false) {
+                    showToast(`Atualização forçada para ${msisdn}`, 'success');
+                    setTimeout(() => { loadAmzUsers(); loadAmzStats(); }, 1500);
+                } else {
+                    showToast(data.error || 'Erro ao forçar atualização', 'error');
+                }
+            } catch (e) {
+                showToast('Erro de conexão', 'error');
+            }
+        }
+
+        async function amzCancelUser(msisdn) {
+            if (!confirm(`Cancelar plano de ${msisdn}? (não faz hard delete — só para de atualizar)`)) return;
+            try {
+                const res = await fetch(`/admin/api/automymuze/user/${encodeURIComponent(msisdn)}/cancel`, {
+                    method: 'POST'
+                });
+                const data = await res.json();
+                if (data.success !== false) {
+                    showToast(`${msisdn} cancelado`, 'success');
+                    loadAmzUsers();
+                } else {
+                    showToast(data.error || 'Erro ao cancelar', 'error');
+                }
+            } catch (e) {
+                showToast('Erro de conexão', 'error');
+            }
+        }
+
+        // ============================================================
+        // 🔥 NOVO: AUTO MYMUZE - KEYS
+        // ============================================================
+        async function loadAmzKeys() {
+            try {
+                const res = await fetch('/admin/api/automymuze/keys');
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const data = await res.json();
+                amzKeys = Array.isArray(data) ? data : (data.keys || data.items || []);
+                amzFilterKeys();
+            } catch (e) {
+                console.error('Erro amz keys:', e);
+                document.getElementById('amzKeysTableBody').innerHTML =
+                    '<tr><td colspan="6" class="empty-row"><i class="fas fa-exclamation-circle"></i> Erro ao carregar chaves</td></tr>';
+            }
+        }
+
+        function amzKeyStatus(k) {
+            if (k.cancelled || k.cancelada) return { key: 'cancelled', label: 'Cancelada', cls: 'fail' };
+            if (k.used || k.usada || k.used_by || k.redeemed_by) return { key: 'used', label: 'Resgatada', cls: 'info' };
+            return { key: 'unused', label: 'Disponível', cls: 'ok' };
+        }
+
+        function amzFilterKeys() {
+            const term = (document.getElementById('amzKeySearch').value || '').toLowerCase().trim();
+            const status = document.getElementById('amzKeyStatusFilter').value;
+
+            amzFilteredKeys = amzKeys.filter(k => {
+                const codigo = (k.codigo || k.code || '').toLowerCase();
+                const usedBy = (k.used_by || k.redeemed_by || k.usada_por || '').toLowerCase();
+                if (term && !codigo.includes(term) && !usedBy.includes(term)) return false;
+                if (status) {
+                    const s = amzKeyStatus(k);
+                    if (s.key !== status) return false;
+                }
+                return true;
+            });
+
+            amzRenderKeys();
+            document.getElementById('amzKeysCount').textContent = amzFilteredKeys.length + ' chaves';
+        }
+
+        function amzRenderKeys() {
+            const tbody = document.getElementById('amzKeysTableBody');
+            if (!amzFilteredKeys.length) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-row"><i class="fas fa-key"></i> Nenhuma chave</td></tr>';
+                return;
+            }
+
+            let html = '';
+            amzFilteredKeys.forEach(k => {
+                const codigo = k.codigo || k.code || '—';
+                const dias = k.dias || k.days || '—';
+                const st = amzKeyStatus(k);
+                const criada = k.created_at || k.criada_em || k.createdAt;
+                const usedBy = k.used_by || k.redeemed_by || k.usada_por || '—';
+
+                html += `
+                    <tr>
+                        <td>
+                            <span class="amz-code copyable" onclick="amzCopyCode('${codigo}')" title="Clique para copiar">
+                                ${codigo}
+                            </span>
+                        </td>
+                        <td>${dias}</td>
+                        <td><span class="amz-badge ${st.cls}">${st.label}</span></td>
+                        <td>${criada ? amzFmtDate(criada) : '—'}</td>
+                        <td>${usedBy}</td>
+                        <td>
+                            <div class="item-actions">
+                                ${st.key === 'unused' ? `
+                                <button class="action-btn delete" onclick="amzCancelKey('${codigo}')" title="Cancelar chave">
+                                    <i class="fas fa-ban"></i>
+                                </button>` : ''}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function amzCopyCode(codigo) {
+            if (!codigo || codigo === '—') return;
+            navigator.clipboard?.writeText(codigo).then(() => {
+                showToast('Código copiado: ' + codigo, 'success');
+            }).catch(() => {
+                showToast('Falha ao copiar', 'error');
+            });
+        }
+
+        async function amzGenerateKey() {
+            const dias = parseInt(document.getElementById('amzKeyDays').value, 10);
+            const qty = parseInt(document.getElementById('amzKeyQty').value, 10);
+
+            if (!dias || dias < 1 || dias > 365) {
+                showToast('Dias deve estar entre 1 e 365', 'error');
+                return;
+            }
+            if (!qty || qty < 1 || qty > 50) {
+                showToast('Quantidade deve estar entre 1 e 50', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('amzGenerateKeyBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Gerando...';
+
+            try {
+                const res = await fetch('/admin/api/automymuze/keys', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ days: dias, quantity: qty })
+                });
+                const data = await res.json();
+
+                if (data.success !== false) {
+                    const criadas = data.keys || data.codigos || (data.key ? [data.key] : []);
+                    if (criadas.length === 1) {
+                        const c = criadas[0].codigo || criadas[0].code || criadas[0];
+                        showToast(`Chave gerada: ${c}`, 'success');
+                        amzCopyCode(c);
+                    } else {
+                        showToast(`${criadas.length} chaves geradas`, 'success');
+                    }
+                    loadAmzKeys();
+                } else {
+                    showToast(data.error || 'Erro ao gerar chave', 'error');
+                }
+            } catch (e) {
+                showToast('Erro de conexão', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-plus-circle"></i><span>Gerar</span>';
+            }
+        }
+
+        async function amzCancelKey(codigo) {
+            if (!confirm(`Cancelar a chave ${codigo}?`)) return;
+            try {
+                const res = await fetch(`/admin/api/automymuze/keys/${encodeURIComponent(codigo)}/cancel`, {
+                    method: 'POST'
+                });
+                const data = await res.json();
+                if (data.success !== false) {
+                    showToast('Chave cancelada', 'success');
+                    loadAmzKeys();
+                } else {
+                    showToast(data.error || 'Erro ao cancelar', 'error');
+                }
+            } catch (e) {
+                showToast('Erro de conexão', 'error');
+            }
         }
 
         // ============================================================
@@ -2024,7 +2257,6 @@
             document.getElementById('changePasswordBtn').addEventListener('click', openPasswordModal);
             document.getElementById('logoutBtn').addEventListener('click', logout);
             
-            // Eventos do modal de item
             document.querySelectorAll('.image-tab').forEach(tab => {
                 tab.addEventListener('click', () => switchImageMode(tab.dataset.tab));
             });
@@ -2033,7 +2265,6 @@
             document.getElementById('placeholderBg').addEventListener('input', updatePlaceholderPreview);
             document.getElementById('placeholderTextColor').addEventListener('input', updatePlaceholderPreview);
             
-            // Fechar modais
             document.getElementById('itemModal').addEventListener('click', function(e) {
                 if (e.target === this) closeItemModal();
             });
@@ -2043,8 +2274,15 @@
             document.getElementById('passwordModal').addEventListener('click', function(e) {
                 if (e.target === this) closePasswordModal();
             });
+
+            // 🔥 NOVO: listeners da aba Auto MyMuze
+            document.getElementById('amzRefreshUsersBtn').addEventListener('click', () => {
+                loadAmzUsers();
+                loadAmzStats();
+            });
+            document.getElementById('amzRefreshKeysBtn').addEventListener('click', loadAmzKeys);
+            document.getElementById('amzGenerateKeyBtn').addEventListener('click', amzGenerateKey);
             
-            // Atualizar stats a cada 30s
             setInterval(loadStats, 30000);
         });
     </script>
