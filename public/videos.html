@@ -2,9 +2,13 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
+    <script async src="https://js.wpadmngr.com/static/adManager.js" data-admpid="459377"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DSO Vídeos - Player</title>
+    <meta name="referrer" content="strict-origin-when-cross-origin">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script async src="https://js.wpadmngr.com/static/adManager.js" data-admpid="452853"></script>
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -17,7 +21,7 @@
 
         .header {
             background: linear-gradient(135deg, #0f1a2e, #1a2d4a);
-            padding: 16px 24px;
+            padding: 14px 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -33,26 +37,32 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 700;
             color: #e50914;
             text-decoration: none;
         }
 
-        .header .logo i { font-size: 28px; }
+        .header .logo i { font-size: 26px; }
         .header .logo span { color: #64b5f6; }
 
-        .header .back-home {
+        .header .back-link {
             color: #64b5f6;
             text-decoration: none;
             font-size: 14px;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             transition: color 0.3s;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: rgba(100, 181, 246, 0.08);
         }
 
-        .header .back-home:hover { color: #e50914; }
+        .header .back-link:hover {
+            color: #e50914;
+            background: rgba(229, 9, 20, 0.1);
+        }
 
         .container {
             max-width: 1100px;
@@ -60,124 +70,298 @@
             padding: 20px 24px 60px;
         }
 
-        .player-wrapper {
-            position: relative;
-            width: 100%;
-            padding-bottom: 56.25%;
-            background: #000;
-            border-radius: 14px;
-            overflow: hidden;
-            border: 1px solid rgba(100, 181, 246, 0.1);
-            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+        .banner-slot {
+            text-align: center;
+            padding: 12px 0;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .player-wrapper iframe,
-        .player-wrapper video {
+        .player-wrapper {
+            background: #0a0f1a;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(100, 181, 246, 0.08);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .player-wrapper .player-container {
+            position: relative;
+            width: 100%;
+            background: #000;
+            transition: padding-top 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .player-container.ratio-16-9 { padding-top: 56.25%; }
+        .player-container.ratio-9-16 { padding-top: 177.78%; max-height: 80vh; }
+        .player-container.ratio-4-3  { padding-top: 75%; }
+        .player-container.ratio-1-1  { padding-top: 100%; max-height: 80vh; }
+        .player-container.ratio-21-9 { padding-top: 42.85%; }
+
+        /* Esqueleto Streamable (vertical) */
+        .player-container.ratio-streamable { padding-top: 223.889%; max-height: 85vh; }
+
+        .player-wrapper .player-container iframe#videoIframe {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             border: none;
+            background: #000;
+            z-index: 5;
         }
 
-        .player-wrapper .player-error {
+        #playOverlay {
             position: absolute;
-            inset: 0;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            color: #78909c;
-            text-align: center;
-            padding: 20px;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 20;
+            cursor: pointer;
+            transition: opacity 0.5s ease;
         }
 
-        .player-wrapper .player-error i {
-            font-size: 48px;
-            color: #e50914;
+        #playOverlay.hidden {
+            opacity: 0;
+            pointer-events: none;
         }
 
-        .video-info {
-            margin-top: 24px;
-            padding: 20px;
-            background: #14233a;
-            border-radius: 14px;
-            border: 1px solid rgba(100, 181, 246, 0.06);
-        }
-
-        .video-info h1 {
-            font-size: 22px;
-            font-weight: 700;
-            color: #e0e0e0;
-            margin-bottom: 12px;
-            line-height: 1.3;
-        }
-
-        .video-meta {
+        #playOverlay .play-btn {
+            width: 80px;
+            height: 80px;
+            background: rgba(229, 9, 20, 0.9);
+            border-radius: 50%;
             display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            color: #78909c;
-            font-size: 14px;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: #fff;
+            transition: transform 0.3s, background 0.3s, box-shadow 0.3s;
+            box-shadow: 0 0 0 0 rgba(229, 9, 20, 0.5);
+            animation: pulse 2s infinite;
         }
 
-        .video-meta span {
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(229, 9, 20, 0.5); }
+            70% { box-shadow: 0 0 0 25px rgba(229, 9, 20, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(229, 9, 20, 0); }
+        }
+
+        #playOverlay .play-btn:hover {
+            transform: scale(1.1);
+            background: #e50914;
+            animation: none;
+            box-shadow: 0 0 40px rgba(229, 9, 20, 0.5);
+        }
+
+        #playOverlay .play-label {
+            color: #fff;
+            font-size: 14px;
+            margin-top: 16px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+        }
+
+        #playOverlay .ad-badge {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            background: rgba(229, 9, 20, 0.9);
+            color: #fff;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
             display: flex;
             align-items: center;
             gap: 6px;
+            animation: badgePulse 2s infinite;
         }
 
-        .video-meta i { color: #64b5f6; }
+        @keyframes badgePulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
 
-        .video-description {
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 1px solid rgba(100, 181, 246, 0.08);
+        .video-preview {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 1;
+            transition: opacity 0.6s ease;
+        }
+
+        .video-preview.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .video-info {
+            padding: 20px 24px 24px;
+            background: #14233a;
+            border-top: 1px solid rgba(100, 181, 246, 0.06);
+        }
+
+        .video-info .title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+
+        .video-info .meta {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px 24px;
+            margin-bottom: 14px;
+            font-size: 14px;
+            color: #78909c;
+        }
+
+        .video-info .meta .views i,
+        .video-info .meta .date i {
+            color: #64b5f6;
+            margin-right: 6px;
+        }
+
+        .video-info .meta .badge-views {
+            background: rgba(229, 9, 14, 0.12);
+            color: #e50914;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .video-info .description {
             color: #b0bec5;
             font-size: 14px;
             line-height: 1.6;
+            margin-top: 4px;
             white-space: pre-wrap;
+            word-break: break-word;
         }
 
-        .loading {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 60px 20px;
-            gap: 16px;
-            color: #78909c;
-            font-size: 16px;
-        }
+        .related-section { margin-top: 32px; }
 
-        .loading i {
-            font-size: 28px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #78909c;
-        }
-
-        .empty-state i {
-            font-size: 48px;
+        .related-section .section-title {
+            font-size: 18px;
+            font-weight: 600;
             margin-bottom: 16px;
-            color: #2a3d5f;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #e0e0e0;
         }
 
-        .empty-state h3 {
+        .related-section .section-title i {
+            color: #e50914;
             font-size: 20px;
-            color: #b0bec5;
-            margin-bottom: 8px;
         }
+
+        .related-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        .related-card {
+            background: #14233a;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid rgba(100, 181, 246, 0.06);
+        }
+
+        .related-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+            border-color: rgba(229, 9, 20, 0.2);
+        }
+
+        .related-card .thumb {
+            position: relative;
+            padding-top: 56.25%;
+            background: #0a0f1a;
+        }
+
+        .related-card .thumb img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .related-card .thumb .play-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(229, 9, 20, 0.85);
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .related-card .thumb .play-icon i {
+            color: #fff;
+            font-size: 15px;
+            margin-left: 2px;
+        }
+
+        .related-card:hover .thumb .play-icon { opacity: 1; }
+
+        .related-card .info { padding: 10px 12px 12px; }
+
+        .related-card .info h4 {
+            font-size: 13px;
+            font-weight: 600;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            color: #e0e0e0;
+            margin-bottom: 4px;
+        }
+
+        .related-card .info .views {
+            font-size: 11px;
+            color: #78909c;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .related-card .info .views i { font-size: 12px; }
 
         .toast {
             position: fixed;
@@ -199,6 +383,7 @@
         }
 
         .toast i { color: #4caf50; font-size: 18px; }
+        .toast.error i { color: #e50914; }
 
         @keyframes toastFade {
             0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
@@ -207,42 +392,134 @@
             100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
         }
 
-        @media (max-width: 768px) {
-            .header { padding: 12px 16px; }
-            .header .logo { font-size: 18px; }
-            .container { padding: 12px 12px 40px; }
-            .video-info { padding: 16px; }
-            .video-info h1 { font-size: 18px; }
+        .loading-state {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+            gap: 16px;
+            color: #78909c;
+            font-size: 15px;
         }
 
-        /* Player vertical (Streamable portrait) */
-        .player-wrapper.portrait {
-            padding-bottom: 177.78%;
-            max-width: 500px;
-            margin: 0 auto;
+        .loading-state i {
+            font-size: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #78909c;
+        }
+
+        .empty-state i {
+            font-size: 40px;
+            margin-bottom: 12px;
+            color: #2a3d5f;
+        }
+
+        .empty-state h4 {
+            font-size: 17px;
+            color: #b0bec5;
+            margin-bottom: 4px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .header { padding: 12px 16px; }
+            .header .logo { font-size: 17px; }
+            .header .logo i { font-size: 22px; }
+            .header .back-link { font-size: 13px; padding: 4px 10px; }
+            .container { padding: 12px 12px 40px; }
+            .video-info { padding: 16px 16px 20px; }
+            .video-info .title { font-size: 18px; }
+            .video-info .meta { font-size: 13px; gap: 12px 16px; }
+            .related-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+            #playOverlay .play-btn { width: 60px; height: 60px; font-size: 28px; }
+            .player-container.ratio-9-16 { max-height: 70vh; }
+            .player-container.ratio-1-1 { max-height: 70vh; }
+            .player-container.ratio-streamable { max-height: 75vh; }
+        }
+
+        @media (max-width: 480px) {
+            .header .logo { font-size: 15px; }
+            .header .back-link span { display: none; }
+            .video-info .title { font-size: 16px; }
+            .related-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+            .related-card .info h4 { font-size: 12px; }
+            #playOverlay .play-btn { width: 50px; height: 50px; font-size: 22px; }
+            #playOverlay .play-label { font-size: 12px; }
+            .player-container.ratio-9-16 { max-height: 60vh; }
+            .player-container.ratio-1-1 { max-height: 60vh; }
+            .player-container.ratio-streamable { max-height: 65vh; }
         }
     </style>
 </head>
 <body>
 
     <header class="header">
-        <a href="/" class="logo">
+        <a href="/videos" class="logo">
             <i class="fas fa-film"></i>
             DSO <span>Vídeos</span>
         </a>
-        <a href="/" class="back-home">
-            <i class="fas fa-arrow-left"></i> Voltar
+        <a href="/videos" class="back-link">
+            <i class="fas fa-arrow-left"></i>
+            <span>Voltar para vídeos</span>
         </a>
     </header>
 
+    <div class="banner-slot" data-banner-id="1500401"></div>
+
     <div class="container">
-        <div id="playerContainer">
-            <div class="loading" id="loadingIndicator">
-                <i class="fas fa-spinner"></i> Carregando vídeo...
+
+        <div class="player-wrapper" id="playerWrapper">
+            <div class="player-container ratio-16-9" id="playerContainer">
+
+                <div class="video-preview" id="videoPreview"></div>
+
+                <div id="playOverlay">
+                    <div class="ad-badge" id="adBadge" style="display:none;">
+                        <i class="fas fa-ad"></i> Anúncio
+                    </div>
+                    <div class="play-btn" id="playBtn">
+                        <i class="fas fa-play"></i>
+                    </div>
+                    <div class="play-label" id="playLabel">Clique para reproduzir</div>
+                </div>
+
+                <div id="playerMount"></div>
+            </div>
+
+            <div class="video-info" id="videoInfo">
+                <div class="title" id="videoTitle">Carregando...</div>
+                <div class="meta">
+                    <span class="views" id="videoViews"><i class="fas fa-eye"></i> 0 visualizações</span>
+                    <span class="date" id="videoDate"><i class="far fa-calendar-alt"></i> —</span>
+                    <span class="badge-views" id="videoBadge">Carregando...</span>
+                </div>
+                <div class="description" id="videoDescription"></div>
             </div>
         </div>
 
-        <div id="videoInfo" style="display:none;"></div>
+        <div class="banner-slot" data-banner-id="1500403"></div>
+
+        <div class="related-section">
+            <div class="section-title">
+                <i class="fas fa-list-ul"></i> Recomendados para você
+            </div>
+            <div class="related-grid" id="relatedGrid">
+                <div class="loading-state">
+                    <i class="fas fa-spinner"></i> Carregando recomendados...
+                </div>
+            </div>
+        </div>
+
+        <div class="banner-slot" data-banner-id="1500404"></div>
     </div>
 
     <div id="toastContainer"></div>
@@ -252,25 +529,46 @@
             'use strict';
 
             const CONFIG = {
-                apiBase: '/api'
+                relatedLimit: 8,
+                apiBase: '/api',
+                adCooldownMs: 3 * 60 * 1000,
+                adStorageKey: 'dso_last_ad_time',
+                defaultRatio: '16-9'
             };
 
             const $ = (sel) => document.querySelector(sel);
             const dom = {
+                playOverlay: $('#playOverlay'),
+                playBtn: $('#playBtn'),
+                playLabel: $('#playLabel'),
+                adBadge: $('#adBadge'),
+                videoTitle: $('#videoTitle'),
+                videoViews: $('#videoViews'),
+                videoDate: $('#videoDate'),
+                videoBadge: $('#videoBadge'),
+                videoDescription: $('#videoDescription'),
+                relatedGrid: $('#relatedGrid'),
+                toastContainer: $('#toastContainer'),
                 playerContainer: $('#playerContainer'),
-                videoInfo: $('#videoInfo'),
-                loading: $('#loadingIndicator'),
-                toastContainer: $('#toastContainer')
+                videoPreview: $('#videoPreview'),
+                playerMount: $('#playerMount')
             };
 
-            function showToast(message, icon = 'fa-check-circle') {
+            let state = {
+                videoUrl: '',
+                videoData: null,
+                isPlaying: false,
+                userClicked: false,
+                adBlockedByCooldown: false,
+                videoRatio: CONFIG.defaultRatio
+            };
+
+            function showToast(message, isError = false) {
                 const toast = document.createElement('div');
-                toast.className = 'toast';
-                toast.innerHTML = `<i class="fas ${icon}"></i> ${message}`;
+                toast.className = `toast ${isError ? 'error' : ''}`;
+                toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${message}`;
                 dom.toastContainer.appendChild(toast);
-                setTimeout(() => {
-                    if (toast.parentNode) toast.remove();
-                }, 2800);
+                setTimeout(() => { if (toast.parentNode) toast.remove(); }, 2800);
             }
 
             function formatViews(num) {
@@ -280,220 +578,286 @@
             }
 
             function formatDate(iso) {
-                if (!iso) return '';
+                if (!iso) return '—';
                 const d = new Date(iso);
                 return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
             }
 
             function getVideoIdFromUrl() {
-                const params = new URLSearchParams(window.location.search);
-                if (params.get('id')) return params.get('id');
-                if (params.get('url')) return params.get('url');
                 const path = window.location.pathname;
-                const match = path.match(/\/video\/([^\/]+)/);
-                return match ? match[1] : null;
+                const parts = path.split('/');
+                return parts[parts.length - 1] || null;
             }
 
-            function extractYouTubeId(url) {
-                if (!url) return null;
-                const patterns = [
-                    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/,
-                    /^([a-zA-Z0-9_-]{11})$/
-                ];
-                for (const p of patterns) {
-                    const m = url.match(p);
-                    if (m) return m[1];
-                }
-                return null;
+            function detectVideoRatio() {
+                const data = state.videoData;
+                if (!data) return CONFIG.defaultRatio;
+
+                // Streamable → esqueleto vertical (223.889%)
+                if (data.streamable_url) return 'streamable';
+
+                if (data.youtube_id) return '16-9';
+
+                const text = ((data.titulo || '') + ' ' + (data.descricao || '')).toLowerCase();
+                if (text.includes('shorts') || text.includes('vertical') || text.includes('tiktok') || text.includes('reels')) return '9-16';
+                if (text.includes('quadrado') || text.includes('square')) return '1-1';
+                if (text.includes('cinema') || text.includes('ultrawide')) return '21-9';
+                return CONFIG.defaultRatio;
             }
 
-            function extractVimeoId(url) {
-                const m = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
-                return m ? m[1] : null;
+            function applyRatio(ratio) {
+                state.videoRatio = ratio;
+                dom.playerContainer.className = 'player-container';
+                dom.playerContainer.classList.add(`ratio-${ratio}`);
             }
 
-            function extractStreamableId(url) {
-                const m = url.match(/streamable\.com\/(?:e\/)?([a-zA-Z0-9]+)/);
-                return m ? m[1] : null;
+            function createPlaceholder(title) {
+                const safeTitle = (title || 'Vídeo').substring(0, 30).replace(/[<>&"']/g, '');
+                const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360"><defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#0f1a2e"/><stop offset="100%" style="stop-color:#1a2d4a"/></linearGradient><linearGradient id="ic" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#64b5f6" stop-opacity="0.8"/><stop offset="100%" style="stop-color:#e50914" stop-opacity="0.8"/></linearGradient></defs><rect width="640" height="360" fill="url(#bg)"/><circle cx="320" cy="150" r="45" fill="none" stroke="url(#ic)" stroke-width="3" opacity="0.6"/><polygon points="305,130 305,170 345,150" fill="url(#ic)" opacity="0.8"/><text x="320" y="240" font-family="Segoe UI, Arial, sans-serif" font-size="18" fill="#64b5f6" text-anchor="middle">${safeTitle}</text><text x="320" y="270" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#78909c" text-anchor="middle">DSO Vídeos</text></svg>`;
+                return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
             }
 
-            function extractDailymotionId(url) {
-                const m = url.match(/dailymotion\.com\/video\/([a-zA-Z0-9]+)/);
-                return m ? m[1] : null;
+            function generateThumbnail(data) {
+                if (data.thumbnail && !data.thumbnail.includes('dQw4w9WgXcQ')) return data.thumbnail;
+                if (data.youtube_id) return `https://img.youtube.com/vi/${data.youtube_id}/hqdefault.jpg`;
+                return createPlaceholder(data.titulo || 'Vídeo');
             }
 
-            function isDirectVideo(url) {
-                return /\.(mp4|webm|ogg|mov|m3u8)(\?.*)?$/i.test(url);
+            function setPreview(thumbnail) {
+                dom.videoPreview.style.backgroundImage = `url('${thumbnail}')`;
+                dom.videoPreview.classList.remove('hidden');
             }
 
-            /**
-             * Cria o elemento do player com base na URL.
-             * Retorna { el, portrait }
-             */
-            function createPlayerFromUrl(url) {
-                if (!url) return null;
-
-                // 1) Streamable
-                const streamableId = extractStreamableId(url);
-                if (streamableId) {
-                    const iframe = document.createElement('iframe');
-                    iframe.src = `https://streamable.com/e/${streamableId}?autoplay=1`;
-                    iframe.allow = 'fullscreen';
-                    iframe.allowFullscreen = true;
-                    // Vídeos do Streamable geralmente são verticais
-                    return { el: iframe, portrait: true };
-                }
-
-                // 2) YouTube
-                const ytId = extractYouTubeId(url);
-                if (ytId) {
-                    const iframe = document.createElement('iframe');
-                    iframe.src = `https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0`;
-                    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen';
-                    iframe.allowFullscreen = true;
-                    return { el: iframe, portrait: false };
-                }
-
-                // 3) Vimeo
-                const vimeoId = extractVimeoId(url);
-                if (vimeoId) {
-                    const iframe = document.createElement('iframe');
-                    iframe.src = `https://player.vimeo.com/video/${vimeoId}?autoplay=1`;
-                    iframe.allow = 'autoplay; fullscreen; picture-in-picture';
-                    iframe.allowFullscreen = true;
-                    return { el: iframe, portrait: false };
-                }
-
-                // 4) Dailymotion
-                const dmId = extractDailymotionId(url);
-                if (dmId) {
-                    const iframe = document.createElement('iframe');
-                    iframe.src = `https://www.dailymotion.com/embed/video/${dmId}?autoplay=1`;
-                    iframe.allow = 'autoplay; fullscreen';
-                    iframe.allowFullscreen = true;
-                    return { el: iframe, portrait: false };
-                }
-
-                // 5) Vídeo direto (mp4, webm, etc.)
-                if (isDirectVideo(url)) {
-                    const video = document.createElement('video');
-                    video.src = url;
-                    video.controls = true;
-                    video.autoplay = true;
-                    video.playsInline = true;
-                    video.setAttribute('controlsList', 'nodownload');
-                    return { el: video, portrait: false };
-                }
-
-                // 6) URL genérica que retorna iframe/embed (fallback)
-                if (/^https?:\/\//i.test(url)) {
-                    const iframe = document.createElement('iframe');
-                    iframe.src = url;
-                    iframe.allow = 'fullscreen; autoplay; encrypted-media';
-                    iframe.allowFullscreen = true;
-                    return { el: iframe, portrait: false };
-                }
-
-                return null;
+            function hidePreview() {
+                dom.videoPreview.classList.add('hidden');
             }
 
-            function renderError(message) {
-                dom.playerContainer.innerHTML = `
-                    <div class="player-wrapper">
-                        <div class="player-error">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <p>${message}</p>
-                        </div>
-                    </div>
-                `;
+            function getLastAdTime() {
+                try {
+                    return parseInt(localStorage.getItem(CONFIG.adStorageKey) || '0', 10);
+                } catch(e) { return 0; }
             }
 
-            function renderPlayer(url, videoData) {
-                const player = createPlayerFromUrl(url);
+            function setLastAdTime() {
+                try {
+                    localStorage.setItem(CONFIG.adStorageKey, Date.now().toString());
+                } catch(e) {}
+            }
 
-                if (!player) {
-                    renderError('Formato de vídeo não suportado.');
+            function canShowAd() {
+                return (Date.now() - getLastAdTime()) >= CONFIG.adCooldownMs;
+            }
+
+            function checkAdAvailability() {
+                if (!canShowAd()) {
+                    state.adBlockedByCooldown = true;
+                    dom.adBadge.style.display = 'none';
+                    dom.playLabel.textContent = 'Clique para reproduzir';
                     return;
                 }
+                state.adBlockedByCooldown = false;
+                dom.adBadge.style.display = 'none';
+                dom.playLabel.textContent = 'Clique para reproduzir';
+            }
+
+            /* ============================================================
+             * AJUSTE PRINCIPAL: montar o player Streamable no play
+             * Usa exatamente o esqueleto que você forneceu:
+             * <div style="position:relative;width:100%;height:0px;padding-bottom:223.889%">
+             *   <iframe src="https://streamable.com/e/ID?" ...></iframe>
+             * </div>
+             * ============================================================ */
+            function buildStreamablePlayer(rawUrl) {
+                // Extrai o ID do Streamable (aceita /e/ID, /ID, com ou sem query)
+                let id = null;
+                const m1 = rawUrl.match(/streamable\.com\/e\/([a-zA-Z0-9]+)/i);
+                const m2 = rawUrl.match(/streamable\.com\/([a-zA-Z0-9]+)/i);
+                if (m1) id = m1[1];
+                else if (m2) id = m2[1];
+
+                if (!id) return null;
 
                 const wrapper = document.createElement('div');
-                wrapper.className = 'player-wrapper' + (player.portrait ? ' portrait' : '');
-                wrapper.appendChild(player.el);
+                wrapper.style.cssText = 'position:relative; width:100%; height:0px; padding-bottom:223.889%';
 
-                dom.playerContainer.innerHTML = '';
-                dom.playerContainer.appendChild(wrapper);
+                const iframe = document.createElement('iframe');
+                iframe.allow = 'fullscreen';
+                iframe.allowFullscreen = true;
+                iframe.height = '100%';
+                iframe.src = `https://streamable.com/e/${id}?`;
+                iframe.width = '100%';
+                iframe.style.cssText = 'border:none; width:100%; height:100%; position:absolute; left:0px; top:0px; overflow:hidden;';
 
-                // Renderiza info do vídeo (se disponível)
-                if (videoData) {
-                    renderVideoInfo(videoData);
+                wrapper.appendChild(iframe);
+                return wrapper;
+            }
+
+            function playVideo() {
+                if (state.isPlaying) return;
+                state.isPlaying = true;
+
+                dom.playOverlay.classList.add('hidden');
+                hidePreview();
+
+                // Se a URL for Streamable → monta o esqueleto original
+                if (state.videoUrl && /streamable\.com/i.test(state.videoUrl)) {
+                    const streamableEl = buildStreamablePlayer(state.videoUrl);
+                    if (streamableEl) {
+                        // Substitui o container pelo esqueleto do Streamable
+                        dom.playerContainer.innerHTML = '';
+                        dom.playerContainer.style.paddingTop = '0';
+                        dom.playerContainer.className = 'player-container';
+                        dom.playerContainer.appendChild(streamableEl);
+                        return;
+                    }
+                }
+
+                // Fallback: iframe normal
+                let iframe = dom.playerMount.querySelector('iframe#videoIframe');
+                if (!iframe) {
+                    iframe = document.createElement('iframe');
+                    iframe.id = 'videoIframe';
+                    iframe.allow = 'fullscreen; accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+                    iframe.allowFullscreen = true;
+                    dom.playerMount.appendChild(iframe);
+                }
+                iframe.style.display = 'block';
+                if (state.videoUrl && iframe.src !== state.videoUrl) {
+                    iframe.src = state.videoUrl;
                 }
             }
 
-            function renderVideoInfo(video) {
-                dom.videoInfo.style.display = 'block';
-                dom.videoInfo.innerHTML = `
-                    <div class="video-info">
-                        <h1>${video.titulo || 'Sem título'}</h1>
-                        <div class="video-meta">
-                            <span><i class="fas fa-eye"></i> ${formatViews(video.views || 0)} visualizações</span>
-                            <span><i class="fas fa-calendar"></i> ${formatDate(video.criado_em) || '—'}</span>
-                            <span><i class="fas fa-play-circle"></i> ${video.fonte || 'Vídeo'}</span>
-                        </div>
-                        ${video.descricao ? `<div class="video-description">${video.descricao}</div>` : ''}
-                    </div>
-                `;
+            function handlePlayClick() {
+                if (state.isPlaying) return;
+                state.userClicked = true;
+
+                if (canShowAd()) {
+                    setLastAdTime();
+                }
+
+                playVideo();
             }
 
-            async function loadVideo() {
-                const id = getVideoIdFromUrl();
+            async function loadVideo(videoId) {
+                try {
+                    const resp = await fetch(`${CONFIG.apiBase}/video/${videoId}`);
+                    if (!resp.ok) {
+                        if (resp.status === 404) throw new Error('Vídeo não encontrado');
+                        throw new Error('Erro ao carregar vídeo');
+                    }
 
-                // Se o parâmetro for uma URL completa, carrega direto
-                if (id && /^https?:\/\//i.test(id)) {
-                    const decoded = decodeURIComponent(id);
-                    renderPlayer(decoded, null);
-                    return;
-                }
+                    state.videoData = await resp.json();
 
-                // Caso contrário, busca os dados na API
-                if (!id) {
-                    renderError('Nenhum vídeo especificado.');
-                    return;
+                    dom.videoTitle.textContent = state.videoData.titulo || 'Sem título';
+                    dom.videoViews.innerHTML = `<i class="fas fa-eye"></i> ${formatViews(state.videoData.views || 0)} visualizações`;
+                    dom.videoDate.innerHTML = `<i class="far fa-calendar-alt"></i> ${formatDate(state.videoData.criado_em)}`;
+                    dom.videoBadge.textContent = `${formatViews(state.videoData.views || 0)} views`;
+                    dom.videoDescription.textContent = state.videoData.descricao || '';
+
+                    applyRatio(detectVideoRatio());
+                    setPreview(generateThumbnail(state.videoData));
+
+                    if (state.videoData.streamable_url) {
+                        state.videoUrl = state.videoData.streamable_url;
+                    } else if (state.videoData.embed_url) {
+                        state.videoUrl = state.videoData.embed_url;
+                    } else if (state.videoData.youtube_id) {
+                        state.videoUrl = `https://www.youtube.com/embed/${state.videoData.youtube_id}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3`;
+                    } else {
+                        state.videoUrl = state.videoData.video_url || '';
+                    }
+
+                    checkAdAvailability();
+                    await registerView(videoId);
+                    await loadRelated(videoId);
+
+                    return state.videoData;
+                } catch (err) {
+                    dom.videoTitle.textContent = 'Erro ao carregar vídeo';
+                    dom.videoDescription.textContent = err.message || 'Tente novamente mais tarde.';
+                    dom.playOverlay.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;"><i class="fas fa-exclamation-triangle" style="font-size:40px;color:#e50914;margin-bottom:12px;"></i><span style="color:#e0e0e0;font-size:16px;">${err.message || 'Erro ao carregar'}</span><button onclick="location.reload()" style="margin-top:16px;padding:10px 24px;background:#e50914;border:none;border-radius:20px;color:#fff;cursor:pointer;font-weight:600;">Tentar novamente</button></div>`;
+                    showToast('Erro ao carregar vídeo', true);
+                    return null;
                 }
+            }
+
+            async function registerView(videoId) {
+                try {
+                    const resp = await fetch(`${CONFIG.apiBase}/video/${videoId}/view`, { method: 'POST' });
+                    if (!resp.ok) throw new Error('Erro');
+                    const data = await resp.json();
+                    if (data.views) {
+                        dom.videoViews.innerHTML = `<i class="fas fa-eye"></i> ${formatViews(data.views)} visualizações`;
+                        dom.videoBadge.textContent = `${formatViews(data.views)} views`;
+                    }
+                } catch (err) {}
+            }
+
+            async function loadRelated(videoId) {
+                dom.relatedGrid.innerHTML = `<div class="loading-state"><i class="fas fa-spinner"></i> Carregando recomendados...</div>`;
 
                 try {
-                    const resp = await fetch(`${CONFIG.apiBase}/videos/${encodeURIComponent(id)}`);
-                    if (!resp.ok) throw new Error('Vídeo não encontrado');
+                    const resp = await fetch(`${CONFIG.apiBase}/videos/popular?limit=${CONFIG.relatedLimit}`);
+                    if (!resp.ok) throw new Error('Erro');
 
-                    const video = await resp.json();
-                    const url = video.url || video.video_url || video.stream_url || video.embed_url;
+                    const data = await resp.json();
+                    const videos = data.videos || [];
+                    const filtered = videos.filter(v => v.id !== videoId);
 
-                    if (!url) {
-                        renderError('Este vídeo não possui uma URL válida.');
+                    if (filtered.length === 0) {
+                        dom.relatedGrid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><i class="fas fa-info-circle"></i><h4>Sem recomendações</h4><p>Volte mais tarde para mais vídeos.</p></div>`;
                         return;
                     }
 
-                    renderPlayer(url, video);
+                    const fragment = document.createDocumentFragment();
+                    filtered.forEach(v => {
+                        const card = document.createElement('div');
+                        card.className = 'related-card';
+                        card.dataset.id = v.id;
 
-                    // Incrementa view (opcional)
-                    fetch(`${CONFIG.apiBase}/videos/${encodeURIComponent(id)}/view`, {
-                        method: 'POST'
-                    }).catch(() => {});
+                        let thumb = v.thumbnail || '';
+                        if (!thumb || thumb.includes('dQw4w9WgXcQ')) {
+                            thumb = createPlaceholder(v.titulo || 'Vídeo');
+                        }
 
+                        card.innerHTML = `<div class="thumb"><img src="${thumb}" alt="${v.titulo || 'Vídeo'}" loading="lazy" onerror="this.src='${createPlaceholder(v.titulo || 'Vídeo')}'"><div class="play-icon"><i class="fas fa-play"></i></div></div><div class="info"><h4>${v.titulo || 'Sem título'}</h4><div class="views"><i class="fas fa-eye"></i> ${formatViews(v.views || 0)}</div></div>`;
+
+                        card.addEventListener('click', () => {
+                            window.location.href = `/video/${v.id}`;
+                        });
+                        fragment.appendChild(card);
+                    });
+
+                    dom.relatedGrid.innerHTML = '';
+                    dom.relatedGrid.appendChild(fragment);
                 } catch (err) {
-                    console.error('Erro loadVideo:', err);
-                    showToast('Erro ao carregar vídeo', 'fa-exclamation-circle');
-                    renderError('Não foi possível carregar o vídeo.');
+                    dom.relatedGrid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><i class="fas fa-exclamation-triangle" style="color:#ff9800;"></i><h4>Erro ao carregar recomendações</h4><p>Tente novamente mais tarde.</p></div>`;
                 }
             }
 
-            // Suporte: se o usuário colar uma URL direto na barra (ex: /player?url=...)
-            function init() {
-                loadVideo();
+            dom.playOverlay.addEventListener('click', handlePlayClick);
+            dom.playBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                handlePlayClick();
+            });
+
+            async function init() {
+                const videoId = getVideoIdFromUrl();
+
+                if (!videoId) {
+                    dom.videoTitle.textContent = 'ID do vídeo não encontrado';
+                    dom.videoDescription.textContent = 'URL inválida. Volte para a lista de vídeos.';
+                    dom.playOverlay.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;"><i class="fas fa-exclamation-triangle" style="font-size:40px;color:#ff9800;margin-bottom:12px;"></i><span style="color:#e0e0e0;font-size:16px;">ID do vídeo não encontrado</span><a href="/videos" style="margin-top:12px;color:#64b5f6;text-decoration:none;">Voltar para a lista</a></div>`;
+                    dom.relatedGrid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><i class="fas fa-info-circle"></i><h4>Nenhum vídeo selecionado</h4><p><a href="/videos" style="color:#64b5f6;text-decoration:none;">Voltar para a lista</a></p></div>`;
+                    return;
+                }
+
+                await loadVideo(videoId);
             }
 
             init();
 
-            window.__videoPlayer = { loadVideo, createPlayerFromUrl, renderPlayer };
+            window.__videoPlayer = { loadVideo, loadRelated, registerView, playVideo, state };
 
         })();
     </script>
