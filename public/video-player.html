@@ -102,8 +102,10 @@
         .player-container.ratio-1-1  { padding-top: 100%; max-height: 80vh; }
         .player-container.ratio-21-9 { padding-top: 42.85%; }
 
-        .player-wrapper .player-container iframe#videoIframe,
-        .player-wrapper .player-container video.native-player {
+        /* Esqueleto Streamable (vertical) */
+        .player-container.ratio-streamable { padding-top: 223.889%; max-height: 85vh; }
+
+        .player-wrapper .player-container iframe#videoIframe {
             position: absolute;
             top: 0;
             left: 0;
@@ -441,6 +443,7 @@
             #playOverlay .play-btn { width: 60px; height: 60px; font-size: 28px; }
             .player-container.ratio-9-16 { max-height: 70vh; }
             .player-container.ratio-1-1 { max-height: 70vh; }
+            .player-container.ratio-streamable { max-height: 75vh; }
         }
 
         @media (max-width: 480px) {
@@ -453,6 +456,7 @@
             #playOverlay .play-label { font-size: 12px; }
             .player-container.ratio-9-16 { max-height: 60vh; }
             .player-container.ratio-1-1 { max-height: 60vh; }
+            .player-container.ratio-streamable { max-height: 65vh; }
         }
     </style>
 </head>
@@ -488,10 +492,7 @@
                     <div class="play-label" id="playLabel">Clique para reproduzir</div>
                 </div>
 
-                <iframe id="videoIframe" src="about:blank"
-                        allow="fullscreen; accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowfullscreen>
-                </iframe>
+                <div id="playerMount"></div>
             </div>
 
             <div class="video-info" id="videoInfo">
@@ -537,7 +538,6 @@
 
             const $ = (sel) => document.querySelector(sel);
             const dom = {
-                videoIframe: $('#videoIframe'),
                 playOverlay: $('#playOverlay'),
                 playBtn: $('#playBtn'),
                 playLabel: $('#playLabel'),
@@ -550,7 +550,8 @@
                 relatedGrid: $('#relatedGrid'),
                 toastContainer: $('#toastContainer'),
                 playerContainer: $('#playerContainer'),
-                videoPreview: $('#videoPreview')
+                videoPreview: $('#videoPreview'),
+                playerMount: $('#playerMount')
             };
 
             let state = {
@@ -559,8 +560,7 @@
                 isPlaying: false,
                 userClicked: false,
                 adBlockedByCooldown: false,
-                videoRatio: CONFIG.defaultRatio,
-                resolvedType: 'none'
+                videoRatio: CONFIG.defaultRatio
             };
 
             function showToast(message, isError = false) {
@@ -585,109 +585,25 @@
 
             function getVideoIdFromUrl() {
                 const path = window.location.pathname;
-                const parts = path.split('/').filter(Boolean);
-                if (parts[0] === 'video' && parts[1]) return parts[1];
-
-                const params = new URLSearchParams(window.location.search);
-                return params.get('id') || params.get('v') || null;
+                const parts = path.split('/');
+                return parts[parts.length - 1] || null;
             }
 
-            /* ============================================================
-             * DETECÇÃO E NORMALIZAÇÃO DE URL DE VÍDEO
-             * ============================================================ */
+            function detectVideoRatio() {
+                const data = state.videoData;
+                if (!data) return CONFIG.defaultRatio;
 
-            function ensureAutoplay(url) {
-                if (!/autoplay=/.test(url)) {
-                    return url + (url.includes('?') ? '&' : '?') + 'autoplay=1';
-                }
-                return url;
+                // Streamable → esqueleto vertical (223.889%)
+                if (data.streamable_url) return 'streamable';
+
+                if (data.youtube_id) return '16-9';
+
+                const text = ((data.titulo || '') + ' ' + (data.descricao || '')).toLowerCase();
+                if (text.includes('shorts') || text.includes('vertical') || text.includes('tiktok') || text.includes('reels')) return '9-16';
+                if (text.includes('quadrado') || text.includes('square')) return '1-1';
+                if (text.includes('cinema') || text.includes('ultrawide')) return '21-9';
+                return CONFIG.defaultRatio;
             }
-
-            /**
-             * Detecta o tipo de URL e retorna { src, ratio, type }.
-             * type: 'streamable' | 'youtube' | 'vimeo' | 'dailymotion' | 'video' | 'generic' | 'none'
-             */
-            function resolveVideoUrl(url, data) {
-                // Sem URL direta: tenta youtube_id separado da API
-                if (!url) {
-                    if (data && data.youtube_id) {
-                        return {
-                            src: `https://www.youtube.com/embed/${data.youtube_id}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3`,
-                            ratio: '16-9',
-                            type: 'youtube'
-                        };
-                    }
-                    return { src: 'about:blank', ratio: CONFIG.defaultRatio, type: 'none' };
-                }
-
-                url = String(url).trim();
-
-                // Streamable embed já pronto (streamable.com/e/ID)
-                if (/streamable\.com\/e\//i.test(url)) {
-                    return {
-                        src: ensureAutoplay(url),
-                        ratio: '9-16',
-                        type: 'streamable'
-                    };
-                }
-
-                // Streamable "normal" (streamable.com/ID) → converter para /e/
-                const streamableId = url.match(/streamable\.com\/(?!e\/)([a-zA-Z0-9]+)/i);
-                if (streamableId) {
-                    return {
-                        src: `https://streamable.com/e/${streamableId[1]}?autoplay=1`,
-                        ratio: '9-16',
-                        type: 'streamable'
-                    };
-                }
-
-                // YouTube (watch, youtu.be, shorts, embed)
-                const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/i);
-                if (ytMatch) {
-                    const isShort = /\/shorts\//i.test(url);
-                    return {
-                        src: `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3`,
-                        ratio: isShort ? '9-16' : '16-9',
-                        type: 'youtube'
-                    };
-                }
-
-                // Vimeo
-                const vimeoMatch = url.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
-                if (vimeoMatch) {
-                    return {
-                        src: `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=1`,
-                        ratio: '16-9',
-                        type: 'vimeo'
-                    };
-                }
-
-                // Dailymotion
-                const dmMatch = url.match(/dailymotion\.com\/video\/([a-zA-Z0-9]+)/i);
-                if (dmMatch) {
-                    return {
-                        src: `https://www.dailymotion.com/embed/video/${dmMatch[1]}?autoplay=1`,
-                        ratio: '16-9',
-                        type: 'dailymotion'
-                    };
-                }
-
-                // Vídeo direto (mp4/webm/etc.)
-                if (/\.(mp4|webm|ogg|mov|m3u8)(\?.*)?$/i.test(url)) {
-                    return { src: url, ratio: '16-9', type: 'video' };
-                }
-
-                // Qualquer outra URL: tenta como iframe direto
-                return {
-                    src: ensureAutoplay(url),
-                    ratio: '16-9',
-                    type: 'generic'
-                };
-            }
-
-            /* ============================================================
-             * RATIO / PREVIEW
-             * ============================================================ */
 
             function applyRatio(ratio) {
                 state.videoRatio = ratio;
@@ -715,10 +631,6 @@
             function hidePreview() {
                 dom.videoPreview.classList.add('hidden');
             }
-
-            /* ============================================================
-             * ANÚNCIO (cooldown)
-             * ============================================================ */
 
             function getLastAdTime() {
                 try {
@@ -749,8 +661,36 @@
             }
 
             /* ============================================================
-             * PLAYER
+             * AJUSTE PRINCIPAL: montar o player Streamable no play
+             * Usa exatamente o esqueleto que você forneceu:
+             * <div style="position:relative;width:100%;height:0px;padding-bottom:223.889%">
+             *   <iframe src="https://streamable.com/e/ID?" ...></iframe>
+             * </div>
              * ============================================================ */
+            function buildStreamablePlayer(rawUrl) {
+                // Extrai o ID do Streamable (aceita /e/ID, /ID, com ou sem query)
+                let id = null;
+                const m1 = rawUrl.match(/streamable\.com\/e\/([a-zA-Z0-9]+)/i);
+                const m2 = rawUrl.match(/streamable\.com\/([a-zA-Z0-9]+)/i);
+                if (m1) id = m1[1];
+                else if (m2) id = m2[1];
+
+                if (!id) return null;
+
+                const wrapper = document.createElement('div');
+                wrapper.style.cssText = 'position:relative; width:100%; height:0px; padding-bottom:223.889%';
+
+                const iframe = document.createElement('iframe');
+                iframe.allow = 'fullscreen';
+                iframe.allowFullscreen = true;
+                iframe.height = '100%';
+                iframe.src = `https://streamable.com/e/${id}?`;
+                iframe.width = '100%';
+                iframe.style.cssText = 'border:none; width:100%; height:100%; position:absolute; left:0px; top:0px; overflow:hidden;';
+
+                wrapper.appendChild(iframe);
+                return wrapper;
+            }
 
             function playVideo() {
                 if (state.isPlaying) return;
@@ -759,37 +699,31 @@
                 dom.playOverlay.classList.add('hidden');
                 hidePreview();
 
-                if (!state.videoUrl || state.videoUrl === 'about:blank') {
-                    showToast('URL de vídeo inválida', true);
-                    return;
+                // Se a URL for Streamable → monta o esqueleto original
+                if (state.videoUrl && /streamable\.com/i.test(state.videoUrl)) {
+                    const streamableEl = buildStreamablePlayer(state.videoUrl);
+                    if (streamableEl) {
+                        // Substitui o container pelo esqueleto do Streamable
+                        dom.playerContainer.innerHTML = '';
+                        dom.playerContainer.style.paddingTop = '0';
+                        dom.playerContainer.className = 'player-container';
+                        dom.playerContainer.appendChild(streamableEl);
+                        return;
+                    }
                 }
 
-                const resolved = resolveVideoUrl(state.videoUrl, state.videoData);
-                state.resolvedType = resolved.type;
-
-                // Vídeo direto (mp4/webm): usa <video> no lugar do iframe
-                if (resolved.type === 'video') {
-                    dom.videoIframe.style.display = 'none';
-
-                    const oldVideo = dom.playerContainer.querySelector('video.native-player');
-                    if (oldVideo) oldVideo.remove();
-
-                    const video = document.createElement('video');
-                    video.className = 'native-player';
-                    video.src = resolved.src;
-                    video.controls = true;
-                    video.autoplay = true;
-                    video.playsInline = true;
-                    video.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;background:#000;z-index:5;';
-                    dom.playerContainer.appendChild(video);
-                    return;
+                // Fallback: iframe normal
+                let iframe = dom.playerMount.querySelector('iframe#videoIframe');
+                if (!iframe) {
+                    iframe = document.createElement('iframe');
+                    iframe.id = 'videoIframe';
+                    iframe.allow = 'fullscreen; accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+                    iframe.allowFullscreen = true;
+                    dom.playerMount.appendChild(iframe);
                 }
-
-                // Iframe normal
-                dom.videoIframe.style.display = 'block';
-
-                if (dom.videoIframe.src !== resolved.src) {
-                    dom.videoIframe.src = resolved.src;
+                iframe.style.display = 'block';
+                if (state.videoUrl && iframe.src !== state.videoUrl) {
+                    iframe.src = state.videoUrl;
                 }
             }
 
@@ -803,10 +737,6 @@
 
                 playVideo();
             }
-
-            /* ============================================================
-             * CARREGAMENTO DE DADOS
-             * ============================================================ */
 
             async function loadVideo(videoId) {
                 try {
@@ -824,26 +754,18 @@
                     dom.videoBadge.textContent = `${formatViews(state.videoData.views || 0)} views`;
                     dom.videoDescription.textContent = state.videoData.descricao || '';
 
-                    // Pega a URL bruta em qualquer campo possível da API
-                    const rawUrl =
-                        state.videoData.streamable_url ||
-                        state.videoData.embed_url ||
-                        state.videoData.video_url ||
-                        state.videoData.url ||
-                        '';
-
-                    // Resolve tipo + ratio
-                    const resolved = resolveVideoUrl(rawUrl, state.videoData);
-                    state.videoUrl = rawUrl || resolved.src;
-                    state.resolvedType = resolved.type;
-                    applyRatio(resolved.ratio);
-
-                    // Se a URL for "about:blank" (nenhuma), esconde o overlay de play
-                    if (!rawUrl && resolved.type === 'none') {
-                        dom.playLabel.textContent = 'URL indisponível';
-                    }
-
+                    applyRatio(detectVideoRatio());
                     setPreview(generateThumbnail(state.videoData));
+
+                    if (state.videoData.streamable_url) {
+                        state.videoUrl = state.videoData.streamable_url;
+                    } else if (state.videoData.embed_url) {
+                        state.videoUrl = state.videoData.embed_url;
+                    } else if (state.videoData.youtube_id) {
+                        state.videoUrl = `https://www.youtube.com/embed/${state.videoData.youtube_id}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3`;
+                    } else {
+                        state.videoUrl = state.videoData.video_url || '';
+                    }
 
                     checkAdAvailability();
                     await registerView(videoId);
@@ -880,7 +802,7 @@
 
                     const data = await resp.json();
                     const videos = data.videos || [];
-                    const filtered = videos.filter(v => String(v.id) !== String(videoId));
+                    const filtered = videos.filter(v => v.id !== videoId);
 
                     if (filtered.length === 0) {
                         dom.relatedGrid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><i class="fas fa-info-circle"></i><h4>Sem recomendações</h4><p>Volte mais tarde para mais vídeos.</p></div>`;
@@ -898,7 +820,7 @@
                             thumb = createPlaceholder(v.titulo || 'Vídeo');
                         }
 
-                        card.innerHTML = `<div class="thumb"><img src="${thumb}" alt="${(v.titulo || 'Vídeo').replace(/"/g, '&quot;')}" loading="lazy" onerror="this.src='${createPlaceholder(v.titulo || 'Vídeo')}'"><div class="play-icon"><i class="fas fa-play"></i></div></div><div class="info"><h4>${v.titulo || 'Sem título'}</h4><div class="views"><i class="fas fa-eye"></i> ${formatViews(v.views || 0)}</div></div>`;
+                        card.innerHTML = `<div class="thumb"><img src="${thumb}" alt="${v.titulo || 'Vídeo'}" loading="lazy" onerror="this.src='${createPlaceholder(v.titulo || 'Vídeo')}'"><div class="play-icon"><i class="fas fa-play"></i></div></div><div class="info"><h4>${v.titulo || 'Sem título'}</h4><div class="views"><i class="fas fa-eye"></i> ${formatViews(v.views || 0)}</div></div>`;
 
                         card.addEventListener('click', () => {
                             window.location.href = `/video/${v.id}`;
@@ -935,7 +857,7 @@
 
             init();
 
-            window.__videoPlayer = { loadVideo, loadRelated, registerView, playVideo, resolveVideoUrl, state };
+            window.__videoPlayer = { loadVideo, loadRelated, registerView, playVideo, state };
 
         })();
     </script>
