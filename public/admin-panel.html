@@ -227,6 +227,7 @@
             box-shadow: 0 5px 15px rgba(124, 58, 237, 0.3);
         }
         .add-btn:active { transform: scale(0.95); }
+        .add-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
         .table-wrapper {
             background: var(--bg-card);
@@ -555,17 +556,21 @@
             z-index: 9999;
             animation: slideIn 0.3s ease;
             box-shadow: var(--shadow-lg);
+            max-width: 340px;
         }
         .toast.success { background: var(--success); }
         .toast.error { background: var(--danger); }
         .toast.info { background: var(--accent); }
+        .toast.warn { background: var(--warning); }
 
         @keyframes slideIn {
             from { transform: translateX(100px); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
         }
 
-        /* 🔥 NOVO: estilos exclusivos da aba Auto MyMuze */
+        /* =====================================================
+           ABA AUTO MYMUZE
+           ===================================================== */
         .amz-stat-card {
             background: var(--bg-card);
             border-radius: 16px;
@@ -603,20 +608,6 @@
         .amz-badge.info { background: rgba(6,182,212,.15); color: var(--accent); }
         .amz-badge.muted { background: var(--bg-secondary); color: var(--text-muted); }
 
-        .amz-otp-alert {
-            background: rgba(245,158,11,.1);
-            border: 1px solid rgba(245,158,11,.3);
-            border-radius: 12px;
-            padding: 12px 16px;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.85rem;
-            color: var(--text-primary);
-        }
-        .amz-otp-alert i { color: var(--warning); font-size: 1.1rem; }
-
         .amz-key-form {
             display: grid;
             grid-template-columns: 1fr 1fr auto;
@@ -624,9 +615,6 @@
             align-items: end;
         }
         .amz-key-form .form-group { margin-bottom: 0; }
-        @media (max-width: 640px) {
-            .amz-key-form { grid-template-columns: 1fr; }
-        }
 
         .amz-code {
             font-family: 'Courier New', monospace;
@@ -651,6 +639,10 @@
             cursor: pointer;
         }
         .amz-filter-select:focus { border-color: var(--primary); }
+
+        @media (max-width: 640px) {
+            .amz-key-form { grid-template-columns: 1fr; }
+        }
 
         @media (min-width: 640px) {
             .stats-grid { grid-template-columns: repeat(4, 1fr); gap: 16px; }
@@ -700,7 +692,6 @@
     </header>
     
     <div class="dashboard-container">
-        <!-- Abas de navegação -->
         <div class="admin-tabs">
             <button class="admin-tab active" data-tab="items" onclick="switchTab('items')">
                 <i class="fas fa-box"></i>
@@ -710,16 +701,13 @@
                 <i class="fas fa-film"></i>
                 <span>Vídeos</span>
             </button>
-            <!-- 🔥 NOVO: aba Auto MyMuze -->
             <button class="admin-tab" data-tab="automymuze" onclick="switchTab('automymuze')">
                 <i class="fas fa-robot"></i>
                 <span>Auto MyMuze</span>
             </button>
         </div>
 
-        <!-- ============================================================
-        SEÇÃO ITENS (INTACTA)
-        ============================================================ -->
+        <!-- SEÇÃO ITENS -->
         <div class="section active" id="itemsSection">
             <div class="stats-grid">
                 <div class="stat-card">
@@ -799,37 +787,23 @@
             </div>
         </div>
 
-        <!-- ============================================================
-        SEÇÃO VÍDEOS (INTACTA)
-        ============================================================ -->
+        <!-- SEÇÃO VÍDEOS -->
         <div class="section" id="videosSection">
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-header">
-                        <i class="fas fa-film" style="color:#e50914;"></i>
-                        <span>Total Vídeos</span>
-                    </div>
+                    <div class="stat-header"><i class="fas fa-film" style="color:#e50914;"></i><span>Total Vídeos</span></div>
                     <div class="stat-value" id="totalVideos">0</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-header">
-                        <i class="fas fa-eye" style="color:#64b5f6;"></i>
-                        <span>Views Totais</span>
-                    </div>
+                    <div class="stat-header"><i class="fas fa-eye" style="color:#64b5f6;"></i><span>Views Totais</span></div>
                     <div class="stat-value" id="totalVideoViews">0</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-header">
-                        <i class="fas fa-fire" style="color:#f59e0b;"></i>
-                        <span>Mais Visto</span>
-                    </div>
+                    <div class="stat-header"><i class="fas fa-fire" style="color:#f59e0b;"></i><span>Mais Visto</span></div>
                     <div class="stat-value" id="popularVideo" style="font-size:1.2rem;">—</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-header">
-                        <i class="fas fa-check-circle" style="color:#10b981;"></i>
-                        <span>Ativos</span>
-                    </div>
+                    <div class="stat-header"><i class="fas fa-check-circle" style="color:#10b981;"></i><span>Ativos</span></div>
                     <div class="stat-value" id="activeVideos">0</div>
                 </div>
             </div>
@@ -866,11 +840,8 @@
             </div>
         </div>
 
-        <!-- ============================================================
-        🔥 NOVO: SEÇÃO AUTO MYMUZE
-        ============================================================ -->
+        <!-- SEÇÃO AUTO MYMUZE -->
         <div class="section" id="automymuzeSection">
-            <!-- Stats da fila / cron -->
             <div class="stats-grid">
                 <div class="amz-stat-card ok">
                     <div class="stat-header"><i class="fas fa-check-circle"></i><span>OK (24h)</span></div>
@@ -894,7 +865,6 @@
                 </div>
             </div>
 
-            <!-- Painel de usuários -->
             <div class="section-header">
                 <h2><i class="fas fa-users"></i>Usuários</h2>
                 <button class="add-btn" id="amzRefreshUsersBtn" style="background:linear-gradient(135deg,#06b6d4,#7c3aed);">
@@ -908,9 +878,11 @@
                 <select class="amz-filter-select" id="amzUserStatusFilter" onchange="amzFilterUsers()">
                     <option value="">Todos status</option>
                     <option value="active">Ativos</option>
+                    <option value="grace">Grace (expirado, ainda atualiza)</option>
                     <option value="expired">Expirados</option>
                     <option value="otp">OTP pendente</option>
                     <option value="free">Free trial</option>
+                    <option value="paused">Pausados (falhas)</option>
                 </select>
                 <span class="count" id="amzUsersCount">0 usuários</span>
             </div>
@@ -933,7 +905,6 @@
                 </table>
             </div>
 
-            <!-- Painel de chaves -->
             <div class="section-header">
                 <h2><i class="fas fa-key"></i>Chaves de Ativação</h2>
                 <button class="add-btn" id="amzRefreshKeysBtn" style="background:linear-gradient(135deg,#10b981,#06b6d4);">
@@ -942,15 +913,18 @@
                 </button>
             </div>
 
-            <!-- Formulário de geração -->
             <div class="summary-card" style="margin-bottom:16px;">
                 <div class="amz-key-form">
                     <div class="form-group">
-                        <label><i class="fas fa-calendar-day"></i> Dias por chave</label>
+                        <label><i class="fas fa-phone"></i> MSISDN (destino)</label>
+                        <input type="text" id="amzKeyMsisdn" placeholder="258XXXXXXXXX" inputmode="numeric">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-calendar-day"></i> Dias</label>
                         <input type="number" id="amzKeyDays" min="1" max="365" value="30" placeholder="30">
                     </div>
                     <div class="form-group">
-                        <label><i class="fas fa-layer-group"></i> Quantidade</label>
+                        <label><i class="fas fa-layer-group"></i> Qtd</label>
                         <input type="number" id="amzKeyQty" min="1" max="50" value="1" placeholder="1">
                     </div>
                     <button class="add-btn" id="amzGenerateKeyBtn" style="justify-content:center;width:100%;">
@@ -964,9 +938,9 @@
                 <input type="text" id="amzKeySearch" placeholder="Buscar por código ou MSISDN..." oninput="amzFilterKeys()">
                 <select class="amz-filter-select" id="amzKeyStatusFilter" onchange="amzFilterKeys()">
                     <option value="">Todas</option>
-                    <option value="unused">Não resgatadas</option>
-                    <option value="used">Resgatadas</option>
-                    <option value="cancelled">Canceladas</option>
+                    <option value="nova">Disponíveis</option>
+                    <option value="usada">Resgatadas</option>
+                    <option value="cancelada">Canceladas</option>
                 </select>
                 <span class="count" id="amzKeysCount">0 chaves</span>
             </div>
@@ -976,10 +950,10 @@
                     <thead>
                         <tr>
                             <th>Código</th>
+                            <th>MSISDN</th>
                             <th>Dias</th>
                             <th>Status</th>
                             <th>Criada em</th>
-                            <th>Resgatada por</th>
                             <th style="width:60px;">Ações</th>
                         </tr>
                     </thead>
@@ -991,9 +965,7 @@
         </div>
     </div>
 
-    <!-- ============================================================
-    MODAL DE ITEM (INTACTO)
-    ============================================================ -->
+    <!-- MODAL ITEM -->
     <div class="modal-overlay" id="itemModal">
         <div class="modal">
             <div class="modal-header">
@@ -1100,9 +1072,7 @@
         </div>
     </div>
 
-    <!-- ============================================================
-    MODAL DE VÍDEO (INTACTO)
-    ============================================================ -->
+    <!-- MODAL VÍDEO -->
     <div class="modal-overlay" id="videoModal">
         <div class="modal">
             <div class="modal-header">
@@ -1149,9 +1119,7 @@
         </div>
     </div>
 
-    <!-- ============================================================
-    MODAL DE SENHA (INTACTO)
-    ============================================================ -->
+    <!-- MODAL SENHA -->
     <div class="modal-overlay" id="passwordModal">
         <div class="modal">
             <div class="modal-header">
@@ -1182,6 +1150,9 @@
     </div>
 
     <script>
+        // ============================================================
+        // ESTADO GLOBAL
+        // ============================================================
         let chart = null;
         let currentItems = [];
         let currentVideos = [];
@@ -1190,7 +1161,6 @@
         let isEditing = false;
         let isVideoEditing = false;
 
-        // 🔥 NOVO: estado da aba Auto MyMuze
         let amzUsers = [];
         let amzFilteredUsers = [];
         let amzKeys = [];
@@ -1205,7 +1175,7 @@
             toast.className = `toast ${type}`;
             toast.textContent = message;
             document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+            setTimeout(() => toast.remove(), 3500);
         }
 
         // ============================================================
@@ -1216,7 +1186,6 @@
             document.body.setAttribute('data-theme', theme);
             updateThemeIcon(theme);
         }
-
         function updateThemeIcon(theme) {
             const icon = document.querySelector('#themeToggle i');
             if (icon) icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
@@ -1246,10 +1215,7 @@
             document.getElementById(tab + 'Section').classList.add('active');
             document.querySelector(`.admin-tab[data-tab="${tab}"]`).classList.add('active');
             
-            if (tab === 'videos') {
-                loadVideos();
-            }
-            // 🔥 NOVO: carregar dados do Auto MyMuze ao entrar na aba
+            if (tab === 'videos') loadVideos();
             if (tab === 'automymuze') {
                 loadAmzStats();
                 loadAmzUsers();
@@ -1280,33 +1246,26 @@
             } catch (e) {}
             return null;
         }
-
         function generatePlaceholderUrl() {
             const text = document.getElementById('placeholderText').value || 'BREVE';
             const bgColor = document.getElementById('placeholderBg').value.replace('#', '');
             const textColor = document.getElementById('placeholderTextColor').value.replace('#', '');
             return `https://placehold.co/400x400/${bgColor}/${textColor}?text=${encodeURIComponent(text)}`;
         }
-
         function updatePlaceholderPreview() {
             const preview = document.getElementById('placeholderPreview');
             const text = document.getElementById('placeholderText').value || 'BREVE';
             const bgColor = document.getElementById('placeholderBg').value;
             const textColor = document.getElementById('placeholderTextColor').value;
-            
             preview.style.background = bgColor;
             preview.style.color = textColor;
             preview.textContent = text.substring(0, 3).toUpperCase();
         }
-
         function switchImageMode(mode) {
             currentImageMode = mode;
-            
             document.querySelectorAll('.image-tab').forEach(tab => {
-                tab.classList.remove('active');
-                if (tab.dataset.tab === mode) tab.classList.add('active');
+                tab.classList.toggle('active', tab.dataset.tab === mode);
             });
-            
             document.getElementById('urlField').style.display = mode === 'url' ? 'block' : 'none';
             document.getElementById('placeholderFields').style.display = mode === 'placeholder' ? 'block' : 'none';
             if (mode === 'placeholder') updatePlaceholderPreview();
@@ -1325,7 +1284,6 @@
                 select.appendChild(option);
             });
         }
-
         function cloneFromSource() {
             const sourceId = document.getElementById('cloneSource').value;
             if (!sourceId) {
@@ -1340,17 +1298,14 @@
                 showToast('Campos limpos!', 'info');
                 return;
             }
-            
             const sourceItem = currentItems.find(i => i.id === sourceId);
             if (!sourceItem) return;
-            
             document.getElementById('itemTitulo').value = sourceItem.titulo + ' (Cópia)';
             document.getElementById('itemDescricao').value = sourceItem.descricao || '';
             document.getElementById('itemUrl').value = sourceItem.url_original || '';
             document.getElementById('itemCategoria').value = sourceItem.categoria || 'outros';
             document.getElementById('itemAtivo').value = sourceItem.ativo || 'true';
             document.getElementById('itemExpira').value = sourceItem.expira_em ? sourceItem.expira_em.slice(0, 16) : '';
-            
             const placeholderData = parsePlaceholderUrl(sourceItem.imagem);
             if (placeholderData) {
                 switchImageMode('placeholder');
@@ -1362,12 +1317,11 @@
                 switchImageMode('url');
                 document.getElementById('itemImagem').value = sourceItem.imagem || '';
             }
-            
             showToast(`Dados copiados de: ${sourceItem.titulo}`, 'success');
         }
 
         // ============================================================
-        // ITEMS
+        // STATS (itens)
         // ============================================================
         async function loadStats() {
             try {
@@ -1449,6 +1403,9 @@
             }
         }
 
+        // ============================================================
+        // ITEMS
+        // ============================================================
         async function loadItems() {
             try {
                 const res = await fetch('/admin/api/items');
@@ -1461,12 +1418,11 @@
                     return;
                 }
                 
-                tbody.innerHTML = '';
+                let html = '';
                 data.items.forEach(item => {
                     const rate = item.visualizacoes > 0 ? ((item.downloads / item.visualizacoes) * 100).toFixed(1) : '0';
                     const isActive = item.ativo === 'true';
-                    
-                    tbody.innerHTML += `
+                    html += `
                         <tr>
                             <td>${item.titulo}</td>
                             <td>${item.categoria || 'outros'}</td>
@@ -1495,6 +1451,7 @@
                         </tr>
                     `;
                 });
+                tbody.innerHTML = html;
                 
                 if (document.getElementById('itemModal').classList.contains('active')) {
                     populateCloneDropdown();
@@ -1554,7 +1511,6 @@
             
             modal.classList.add('active');
         }
-
         function closeItemModal() { document.getElementById('itemModal').classList.remove('active'); }
         function editItem(itemId) { openItemModal(itemId, false); }
         function duplicateItem(itemId) { openItemModal(itemId, true); }
@@ -1695,7 +1651,6 @@
                     </tr>
                 `;
             });
-            
             tbody.innerHTML = html;
             document.getElementById('videosCount').textContent = `${filteredVideos.length} vídeos`;
         }
@@ -1735,7 +1690,6 @@
             const modal = document.getElementById('videoModal');
             const title = document.getElementById('videoModalTitle');
             const form = document.getElementById('videoForm');
-            
             isVideoEditing = !!videoId;
             
             if (videoId) {
@@ -1758,7 +1712,6 @@
                 document.getElementById('videoId').value = '';
                 document.getElementById('videoAtivo').value = 'true';
             }
-            
             modal.classList.add('active');
         }
 
@@ -1864,7 +1817,7 @@
         }
 
         // ============================================================
-        // 🔥 NOVO: AUTO MYMUZE - UTILITÁRIOS
+        // AUTO MYMUZE — HELPERS
         // ============================================================
         function amzFmtRelative(ts) {
             if (!ts) return '—';
@@ -1887,13 +1840,26 @@
                 ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
         }
 
-        function amzDaysLeft(expiresAt) {
-            if (!expiresAt) return 0;
-            return Math.max(0, Math.ceil((expiresAt - Date.now()) / (24 * 60 * 60 * 1000)));
+        function amzDaysLeft(u) {
+            if (!u) return 0;
+            if (typeof u.dias_restantes === 'number') return u.dias_restantes;
+            const exp = u.plano_fim || u.expires_at || u.expira_em;
+            if (!exp) return 0;
+            return Math.max(0, Math.ceil((exp - Date.now()) / (24 * 60 * 60 * 1000)));
+        }
+
+        function amzUserStatus(u) {
+            const s = u.status;
+            if (s === 'otp')     return { key: 'otp',     label: 'OTP pendente',           cls: 'warn' };
+            if (s === 'expired') return { key: 'expired', label: 'Expirado',               cls: 'fail' };
+            if (s === 'grace')   return { key: 'grace',   label: `Grace (${u.dias_restantes || 0}d)`, cls: 'warn' };
+            if (s === 'free')    return { key: 'free',    label: 'Free trial',             cls: 'info' };
+            if (s === 'paused')  return { key: 'paused',  label: 'Pausado (falhas)',       cls: 'warn' };
+            return { key: 'active', label: 'Ativo', cls: 'ok' };
         }
 
         // ============================================================
-        // 🔥 NOVO: AUTO MYMUZE - STATS
+        // AUTO MYMUZE — STATS
         // ============================================================
         async function loadAmzStats() {
             try {
@@ -1901,11 +1867,10 @@
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 const data = await res.json();
 
-                const ok = data.ok_24h ?? data.ok24h ?? 0;
-                const fail = data.fail_24h ?? data.fail24h ?? 0;
-                const queueSize = data.queueSize ?? data.queue_size ?? 0;
-                const lastTick = data.lastTick ?? data.last_tick ?? null;
-                const todayMz = data.today_mz ?? data.todayMz ?? '—';
+                const ok = data.ok_24h || 0;
+                const fail = data.fail_24h || 0;
+                const queueSize = data.queueSize || 0;
+                const lastTick = data.last_cron_run || (data.cron && data.cron.lastRunAt) || null;
 
                 document.getElementById('amzOk24h').textContent = ok;
                 document.getElementById('amzFail24h').textContent = fail;
@@ -1921,9 +1886,8 @@
                     : 'fila vazia';
 
                 document.getElementById('amzLastTick').textContent = lastTick ? amzFmtRelative(lastTick) : '—';
-                document.getElementById('amzTodayMz').textContent = 'Hoje MZ: ' + todayMz;
+                document.getElementById('amzTodayMz').textContent = 'Hoje MZ: ' + (data.today_mz || '—');
 
-                // aviso se cron parado (> 30min sem tick)
                 const cronCard = document.querySelector('.amz-stat-card.cron');
                 if (lastTick && Date.now() - lastTick > 30 * 60 * 1000) {
                     cronCard.style.borderColor = 'var(--danger)';
@@ -1936,30 +1900,20 @@
         }
 
         // ============================================================
-        // 🔥 NOVO: AUTO MYMUZE - USERS
+        // AUTO MYMUZE — USERS
         // ============================================================
         async function loadAmzUsers() {
             try {
                 const res = await fetch('/admin/api/automymuze/users');
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 const data = await res.json();
-
-                // aceita {users:[]} ou array direto
-                amzUsers = Array.isArray(data) ? data : (data.users || data.items || []);
+                amzUsers = Array.isArray(data) ? data : (data.users || []);
                 amzFilterUsers();
             } catch (e) {
                 console.error('Erro amz users:', e);
                 document.getElementById('amzUsersTableBody').innerHTML =
                     '<tr><td colspan="6" class="empty-row"><i class="fas fa-exclamation-circle"></i> Erro ao carregar usuários</td></tr>';
             }
-        }
-
-        function amzUserStatus(u) {
-            if (u.otp_needed) return { key: 'otp', label: 'OTP pendente', cls: 'warn' };
-            const exp = u.expires_at || u.expira_em || u.expiresAt;
-            if (exp && exp < Date.now()) return { key: 'expired', label: 'Expirado', cls: 'fail' };
-            if (u.plan === 'free' || u.plano === 'free' || u.is_free) return { key: 'free', label: 'Free trial', cls: 'info' };
-            return { key: 'active', label: 'Ativo', cls: 'ok' };
         }
 
         function amzFilterUsers() {
@@ -1990,11 +1944,10 @@
             let html = '';
             amzFilteredUsers.forEach(u => {
                 const msisdn = u.msisdn || '—';
-                const plan = u.plan || u.plano || 'paid';
-                const exp = u.expires_at || u.expira_em || u.expiresAt;
-                const days = amzDaysLeft(exp);
+                const plan = u.plano || 'paid';
+                const days = amzDaysLeft(u);
                 const st = amzUserStatus(u);
-                const lastOk = u.last_update_ok || u.lastUpdateOk || null;
+                const lastOk = u.last_update_ok || null;
 
                 html += `
                     <tr>
@@ -2029,12 +1982,25 @@
                 const res = await fetch(`/admin/api/automymuze/user/${encodeURIComponent(msisdn)}/extend`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ days: +days })
+                    body: JSON.stringify({ dias: +days, days: +days }) // manda os dois por compat
                 });
                 const data = await res.json();
-                if (data.success !== false) {
-                    showToast(`${msisdn} estendido por ${days} dias`, 'success');
+
+                if (res.ok && data.ok !== false) {
+                    showToast(
+                        `${msisdn} estendido por ${data.dias || days} dias (${data.dias_restantes || '?'} restantes)`,
+                        'success'
+                    );
+                    if (data.precisa_otp) {
+                        setTimeout(() => {
+                            showToast(
+                                `⚠️ ${msisdn} está sem sessão — cliente precisa relogar com OTP`,
+                                'warn'
+                            );
+                        }, 1500);
+                    }
                     loadAmzUsers();
+                    loadAmzStats();
                 } else {
                     showToast(data.error || 'Erro ao estender', 'error');
                 }
@@ -2050,7 +2016,7 @@
                     method: 'POST'
                 });
                 const data = await res.json();
-                if (data.success !== false) {
+                if (data.ok !== false) {
                     showToast(`Atualização forçada para ${msisdn}`, 'success');
                     setTimeout(() => { loadAmzUsers(); loadAmzStats(); }, 1500);
                 } else {
@@ -2068,7 +2034,7 @@
                     method: 'POST'
                 });
                 const data = await res.json();
-                if (data.success !== false) {
+                if (data.ok !== false) {
                     showToast(`${msisdn} cancelado`, 'success');
                     loadAmzUsers();
                 } else {
@@ -2080,14 +2046,14 @@
         }
 
         // ============================================================
-        // 🔥 NOVO: AUTO MYMUZE - KEYS
+        // AUTO MYMUZE — KEYS
         // ============================================================
         async function loadAmzKeys() {
             try {
                 const res = await fetch('/admin/api/automymuze/keys');
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 const data = await res.json();
-                amzKeys = Array.isArray(data) ? data : (data.keys || data.items || []);
+                amzKeys = Array.isArray(data) ? data : (data.keys || []);
                 amzFilterKeys();
             } catch (e) {
                 console.error('Erro amz keys:', e);
@@ -2097,9 +2063,9 @@
         }
 
         function amzKeyStatus(k) {
-            if (k.cancelled || k.cancelada) return { key: 'cancelled', label: 'Cancelada', cls: 'fail' };
-            if (k.used || k.usada || k.used_by || k.redeemed_by) return { key: 'used', label: 'Resgatada', cls: 'info' };
-            return { key: 'unused', label: 'Disponível', cls: 'ok' };
+            if (k.status === 'cancelada') return { key: 'cancelada', label: 'Cancelada', cls: 'fail' };
+            if (k.status === 'usada')     return { key: 'usada',     label: 'Resgatada', cls: 'info' };
+            return { key: 'nova', label: 'Disponível', cls: 'ok' };
         }
 
         function amzFilterKeys() {
@@ -2107,13 +2073,10 @@
             const status = document.getElementById('amzKeyStatusFilter').value;
 
             amzFilteredKeys = amzKeys.filter(k => {
-                const codigo = (k.codigo || k.code || '').toLowerCase();
-                const usedBy = (k.used_by || k.redeemed_by || k.usada_por || '').toLowerCase();
-                if (term && !codigo.includes(term) && !usedBy.includes(term)) return false;
-                if (status) {
-                    const s = amzKeyStatus(k);
-                    if (s.key !== status) return false;
-                }
+                const codigo = (k.codigo || '').toLowerCase();
+                const dest = (k.msisdn_destino || '').toLowerCase();
+                if (term && !codigo.includes(term) && !dest.includes(term)) return false;
+                if (status && k.status !== status) return false;
                 return true;
             });
 
@@ -2130,11 +2093,11 @@
 
             let html = '';
             amzFilteredKeys.forEach(k => {
-                const codigo = k.codigo || k.code || '—';
-                const dias = k.dias || k.days || '—';
+                const codigo = k.codigo || '—';
+                const dest = k.msisdn_destino || '—';
+                const dias = k.dias || '—';
                 const st = amzKeyStatus(k);
-                const criada = k.created_at || k.criada_em || k.createdAt;
-                const usedBy = k.used_by || k.redeemed_by || k.usada_por || '—';
+                const criada = Number(k.criada_em) || null;
 
                 html += `
                     <tr>
@@ -2143,13 +2106,13 @@
                                 ${codigo}
                             </span>
                         </td>
+                        <td>${dest}</td>
                         <td>${dias}</td>
                         <td><span class="amz-badge ${st.cls}">${st.label}</span></td>
                         <td>${criada ? amzFmtDate(criada) : '—'}</td>
-                        <td>${usedBy}</td>
                         <td>
                             <div class="item-actions">
-                                ${st.key === 'unused' ? `
+                                ${st.key === 'nova' ? `
                                 <button class="action-btn delete" onclick="amzCancelKey('${codigo}')" title="Cancelar chave">
                                     <i class="fas fa-ban"></i>
                                 </button>` : ''}
@@ -2171,9 +2134,14 @@
         }
 
         async function amzGenerateKey() {
+            const msisdn = (document.getElementById('amzKeyMsisdn').value || '').trim();
             const dias = parseInt(document.getElementById('amzKeyDays').value, 10);
             const qty = parseInt(document.getElementById('amzKeyQty').value, 10);
 
+            if (!msisdn || !/^\d{9,15}$/.test(msisdn)) {
+                showToast('MSISDN obrigatório (9-15 dígitos)', 'error');
+                return;
+            }
             if (!dias || dias < 1 || dias > 365) {
                 showToast('Dias deve estar entre 1 e 365', 'error');
                 return;
@@ -2191,18 +2159,20 @@
                 const res = await fetch('/admin/api/automymuze/keys', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ days: dias, quantity: qty })
+                    body: JSON.stringify({ msisdn, dias, days: dias, quantity: qty, qty })
                 });
                 const data = await res.json();
 
-                if (data.success !== false) {
-                    const criadas = data.keys || data.codigos || (data.key ? [data.key] : []);
+                if (res.ok && data.ok !== false) {
+                    const criadas = data.keys || [];
                     if (criadas.length === 1) {
-                        const c = criadas[0].codigo || criadas[0].code || criadas[0];
+                        const c = criadas[0].codigo;
                         showToast(`Chave gerada: ${c}`, 'success');
                         amzCopyCode(c);
-                    } else {
+                    } else if (criadas.length > 1) {
                         showToast(`${criadas.length} chaves geradas`, 'success');
+                    } else {
+                        showToast('Chave gerada', 'success');
                     }
                     loadAmzKeys();
                 } else {
@@ -2223,7 +2193,7 @@
                     method: 'POST'
                 });
                 const data = await res.json();
-                if (data.success !== false) {
+                if (data.ok !== false) {
                     showToast('Chave cancelada', 'success');
                     loadAmzKeys();
                 } else {
@@ -2275,7 +2245,6 @@
                 if (e.target === this) closePasswordModal();
             });
 
-            // 🔥 NOVO: listeners da aba Auto MyMuze
             document.getElementById('amzRefreshUsersBtn').addEventListener('click', () => {
                 loadAmzUsers();
                 loadAmzStats();
