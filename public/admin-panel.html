@@ -867,10 +867,16 @@
 
             <div class="section-header">
                 <h2><i class="fas fa-users"></i>Usuários</h2>
-                <button class="add-btn" id="amzRefreshUsersBtn" style="background:linear-gradient(135deg,#06b6d4,#7c3aed);">
-                    <i class="fas fa-sync-alt"></i>
-                    <span>Atualizar</span>
-                </button>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <button class="add-btn" id="amzPurgeFreeBtn" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">
+                        <i class="fas fa-broom"></i>
+                        <span>Excluir free trials</span>
+                    </button>
+                    <button class="add-btn" id="amzRefreshUsersBtn" style="background:linear-gradient(135deg,#06b6d4,#7c3aed);">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>Atualizar</span>
+                    </button>
+                </div>
             </div>
 
             <div class="search-bar">
@@ -896,7 +902,7 @@
                             <th>Dias</th>
                             <th>Última att.</th>
                             <th>Status</th>
-                            <th style="width:130px;">Ações</th>
+                            <th style="width:170px;">Ações</th>
                         </tr>
                     </thead>
                     <tbody id="amzUsersTableBody">
@@ -1964,8 +1970,11 @@
                                 <button class="action-btn duplicate" onclick="amzForceUpdate('${msisdn}')" title="Forçar atualização">
                                     <i class="fas fa-bolt"></i>
                                 </button>
-                                <button class="action-btn delete" onclick="amzCancelUser('${msisdn}')" title="Cancelar">
+                                <button class="action-btn delete" onclick="amzCancelUser('${msisdn}')" title="Cancelar (mantém dados)">
                                     <i class="fas fa-ban"></i>
+                                </button>
+                                <button class="action-btn delete" onclick="amzDeleteUser('${msisdn}')" title="Excluir completamente">
+                                    <i class="fas fa-trash"></i>
                                 </button>
                             </div>
                         </td>
@@ -1982,7 +1991,7 @@
                 const res = await fetch(`/admin/api/automymuze/user/${encodeURIComponent(msisdn)}/extend`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ dias: +days, days: +days }) // manda os dois por compat
+                    body: JSON.stringify({ dias: +days, days: +days })
                 });
                 const data = await res.json();
 
@@ -2042,6 +2051,73 @@
                 }
             } catch (e) {
                 showToast('Erro de conexão', 'error');
+            }
+        }
+
+        // ⭐ Excluir UM usuário manualmente (limpa TUDO, inclusive free trial)
+        async function amzDeleteUser(msisdn) {
+            if (!confirm(
+                `⚠️ EXCLUIR COMPLETAMENTE ${msisdn}?\n\n` +
+                `• Apaga plano, sessão, fila, home e profile\n` +
+                `• Cliente PODERÁ pedir free trial novamente\n\n` +
+                `Essa ação NÃO pode ser desfeita.`
+            )) return;
+
+            try {
+                const res = await fetch(`/admin/api/automymuze/user/${encodeURIComponent(msisdn)}`, {
+                    method: 'DELETE'
+                });
+                const data = await res.json();
+                if (res.ok && data.ok !== false) {
+                    showToast(`${msisdn} excluído completamente`, 'success');
+                    loadAmzUsers();
+                    loadAmzStats();
+                } else {
+                    showToast(data.error || 'Erro ao excluir', 'error');
+                }
+            } catch (e) {
+                showToast('Erro de conexão', 'error');
+            }
+        }
+
+        // ⭐ Excluir em massa SOMENTE usuários free_trial
+        // (mantém flag amz:free_trials_used → não podem pedir free de novo)
+        async function amzPurgeFreeTrials() {
+            const freeCount = amzUsers.filter(u => u.plano === 'free_trial').length;
+            if (freeCount === 0) {
+                showToast('Nenhum usuário em free trial', 'info');
+                return;
+            }
+
+            if (!confirm(
+                `⚠️ EXCLUIR ${freeCount} USUÁRIO(S) FREE TRIAL?\n\n` +
+                `• Apaga plano, sessão, fila, home e profile\n` +
+                `• MAS mantém a flag de free trial usada\n` +
+                `• Ou seja: NÃO poderão pedir free trial novamente\n\n` +
+                `Contas pagas NÃO são afetadas.`
+            )) return;
+
+            const btn = document.getElementById('amzPurgeFreeBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Excluindo...';
+
+            try {
+                const res = await fetch('/admin/api/automymuze/users/purge-free', {
+                    method: 'POST'
+                });
+                const data = await res.json();
+                if (res.ok && data.ok !== false) {
+                    showToast(`${data.deleted || 0} free trial(s) excluído(s)`, 'success');
+                    loadAmzUsers();
+                    loadAmzStats();
+                } else {
+                    showToast(data.error || 'Erro ao excluir', 'error');
+                }
+            } catch (e) {
+                showToast('Erro de conexão', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-broom"></i><span>Excluir free trials</span>';
             }
         }
 
@@ -2249,6 +2325,7 @@
                 loadAmzUsers();
                 loadAmzStats();
             });
+            document.getElementById('amzPurgeFreeBtn').addEventListener('click', amzPurgeFreeTrials);
             document.getElementById('amzRefreshKeysBtn').addEventListener('click', loadAmzKeys);
             document.getElementById('amzGenerateKeyBtn').addEventListener('click', amzGenerateKey);
             
